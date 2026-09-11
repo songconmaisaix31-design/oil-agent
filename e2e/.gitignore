@@ -1,4 +1,5 @@
 local-acceptance.xml
+core-acceptance.xml
 runtime-artifacts/*.xml
 *.dump
 *sessions*.json

@@ -16,6 +16,17 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     services:
+      postgres-c:
+        image: postgres:16-alpine@sha256:e013e867e712fec275706a6c51c966f0bb0c93cfa8f51000f85a15f9865a28cb
+        env:
+          POSTGRES_USER: oil_c_test
+          POSTGRES_DB: oil_c_test
+          POSTGRES_PASSWORD: SYNTHETIC-CI-C-ONLY
+        ports: [55431:5432]
+        options: >-
+          --health-cmd "pg_isready -U oil_c_test -d oil_c_test"
+          --health-interval 5s --health-timeout 3s --health-retries 12
+          --memory 256m --cpus 1
       postgres:
         image: postgres:16-alpine@sha256:e013e867e712fec275706a6c51c966f0bb0c93cfa8f51000f85a15f9865a28cb
         env:
@@ -29,6 +40,8 @@ jobs:
           --memory 256m --cpus 1
     env:
       OIL_E_TEST_DATABASE_URL: postgresql+psycopg://oil_e_ci:SYNTHETIC-CI-ONLY@127.0.0.1:5432/oil_e_ci
+      OIL_TEST_DATABASE_URL: postgresql+psycopg://oil_c_test:SYNTHETIC-CI-C-ONLY@127.0.0.1:55431/oil_c_test
+      OIL_AB_PACKAGE_ROOT: ${{ github.workspace }}/src/oil_agent
       OIL_ENVIRONMENT: test
       OIL_OUTBOUND_MODE: dry_run
       UV_PYTHON_DOWNLOADS: never
@@ -48,7 +61,11 @@ jobs:
       - run: uv sync --locked
       - run: uv run --locked python scripts/validate_scenario_corpus.py
       - run: uv run --locked ruff check tests/integration deploy/worker_health.py
-      - run: uv run --locked pytest tests/contracts tests/unit -m 'not postgres' -q
+      - name: Migrate the separate C test service
+        env:
+          OIL_DATABASE_URL: postgresql+psycopg://oil_c_test:SYNTHETIC-CI-C-ONLY@127.0.0.1:55431/oil_c_test
+        run: uv run --locked python -m oil_agent.runtime.cli migrate
+      - run: uv run --locked pytest tests/contracts tests/unit -q --junitxml=e2e/core-acceptance.xml
       - run: uv run --locked pytest tests/integration -q --junitxml=e2e/local-acceptance.xml
       - run: npm ci --ignore-scripts
         working-directory: web
@@ -67,6 +84,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: synthetic-local-acceptance
-          path: e2e/local-acceptance.xml
+          path: |
+            e2e/local-acceptance.xml
+            e2e/core-acceptance.xml
           if-no-files-found: ignore
           retention-days: 7

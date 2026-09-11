@@ -132,15 +132,16 @@ async def seed(output):
             await app.assess_pending()
             await app.send_pending()
             await app.send_pending()
-            report = await app.build_daily()
+            await app.build_daily()
             events = app.repository.events(actors["viewer"]).items
+            reports = app.repository.reports(actors["viewer"]).items
             json.dump(
                 {
                     "is_fixture": True,
                     "dataset": DATASET,
                     "sessions": sessions,
                     "event_id": events[0].event_id,
-                    "report_id": report.report_id if report else None,
+                    "report_id": reports[0].report_id if reports else None,
                 },
                 destination,
             )
