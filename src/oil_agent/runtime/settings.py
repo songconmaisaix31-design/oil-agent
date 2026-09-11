@@ -1,7 +1,8 @@
 """Explicit environment injection; no automatic dotenv or secret discovery.
 
-The foundation cannot enable production sending. Runtime delivery authorization
-and budget gates must be implemented before that restriction is changed.
+Production requires explicit operator gate references as well as current database
+authorization. References are not external acceptance evidence; sources/models
+remain closed. Reminders are configured per revision through the audited API.
 """
 
 from typing import Literal
@@ -57,7 +58,7 @@ class Settings(BaseSettings):
         )
 
     @model_validator(mode="after")
-    def safe_foundation(self):
+    def safe_defaults(self):
         if self.environment == "production" and (
             not self.cookie_secure or not self.public_origin.startswith("https://")
         ):
@@ -75,7 +76,7 @@ class Settings(BaseSettings):
                 "Production license, recipients, budget, policy, retention and credentials required"
             )
         if self.reminders_enabled or self.sms_enabled or self.phone_enabled:
-            raise ValueError("Reminders, SMS and phone are unavailable in the foundation")
+            raise ValueError("Use audited per-revision reminder config; SMS and phone are disabled")
         if self.database_url:
             try:
                 driver = make_url(self.database_url.get_secret_value()).drivername

@@ -346,7 +346,7 @@ class AckPayload(DTO):
     """Raw callback bytes plus headers; D verifies authenticity before decoding.
 
     Never log this envelope; C rechecks recipient/revision authorization after D
-    returns VerifiedAck. HTTP callback mounting is deferred to C runtime.
+    returns VerifiedAck. C runtime mounts the callback and durably rejects replay.
     """
 
     body: Annotated[bytes, Field(max_length=262144)]

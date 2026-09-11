@@ -14,6 +14,7 @@ from oil_agent.contracts.dto import (
     Delivery,
     NotificationIntent,
     RecipientAuthorization,
+    SourceRecord,
     VerifiedAck,
 )
 from oil_agent.contracts.http import BusinessConfig
@@ -25,9 +26,11 @@ from oil_agent.storage.models import (
     BusinessConfigRow,
     DeliveryRow,
     IntentRow,
+    SourceRecordRow,
     SubjectRow,
     UserRow,
 )
+from oil_agent.storage.notification_text import notification_body
 
 
 @dataclass(frozen=True)
@@ -175,7 +178,15 @@ class DeliveryRepository:
             idempotency_key=key,
             created_at=self.clock(),
             title=getattr(item, "title", f"Daily report {getattr(item, 'report_date', '')}"),
-            body=getattr(item, "change_summary", "Evidence-backed daily report"),
+            body=notification_body(
+                item,
+                {
+                    (ref.record_id, ref.revision): SourceRecord.model_validate(
+                        session.get(SourceRecordRow, (ref.record_id, ref.revision)).payload
+                    )
+                    for ref in item.evidence
+                },
+            ),
             evidence=item.evidence,
             is_fixture=item.is_fixture,
             provenance=item.provenance,

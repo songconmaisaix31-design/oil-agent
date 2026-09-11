@@ -3,7 +3,7 @@
 Authentication is a server-resolved HttpOnly session cookie, never an actor or
 role supplied by a client. Mutation requests contain no trusted identity fields.
 Quote preview accepts bounded base64 CSV/XLSX data; import references a persisted,
-actor-bound preview. Neither preview nor import is implemented by this foundation.
+actor-bound preview. C runtime persists previews and imports through injected AB parsing.
 """
 
 from datetime import time
