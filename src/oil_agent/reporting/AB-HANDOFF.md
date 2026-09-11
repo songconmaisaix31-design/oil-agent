@@ -243,3 +243,22 @@ E's browser test and C/D/E/M files were not edited; no injected UI/test mapping
 workaround was used. Main/E must rerun the unchanged real browser/API/PostgreSQL
 default upload flow on the delivered SHA. No Docker, product model, source API or
 customer sending was used for this local fix; existing external limits remain.
+
+## AB-FIX-SUMMARY-COPY follow-up
+
+Base: `026490a4558ffc50dba03a28c14b2e03dcfa32e9`. Replaced only the user-visible
+change_summary coordination placeholder with a concise Chinese explanation that
+the assessment uses the listed sources and presents fact status, evidence status
+and unresolved questions separately. It does not claim a new event, update,
+confirmation or durable revision. Matching and revision allocation remain C's
+responsibility; no processing behavior, IDs/hashes, severity/evidence fields,
+unknown codes, model settings or DTOs changed.
+
+- `uv run --frozen ruff check src/oil_agent/intelligence/assessment.py`: passed.
+- `uv run --frozen pytest tests/unit/intelligence -q`: 14 passed.
+- Existing tests were used without adding text-only assertions.
+
+Only assessment.py and this handoff changed. No Docker or live calls were used.
+The coordinator's reported eight-browser/264-Python integration evidence applies
+to the base above, not this successor. Final I must adopt the copy-only successor
+and rerun integrated CI; that validation was not performed in this AB follow-up.

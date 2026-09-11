@@ -380,7 +380,7 @@ class ConservativeAssessmentService:
                     ),
                     assessed_at=now,
                     change_summary=(
-                        "Candidate assessment; C must match history and allocate durable revision"
+                        "研判依据所列来源，事实状态、证据状态与待核实事项分别展示。"
                     ),
                     is_fixture=fixture,
                     provenance=provenance,
