@@ -12,9 +12,9 @@ quote import, mobile views and deployment checks. Real source, Feishu, phone and
 | Stage | Work | Gate/status |
 | --- | --- | --- |
 | M0 | Read-only baseline; C freezes contracts, dependencies and API schema | DONE for foundation scope on C branch; final integration pending |
-| M1 | AB replay/assessment + C transactional pipeline + D dry-run/ack | RUNNING local scope; real source/phone BLOCKED_EXTERNAL |
-| M2 | Revisions, independent evidence, failure recovery, authorization | RUNNING implementation; acceptance depends on M1 |
-| M3 | Daily reports, safe quote imports, five responsive views | RUNNING local scope |
+| M1 | AB replay/assessment + C transactional pipeline + D dry-run/ack | Local implementation accepted per track; E regression running; real source/phone BLOCKED_EXTERNAL |
+| M2 | Revisions, independent evidence, failure recovery, authorization | Local implementation accepted per track; final E/I acceptance pending |
+| M3 | Daily reports, safe quote imports, five responsive views | Local implementation accepted per track; actual browser regression pending latest AB fix |
 | M4 | E regression/security/PostgreSQL/Compose; separate I integration | E RUNNING; I waits for completed tracks |
 | M5 | Authorized source/phone and >=14 days operation | BLOCKED_EXTERNAL |
 
@@ -26,7 +26,7 @@ and B to reduce agent count; independent source and processing modules remain.
 | Track | Exclusive write_paths | Initial work / state |
 | --- | --- | --- |
 | M | AGENTS.md, README.md, V01-TODO.md | decisions, status, acceptance / RUNNING |
-| C | src/oil_agent/contracts/, src/oil_agent/storage/, src/oil_agent/runtime/, src/oil_agent/api/, src/oil_agent/__init__.py, src/oil_agent/bootstrap.py, tests/contracts/, tests/conftest.py, tests/unit/storage/, tests/unit/runtime/, tests/unit/api/, pyproject.toml, uv.lock, .python-version, .env.example, .gitignore, alembic.ini, config/ | M-02 accepted; C-01..04 / RUNNING |
+| C | src/oil_agent/contracts/, src/oil_agent/storage/, src/oil_agent/runtime/, src/oil_agent/api/, src/oil_agent/__init__.py, src/oil_agent/bootstrap.py, tests/contracts/, tests/conftest.py, tests/unit/storage/, tests/unit/runtime/, tests/unit/api/, pyproject.toml, uv.lock, .python-version, .env.example, .gitignore, alembic.ini, config/ | local runtime accepted; retained for integration fixes |
 | AB | src/oil_agent/ingestion/, src/oil_agent/intelligence/, src/oil_agent/reporting/, tests/unit/ingestion/, tests/unit/intelligence/, tests/unit/reporting/ | local increment accepted; integration pending; external source/model gates remain |
 | D | src/oil_agent/channels/, web/, tests/unit/channels/ | local increment accepted; real API/phone acceptance pending |
 | E | tests/integration/, e2e/, fixtures/, deploy/, scripts/, .github/workflows/, docs/runbook.md | E-01..03 / RUNNING; E-04 external gates |
@@ -84,10 +84,10 @@ Worker success enters REVIEW until integration checks.
 
 | Track | Worktree / branch | Base / dispatch | State |
 | --- | --- | --- | --- |
-| C | C:/Users/DW/orca/workspaces/oil-agent/oil-v01-c / songconmaisaix31-design/oil-v01-c | f5d5face60c160e70a7565498a6da54ed33c15fd; runtime starts at d31d8f9d410375dedb4727a3999ab56442c82df3 / ctx_1248df0f39e2 (task_ccc3fe1d6a12) | foundation accepted; RUNNING runtime in same session |
+| C | C:/Users/DW/orca/workspaces/oil-agent/oil-v01-c / songconmaisaix31-design/oil-v01-c | f5d5face60c160e70a7565498a6da54ed33c15fd; runtime starts at d31d8f9d410375dedb4727a3999ab56442c82df3 / ctx_1248df0f39e2 (task_ccc3fe1d6a12) | local runtime accepted at 41a00ded; RETAINED |
 | E | C:/Users/DW/orca/workspaces/oil-agent/oil-v01-e / songconmaisaix31-design/oil-v01-e | initial f5d5face60c160e70a7565498a6da54ed33c15fd; runtime starts at 49a1b9cb29d6d35029bba904a40f733e39580245 / ctx_d1f60fcc77b0 (task_514645bb2c7a) | baseline accepted; RUNNING tests/deployment in same session |
-| AB | C:/Users/DW/orca/workspaces/oil-agent/oil-v01-ab / songconmaisaix31-design/oil-v01-ab | dd01ee225ba36c1d7e75acdf5c96cd2d8e0df482 / ctx_ee9e5a943861 (task_0fb0fc0330b5) | local increment accepted; RETAINED for integration fixes |
-| D | C:/Users/DW/orca/workspaces/oil-agent/oil-v01-d / songconmaisaix31-design/oil-v01-d | dd01ee225ba36c1d7e75acdf5c96cd2d8e0df482 / ctx_628088790830 (task_59fba1d3c03e) | local increment accepted; RETAINED for integration fixes |
+| AB | C:/Users/DW/orca/workspaces/oil-agent/oil-v01-ab / songconmaisaix31-design/oil-v01-ab | dd01ee225ba36c1d7e75acdf5c96cd2d8e0df482; latest same-session follow-up ctx_10a78cbe3c9a (task_5cb6b38fc2d1) | local quote-default fix accepted at 026490a4; RETAINED |
+| D | C:/Users/DW/orca/workspaces/oil-agent/oil-v01-d / songconmaisaix31-design/oil-v01-d | dd01ee225ba36c1d7e75acdf5c96cd2d8e0df482; latest same-session follow-up ctx_5e6e04e2d3d2 (task_1f3366c05108) | local upload-limit fix accepted at 0bbdc217; RETAINED |
 
 - Governance commit f5d5face60c160e70a7565498a6da54ed33c15fd pushed to origin.
   Initial direct pushes failed with connection reset/timeout; a process-scoped
@@ -201,16 +201,49 @@ Worker success enters REVIEW until integration checks.
   E owns fixes for migrate command spelling, base64 upload proxy allowance and
   copying authoritative OpenAPI into the frontend image build context.
 
-## Open integration blockers
+## Latest reviewed fixes and acceptance
 
-- T04 FAIL on C88338fa + AB25cceea + D e55c62c, actual E PostgreSQL 16.14:
-  tests/integration/test_postgres_pipeline.py::test_T04_independent_late_evidence_upgrades_same_persisted_event.
-  Late independent source creates revision 2 but remains credible_single_source.
-  C only supplied new claims and rejected historical evidence outside those claims.
-  Returned to C for bounded durable same-family history context and stale-head
-  checks; no weakened assertion or AB in-memory history workaround. C not complete.
-- C is adding bounded authoritative event/report content to NotificationIntent.body
-  so D can render fact/evidence status, publisher/time, cutoff and gaps without
-  inferring them from a notification kind or inventing unsupported numbers.
-- Real API browser checks, Linux full Compose build/worker recovery, backup restore,
-  remote CI and final separate I integration remain unaccepted at this snapshot.
+- C runtime final 41a00ded1f949aee8099b549d5d419f0487dd0f9, code
+  571a4af958754899c3cf8903d52075e9b8a616ff: exact remote verified and handoff
+  reviewed. Worker reports 69 tests without skips on real PostgreSQL, fresh
+  migration/drift, locked sync, Ruff, build and HTTP smoke. Its isolated database
+  container was stopped and retained. See config/runtime-handoff.md on C.
+- Original E T04 failed on C88338fa because late independent evidence was assessed
+  without durable same-family history. C16d064e adds bounded history and captured
+  head checks; E reran the original assertion with actual AB and PostgreSQL -> PASS.
+  C ad19dce adds authoritative Chinese notification content; 571a4af fixes
+  second-pass quota exhaustion deferral without hot retries or consumed attempts.
+- AB replay fix f3b726d1a194f192f7fc4dc5908882190b416b96 supports stable
+  record IDs with immutable revisions and arrival-order cursors. Main reviewed the
+  diff/remote and ran ingestion tests -> 25 passed. Original E T09/T05 regression
+  rerun remains required; the failing assertions were preserved.
+- D final 0bbdc217b43aec94e66ead9863a734f7902d20f2, code
+  b35e5a3945157a0c74a4f06410b822dd06c6bef8 aligns both browser preflights and
+  wording with AB's 2,000,000-byte upload limit. Exact remote/diff verified;
+  main frontend tests -> 13 passed, including exact-limit and limit-plus-one.
+- E actual API/PostgreSQL/browser exposed default field_mapping={} rejection.
+  AB final 026490a4558ffc50dba03a28c14b2e03dcfa32e9 now derives exact canonical
+  fields from validated CSV/XLSX headers and preserves strict explicit mappings,
+  optional basis fields, provenance and stable identities. Main reviewed the three
+  owned files and matching remote, then ran ingestion tests -> 42 passed. E is
+  authorized to merge this exact commit and rerun the original browser flow.
+- E has built both Linux images and reports five real PostgreSQL operations cases
+  including blocked-normal/urgent Procrastinate isolation, plus nine signed
+  callback/HTTP permission cases. Platform-accepted rows in these tests are
+  explicit fixtures, not evidence of Feishu delivery. Six real API browser flows
+  passed before the default quote failure; full browser acceptance remains pending.
+- E may rebuild/recreate only its own stateless init/api/ingest/urgent/normal/
+  gateway services after verifying Compose project/service identity. Preserve
+  oil-agent-e-postgres-1, its volume and networks, and all unrelated resources.
+  No compose down, volume deletion or prune. Final image identities must be recorded.
+
+## Open integration gates
+
+- E must finish unchanged regression assertions, final actual browser checks,
+  Linux worker fault/recovery, backup/restore and complete candidate checks.
+- After AB/C/D/E finish, separate I may merge their exact commits and add only
+  minimal bootstrap/import/config/type glue. The safe service factory must wire
+  existing AB/D services; no new domain implementation or production activation.
+- Final integrated full suite, clean push/remote SHA and remote CI are unaccepted
+  at this snapshot. Real source, platform, phone and continuous-operation gates
+  remain BLOCKED_EXTERNAL independently of local results.
