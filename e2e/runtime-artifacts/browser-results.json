@@ -1,0 +1,47 @@
+{
+  "is_fixture": true,
+  "results": [
+    {
+      "name": "T23 anonymous event link requires session",
+      "status": "PASS",
+      "evidence": "actual local gateway + API + PostgreSQL; synthetic data"
+    },
+    {
+      "name": "T24 T27 live fixture home and responsive layout",
+      "status": "PASS",
+      "evidence": "actual local gateway + API + PostgreSQL; synthetic data"
+    },
+    {
+      "name": "T17 T23 persisted browser acknowledgment and feedback",
+      "status": "PASS",
+      "evidence": "actual local gateway + API + PostgreSQL; synthetic data"
+    },
+    {
+      "name": "T19 T24 persisted report is visible",
+      "status": "PASS",
+      "evidence": "actual local gateway + API + PostgreSQL; synthetic data"
+    },
+    {
+      "name": "T23 viewer cannot configure or import quotes",
+      "status": "PASS",
+      "evidence": "actual local gateway + API + PostgreSQL; synthetic data"
+    },
+    {
+      "name": "T23 forwarded link denied to ungranted user",
+      "status": "PASS",
+      "evidence": "actual local gateway + API + PostgreSQL; synthetic data"
+    },
+    {
+      "name": "T11 T24 actual safe quote preview and import",
+      "status": "PASS",
+      "evidence": "actual local gateway + API + PostgreSQL; synthetic data"
+    },
+    {
+      "name": "T23 browser logout revokes persisted session",
+      "status": "PASS",
+      "evidence": "actual local gateway + API + PostgreSQL; synthetic data"
+    }
+  ],
+  "errors": [],
+  "externalPhoneAndIdentity": "NOT EXECUTED"
+}

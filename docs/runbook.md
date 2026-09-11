@@ -32,6 +32,10 @@ the newly provisioned E test password. Without it, PostgreSQL cases explicitly
 skip; that is NOT PostgreSQL acceptance. Each case migrates a unique schema then
 removes only that schema. GitHub Actions uses its separate ephemeral `oil_e_ci`
 database/user on 5432. C's own database-scoped unit tests are not pointed at E.
+CI provisions a second isolated service on loopback 55431 (`oil_c_test`), migrates
+it explicitly, and runs the complete C/AB/D unit/contract suite with
+`OIL_TEST_DATABASE_URL` and `OIL_AB_PACKAGE_ROOT` set. Local E runs list those C
+tests as deselected instead of borrowing a teammate's credentials or database.
 
 In `web`, run `npm ci --ignore-scripts`, `npm test`, and `npm run build`. The build
 checks generated types against C's OpenAPI before TypeScript/Vite. E browser checks

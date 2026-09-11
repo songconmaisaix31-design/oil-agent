@@ -60,8 +60,11 @@ try {
     await viewer.page.getByRole('button', { name: '本版本已确认', exact: true }).waitFor();
     await viewer.page.getByLabel('补充说明').fill('Synthetic E local browser feedback only');
     const feedback = viewer.page.waitForResponse(r => r.url().endsWith('/feedback') && r.request().method() === 'POST');
+    const refreshed = viewer.page.waitForResponse(r => r.url().endsWith(`/events/${seed.event_id}`) && r.request().method() === 'GET');
     await viewer.page.getByRole('button', { name: '提交反馈' }).click();
     assert.equal((await feedback).status(), 200);
+    assert.equal((await refreshed).status(), 200);
+    await viewer.page.getByRole('heading', { name: '确认与反馈' }).waitFor();
     await viewer.page.screenshot({ path: new URL('event-390.png', artifacts).pathname.replace(/^\/(\w:)/, '$1'), fullPage: true });
   });
   await record('T19 T24 persisted report is visible', async () => {
