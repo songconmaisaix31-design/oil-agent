@@ -47,6 +47,16 @@ class IngestionRepository:
         return SourceCheckpoint(**{key: getattr(row, key) for key in SourceCheckpoint.model_fields})
 
     def _insert_record(self, session, record: SourceRecord, *, state="pending", rediscovered=False):
+        family = session.scalar(
+            select(SourceRecordRow.record_id)
+            .where(
+                SourceRecordRow.source_id == record.source_id,
+                SourceRecordRow.external_id == record.external_id,
+            )
+            .limit(1)
+        )
+        if family and family != record.record_id:
+            reject(ErrorCode.INVALID_INPUT, "A source external ID must retain its stable record ID")
         existing = session.get(SourceRecordRow, (record.record_id, record.revision))
         if existing:
             incoming = record.model_dump(mode="json")

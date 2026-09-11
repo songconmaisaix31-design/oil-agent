@@ -48,6 +48,9 @@ class RuntimeServices:
 
 
 class Runtime:
+    async def authorize_recipient(self, scope):
+        return await self.db(self.repository.authorize_recipient, scope)
+
     async def authorize_intent(self, intent):
         return await self.db(self.repository.authorize_intent, intent)
 
@@ -184,16 +187,35 @@ class Runtime:
                 raise
             raise ServiceError(code, "Assessment failed output validation") from None
 
-    async def send_pending(self):
+    async def send_pending(self, *, subject_type="event"):
         config = await self.db(self.repository.business_config)
         if config.notification_channel not in self.services.channels:
             self.missing("Configured notification channel")
         if config.notification_channel != "dry_run" and not self.settings.production_ready:
             raise ServiceError(ErrorCode.FORBIDDEN, "Production readiness is not verified")
-        claims = await self.db(self.repository.claim_deliveries, limit=1)
+        claims = await self.db(self.repository.claim_deliveries, limit=1, subject_type=subject_type)
         completed = []
         for claim in claims:
+            if not await self.authorize_intent(claim.intent):
+                result = Delivery(
+                    delivery_id=claim.intent.delivery_id,
+                    intent_id=claim.intent.intent_id,
+                    recipient_id=claim.intent.recipient_scope.recipient_id,
+                    revision=claim.intent.revision,
+                    attempt=claim.attempt,
+                    state="failed_final",
+                    updated_at=self.repository.clock(),
+                    error_code="authorization_revoked",
+                )
+                completed.append(await self.db(self.repository.finish_delivery, claim, result))
+                continue
             try:
+                if claim.intent.channel == "feishu":
+                    await self.db(
+                        self.repository.charge_budget,
+                        "delivery",
+                        self.settings.production_budget_units,
+                    )
                 result = await self.bounded(
                     lambda ctx, claim=claim: self.services.channels[claim.intent.channel].send(
                         claim.intent, context=ctx
@@ -225,7 +247,7 @@ class Runtime:
                     error_code=code.value,
                 )
             completed.append(await self.db(self.repository.finish_delivery, claim, result))
-        await self.db(self.repository.health, "delivery")
+        await self.db(self.repository.health, "delivery:" + subject_type)
         return tuple(completed)
 
     async def acknowledge_callback(self, payload: AckPayload):
@@ -356,7 +378,13 @@ class Runtime:
             raise ServiceError(
                 ErrorCode.INVALID_OUTPUT, "Report changed its input snapshot identity"
             )
-        report = report.model_copy(update={"delayed": local > scheduled + timedelta(minutes=5)})
+        gaps = await self.db(self.repository.coverage_gaps)
+        report = report.model_copy(
+            update={
+                "delayed": local > scheduled + timedelta(minutes=5),
+                "gaps": tuple(sorted(set(report.gaps) | set(gaps))),
+            }
+        )
         result = await self.db(self.repository.commit_report, report, token)
         await self.db(self.repository.health, "report")
         return result
