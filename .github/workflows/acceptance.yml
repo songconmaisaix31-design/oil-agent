@@ -1,0 +1,72 @@
+name: Local synthetic acceptance
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: acceptance-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  acceptance:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16-alpine@sha256:e013e867e712fec275706a6c51c966f0bb0c93cfa8f51000f85a15f9865a28cb
+        env:
+          POSTGRES_USER: oil_e_ci
+          POSTGRES_DB: oil_e_ci
+          POSTGRES_PASSWORD: SYNTHETIC-CI-ONLY
+        ports: [5432:5432]
+        options: >-
+          --health-cmd "pg_isready -U oil_e_ci -d oil_e_ci"
+          --health-interval 5s --health-timeout 3s --health-retries 12
+          --memory 256m --cpus 1
+    env:
+      OIL_E_TEST_DATABASE_URL: postgresql+psycopg://oil_e_ci:SYNTHETIC-CI-ONLY@127.0.0.1:5432/oil_e_ci
+      OIL_ENVIRONMENT: test
+      OIL_OUTBOUND_MODE: dry_run
+      UV_PYTHON_DOWNLOADS: never
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13.13'
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: '0.11.26'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.16.0'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: uv sync --locked
+      - run: uv run --locked python scripts/validate_scenario_corpus.py
+      - run: uv run --locked ruff check tests/integration deploy/worker_health.py
+      - run: uv run --locked pytest tests/contracts tests/unit -m 'not postgres' -q
+      - run: uv run --locked pytest tests/integration -q --junitxml=e2e/local-acceptance.xml
+      - run: npm ci --ignore-scripts
+        working-directory: web
+      - run: npm test
+        working-directory: web
+      - run: npm run build
+        working-directory: web
+      - name: Shell safety syntax
+        run: bash -n deploy/entrypoint.sh scripts/backup.sh scripts/restore-isolated.sh scripts/compose_scope.sh
+      - name: Build Linux images serially
+        run: |
+          docker build -f deploy/app.Dockerfile -t oil-agent-app:ci .
+          docker build -f deploy/web.Dockerfile -t oil-agent-web:ci .
+      - name: Keep synthetic test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: synthetic-local-acceptance
+          path: e2e/local-acceptance.xml
+          if-no-files-found: ignore
+          retention-days: 7

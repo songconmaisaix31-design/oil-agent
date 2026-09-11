@@ -10,11 +10,11 @@ case "${1:-}" in
       --factory --host 0.0.0.0 --port 8000 --no-access-log "$@"
     ;;
   init)
-    python -m oil_agent.runtime.cli migration
+    python -m oil_agent.runtime.cli migrate
     python -m oil_agent.runtime.cli queue-schema
     exec python -m oil_agent.runtime.cli recover
     ;;
-  worker|migration|queue-schema|recover)
+  worker|migrate|queue-schema|recover)
     exec python -m oil_agent.runtime.cli "$@"
     ;;
   *)

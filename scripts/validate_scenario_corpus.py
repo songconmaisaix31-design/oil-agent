@@ -259,7 +259,7 @@ def main() -> int:
         + ", ".join(f"{key}={value}" for key, value in sorted(categories.items()))
     )
     print(
-        "NOT EXECUTED: all 28 application cases; "
+        "NOT EXECUTED BY THIS CHECK: all 28 application cases; "
         "PostgreSQL, browser, Feishu, phone and operational gates"
     )
     return 0

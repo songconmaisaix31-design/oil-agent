@@ -13,14 +13,50 @@ from sqlalchemy import func, select, text
 from test_postgres_pipeline import runtime, services
 
 from oil_agent.channels import DryRunChannel
-from oil_agent.contracts.http import QuotePreviewRequest
-from oil_agent.contracts.services import ServiceError
+from oil_agent.contracts.http import AckRequest, QuotePreviewRequest
+from oil_agent.contracts.services import ErrorCode, ServiceError
 from oil_agent.ingestion import SafeQuoteParser
 from oil_agent.runtime.tasks import register_tasks
 from oil_agent.storage.models import DeliveryRow, IntentRow, ObservationRow, VersionRow
 from oil_agent.storage.repository import Repository
 
 pytestmark = pytest.mark.postgres
+
+
+@pytest.mark.parametrize(
+    "code", [ErrorCode.RATE_LIMITED, ErrorCode.UNAUTHORIZED, ErrorCode.QUOTA_EXHAUSTED]
+)
+async def test_T20_source_failure_preserves_cursor_and_records_degraded_health(
+    e_repository,
+    scenario,
+    make_record,
+    code,
+):
+    record = make_record(
+        scenario["T20"], {"content_excerpt": "Synthetic source checkpoint."}, "first"
+    )
+    app = runtime(e_repository, services(e_repository, (record,)))
+    assert await app.ingest("e-replay") == 1
+    checkpoint = e_repository.checkpoint("e-replay")
+    requests = []
+
+    class FailedSource:
+        async def fetch(self, cursor, *, context):
+            assert cursor == checkpoint
+            requests.append(code)
+            raise ServiceError(
+                code, "Synthetic source failure", retryable=code == ErrorCode.RATE_LIMITED
+            )
+
+    app.services.sources["e-replay"] = FailedSource()
+    with pytest.raises(ServiceError) as error:
+        await app.ingest("e-replay")
+    assert error.value.code == code and requests == [code]
+    restarted = Repository(e_repository.engine, clock=e_repository.clock)
+    assert restarted.checkpoint("e-replay") == checkpoint and restarted.pending_record_exists()
+    counters, health = restarted.runtime_metrics()
+    assert counters["budget:source:e-replay"] == 2
+    assert health["source:e-replay"] == "degraded"
 
 
 def csv_request(rows):
@@ -162,6 +198,55 @@ def test_T28_daily_budget_urgent_reserve_survives_restart_and_rolls_at_UTC(e_rep
     assert restarted.runtime_metrics()[1]["source:e-replay"] == "stale"
     restarted.clock = lambda: now + timedelta(days=1)
     assert restarted.charge_budget("e-processing", 3, reserve=1) == 1
+
+
+async def test_T18_reminders_are_per_recipient_and_revision_and_default_off(
+    e_repository,
+    e_actors,
+    scenario,
+    make_record,
+):
+    assert not e_repository.business_config().reminders_enabled
+    assert e_repository.create_due_reminders() == 0
+    e_repository.update_config(
+        e_actors["admin"][0],
+        e_repository.business_config().model_copy(
+            update={"reminders_enabled": True},
+        ),
+    )
+    first = make_record(scenario["T18"], {"content_excerpt": "Synthetic outage."}, "same")
+    second = make_record(
+        scenario["T18"], {"content_excerpt": "Synthetic outage expanded."}, "same", revision=2
+    )
+    app = runtime(e_repository, services(e_repository, (first, second)))
+    await app.ingest("e-replay")
+    (item,) = await app.assess_pending()
+    sent = [*(await app.send_pending()), *(await app.send_pending())]
+    a = next(delivery for delivery in sent if delivery.recipient_id == "fixture-user-a")
+    now = e_repository.clock()
+    e_repository.clock = lambda: now + timedelta(seconds=1801)
+    assert e_repository.create_due_reminders() == 2
+    assert e_repository.create_due_reminders() == 0
+    await app.acknowledge_web(
+        e_actors["a"][0], item.event_id, AckRequest(delivery_id=a.delivery_id, revision=1)
+    )
+    (reminder,) = e_repository.claim_deliveries(limit=10)
+    assert (
+        reminder.intent.kind == "reminder"
+        and reminder.intent.recipient_scope.recipient_id == "fixture-user-b"
+    )
+    e_repository.finish_delivery(
+        reminder, await DryRunChannel().send(reminder.intent, context=app.context())
+    )
+    await app.ingest("e-replay")
+    (updated,) = await app.assess_pending()
+    assert updated.event_id == item.event_id and updated.revision == 2
+    claims = e_repository.claim_deliveries(limit=10)
+    assert len(claims) == 2 and all(claim.intent.revision == 2 for claim in claims)
+    assert {claim.intent.recipient_scope.recipient_id for claim in claims} == {
+        "fixture-user-a",
+        "fixture-user-b",
+    }
 
 
 def test_T14_real_normal_queue_block_does_not_delay_urgent_delivery(

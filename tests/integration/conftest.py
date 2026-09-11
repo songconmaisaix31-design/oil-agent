@@ -122,6 +122,7 @@ def e_repository(monkeypatch):
         # D reads its module clock directly; align it with the frozen C/replay clock.
         monkeypatch.setattr("oil_agent.channels.common.datetime", ChannelClock)
         monkeypatch.setattr("oil_agent.channels.callbacks.datetime", ChannelClock)
+        monkeypatch.setattr("oil_agent.api.auth.datetime", ChannelClock)
         yield repo
     finally:
         engine.dispose()

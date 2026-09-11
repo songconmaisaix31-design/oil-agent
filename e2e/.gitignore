@@ -1,0 +1,4 @@
+local-acceptance.xml
+runtime-artifacts/*.xml
+*.dump
+*sessions*.json

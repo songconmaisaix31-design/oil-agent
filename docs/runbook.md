@@ -1,47 +1,117 @@
 # Oil Agent verification and operations runbook
 
-This is the E-BASELINE runbook, based on the supplied development plan v1.0 and
-`V01-TODO.md`. It records procedures and unmet gates, not deployment acceptance.
-The baseline `f5d5face60c160e70a7565498a6da54ed33c15fd` has no application or Compose
-entry point. C's evolving worktree was inspected read-only; its later foundation
-commit `558010bee164f2161a0928384eb6aac36e001c07` is not integrated in this E
-checkout. Do not infer an available E command from that work in progress. Only
-the corpus checker below is implemented in this increment.
+This E runtime increment uses the reviewed AB/C/D implementations and the supplied
+development plan v1.0. [Runtime checks](../e2e/runtime-checks.md) record exact
+candidates, results and unresolved gates. [Baseline checks](../e2e/baseline-checks.md)
+remain historical evidence, not the current application status. This checkout
+provides local synthetic acceptance and a Linux Compose reference; I still owns
+final integration and real deployment remains an external gate.
 
 No deployment, account login, commercial-source request, paid product model call
 or customer message is authorized by this document. Ordinary local development,
 tests, commits and pushes to the existing origin are already authorized.
 
-## Available checks and pending commands
+## Available local checks
 
-Run from this checkout using Python 3.13, with no dependency installation:
+Run from the checkout root with Python 3.13 and uv 0.11.26:
 
 ```powershell
-python --version
-python -B scripts/validate_scenario_corpus.py
+uv sync --locked
+uv run --locked python scripts/validate_scenario_corpus.py
+uv run --locked pytest tests/contracts tests/unit -m 'not postgres' -q
+uv run --locked pytest tests/integration -q
+uv run --locked ruff check tests/integration deploy/worker_health.py fixtures/runtime_factory.py
 git diff --check
 ```
 
 The checker reads [fixed synthetic scenarios](../fixtures/scenarios/v01.json)
 and performs consistency checks only. Its PASS is not a T01-T28 application PASS.
-See [baseline checks](../e2e/baseline-checks.md) for actual evidence.
+The integration command requires a deliberately injected `OIL_E_TEST_DATABASE_URL`:
+`postgresql+psycopg`, host `127.0.0.1`, port `55434`, database/user `oil_e_test` and
+the newly provisioned E test password. Without it, PostgreSQL cases explicitly
+skip; that is NOT PostgreSQL acceptance. Each case migrates a unique schema then
+removes only that schema. GitHub Actions uses its separate ephemeral `oil_e_ci`
+database/user on 5432. C's own database-scoped unit tests are not pointed at E.
 
-| Action | Command availability | Gate |
-| --- | --- | --- |
-| Corpus consistency | Implemented above | Local, no network or services |
-| Contract/unit/integration suite | PENDING: C dependency lock and AB/C/D implementation | Record actual test selectors after integration |
-| Browser tests and Vite build | PENDING: D app/package scripts | Exercise real API, not screenshots of fixture pages alone |
-| PostgreSQL migration/worker startup | PENDING: C schema and CLI | Fresh E-only database and process boundaries |
-| Compose build/up/health | PENDING: E follow-up after app entry points exist | Inspect actual Compose service names and locked images first |
-| Backup/restore/schema inspection | PENDING: pinned PostgreSQL tools and schema | Rehearse against empty E-only target |
-| API health probe and application rollback | PENDING: actual endpoints/version compatibility | Off-host probe and approved outage window |
+In `web`, run `npm ci --ignore-scripts`, `npm test`, and `npm run build`. The build
+checks generated types against C's OpenAPI before TypeScript/Vite. E browser checks
+use the installed `playwright-core` and a new headless Chrome context; they do not
+open existing profiles. Real phone behavior and OAuth are separate external gates.
 
-Do not paste guessed module, service, route or migration commands into automation.
-Replace a pending entry only after the command exists and has been exercised.
+## Linux Compose and local synthetic startup
+
+Inspect exact `oil-agent-e` labels, port 55434 and port 18084 before starting. All
+commands use the deliberately empty public `deploy/compose.env` to prevent automatic
+loading of an unrelated `.env`. Inject a new isolated database password through
+`OIL_POSTGRES_PASSWORD` and the matching internal DSN through `OIL_DATABASE_URL`
+(host `postgres`, port 5432, database/user `oil_e_test`). Never print rendered
+Compose configuration or environment values; use `config --quiet`.
+
+```sh
+docker compose --env-file deploy/compose.env -f deploy/compose.yaml -p oil-agent-e config --quiet
+docker build -f deploy/app.Dockerfile -t oil-agent-app:e-local .
+docker build -f deploy/web.Dockerfile -t oil-agent-web:e-local .
+docker compose --env-file deploy/compose.env -f deploy/compose.yaml -f deploy/compose.e-test.yaml -f deploy/compose.e-runtime.yaml -p oil-agent-e up -d --no-build --no-recreate init api ingest urgent normal gateway
+```
+
+Run builds serially on a memory-constrained host. API and all three queue workers
+use the same nonroot application image. PostgreSQL is internal-only in the base
+file; the explicit E test override publishes loopback 55434. The gateway alone
+publishes loopback 18084, serves D's static build and forwards `/api/`, `/healthz`
+and `/readyz`. It preserves the API's 3,000,000-byte request limit with a 3m proxy
+ceiling, allowing the canonical **2,000,000 raw byte** CSV/XLSX cap after base64.
+Read-only filesystems, tmpfs, dropped capabilities, resource/log limits and restart
+policies are configured. Worker health reads the actual named queue heartbeat and
+fails after 150 seconds; a running process alone is insufficient.
+
+`init` executes the real C CLI in sequence:
+
+```sh
+python -m oil_agent.runtime.cli migrate
+python -m oil_agent.runtime.cli queue-schema
+python -m oil_agent.runtime.cli recover
+```
+
+The worker commands are `python -m oil_agent.runtime.cli worker --queue ingest`,
+`--queue urgent`, and `--queue normal`; `--once` drains available tasks and exits.
+Do not run a second initializer concurrently. Existing queue schema detection is
+not a queue-schema upgrade tool; review upstream migration requirements for any
+future Procrastinate version change.
+
+The optional `compose.e-runtime.yaml` mounts `fixtures/runtime_factory.py` read-only.
+That factory accepts only test/dry-run and E's exact local database; it composes
+the actual ReplaySource, ConservativeAssessmentService, SnapshotReportService,
+SafeQuoteParser and DryRunChannel. It has no Feishu/OAuth/model/external source.
+Omit this override outside local E tests. An approved production factory, HTTPS
+termination, identity, licenses and operations ownership are still required.
+
+For synthetic browser data, inject the host E DSN and `OIL_ENVIRONMENT=test`, then
+run `uv run --locked python -m fixtures.runtime_factory --seed-session-file` with
+an explicit new private file path outside Git. The seed creates only named E
+synthetic users and fixtures, with a midnight test report schedule. Existing users
+must match the exact synthetic scope. It saves newly generated test sessions
+without printing them. Never reuse it for a real identity or production database.
+Set `OIL_E_SESSION_FILE` to that newly created file and run:
+
+```sh
+node e2e/browser-runtime.mjs
+uv run --locked python e2e/gateway-upload.py
+```
+
+Session material stays outside artifacts. Browser screenshots/results contain only
+labeled synthetic content. The script directly exercises the gateway/API/PostgreSQL;
+it blocks external requests without mocking local responses. A repeat run may
+observe an already persisted acknowledgement; it must not erase that evidence.
+
+Stop only E services after a rehearsal. Do not use `down`, `prune` or volume deletion.
+Replacing the six stateless E-created services is permitted only within the verified
+local ownership scope; preserve the PostgreSQL container/volume/networks. Record
+old/new image and container IDs. Production rollout and compatible image rollback
+require their own reviewed candidate and outage window.
 
 ## Isolation and secrets
 
-E's reserved future PostgreSQL host port is `55434` and Compose project name is
+E's reserved PostgreSQL host port is `55434` and Compose project name is
 `oil-agent-e`. Reservation is not proof of availability. Immediately before any
 future start, check the port listener, inspect only resources with the exact E
 Compose project label, record the intended database/service/volume names, and
@@ -97,8 +167,10 @@ authorized transaction evidence establishes otherwise.
 
 1. Freeze the actual SDK/version, current message and callback documentation,
    tenant/app, required permissions, callback response deadline and identity
-   mapping. These protocol details are pending D/C implementation; do not assert
-   invented field names, signature algorithms or timeouts.
+   mapping. The implemented protocol and official source references are recorded
+   in [D's references](../src/oil_agent/channels/REFERENCES.md); reverify against
+   the approved tenant before external acceptance. Local signature tests alone
+   do not establish the tenant, permissions or actual provider callback deadline.
 2. Configure an approved test recipient only. Use a clearly marked synthetic card
    and associate the source record, event/revision, recipient, notification intent,
    delivery and platform message identifiers. Keep the mapping private/redacted.
@@ -195,8 +267,27 @@ human support. Record the actual maintenance agreement.
 
 ## Safe backup, restore and rollback (T25)
 
-The following is a pending rehearsal procedure; no database commands are supplied
-until C's migration/application interfaces and E's Compose services exist.
+The implemented `scripts/backup.sh` and `scripts/restore-isolated.sh` use official
+PostgreSQL tools in the exact E PostgreSQL container. Both verify Compose project
+and service labels. Backup requires an absolute new filename, creates it exclusively
+with private permissions and checks the custom archive listing. Restore requires a
+trusted regular archive and a **new** `oil_e_restore_` database; `createdb` refuses
+an existing target. Restore uses one transaction, no owner/ACL restoration and no
+clean/drop operation. Failed output/targets are retained for inspection.
+
+Pass the chosen absolute archive path to `sh scripts/backup.sh`; pass that same path
+and the new database name to `sh scripts/restore-isolated.sh`. Inject the E Compose
+environment first, as for startup. Do not put dump files in Git or public artifacts.
+On this Windows rehearsal, Git Bash preserves binary dump streams; PowerShell text
+pipelines are not used for archive data. These scripts are scoped to E and are not
+authorized production backup automation.
+
+The local rehearsal restored one source record, two immutable versions and one
+acknowledgement, matching the source snapshot. A synthetic expired in-flight lease
+inserted only in the restored database became UNKNOWN under the actual recovery
+CLI; three other dry-runs remained dry-run. Repeated backup/restore against the same
+targets failed safely. Measured RPO/RTO, real off-host backup storage and an actual
+production rollback remain NOT EXECUTED.
 
 1. Inventory the exact approved E source database and new empty restore database,
    application commit/image, PostgreSQL version, schema migration revision and
@@ -262,3 +353,10 @@ UTC interval, status and limitations. Keep raw sensitive evidence in approved
 private storage; public records contain redacted references. Separate deterministic
 synthetic, PostgreSQL integration, platform-accepted, real-phone and longitudinal
 results. Never backfill PASS or timestamps for skipped/blocked work.
+
+The deployment uses official [uv Docker guidance](https://docs.astral.sh/uv/guides/integration/docker/),
+[Compose startup dependencies](https://docs.docker.com/compose/how-tos/startup-order/),
+[PostgreSQL dump](https://www.postgresql.org/docs/16/app-pgdump.html) and
+[restore](https://www.postgresql.org/docs/16/app-pgrestore.html) tooling. Base images
+are pinned to the digests actually built in this rehearsal. Dependency locks and
+image digests improve reproducibility; they do not establish production safety.

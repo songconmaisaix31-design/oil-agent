@@ -15,8 +15,10 @@ The validator checks exact ordered coverage, fixture provenance, safe default
 settings, UTC timestamps, decimal strings, input/expectation references and
 acceptance classifications. It does not test the application, the truth of an
 assertion, a model, network policy, signature verification or a database. A
-successful exit means **corpus consistency only**. All application checks remain
-`NOT_EXECUTED`. Missing references or unsafe defaults return a nonzero exit.
+successful exit means **corpus consistency only**. The frozen corpus retains its
+baseline `NOT_EXECUTED` planned-gate labels; actual application executions are in
+[runtime checks](../../e2e/runtime-checks.md). Missing references or unsafe defaults
+return a nonzero exit.
 
 ## Reading the data
 
@@ -26,7 +28,7 @@ successful exit means **corpus consistency only**. All application checks remain
   synthetic provenance. Nested payload objects inherit that label. A future
   adapter must propagate it to every materialized record, report and intent.
 - `kind` and `payload` describe a test stimulus, not a duplicate production DTO.
-  The next increment will adapt these values to C's frozen contracts.
+  E's integration fixtures adapt these values to C's authoritative contracts.
 - `input_id#/path` is a JSON Pointer into that input's `payload`, scoped to its
   case. For example, T01 `old#/occurred_at` resolves to the original occurrence
   instant. These are local evidence references, not external URLs to fetch.
@@ -49,10 +51,10 @@ successful exit means **corpus consistency only**. All application checks remain
 
 ## Acceptance categories
 
-| Category | Intended execution | Current status |
+| Category | Intended execution | Evidence scope |
 | --- | --- | --- |
-| `automated_local` | Deterministic replay/stubs, API/browser checks with actual application code | NOT_EXECUTED; app/contracts not integrated |
-| `automated_postgresql` | Real PostgreSQL with independent connections, migrations and isolated worker processes | NOT_EXECUTED; no SQLite substitute |
+| `automated_local` | Deterministic replay/stubs, API/browser checks with actual application code | Runtime report identifies executed subsets |
+| `automated_postgresql` | Real PostgreSQL with independent connections, migrations and isolated worker processes | Runtime report; no SQLite substitute |
 | `external_manual` | Authorized source/platform, identity, phones or off-host operational observations | NOT_EXECUTED; external gates pending |
 
 Some cases have both automated and external gates. Passing the automated portion

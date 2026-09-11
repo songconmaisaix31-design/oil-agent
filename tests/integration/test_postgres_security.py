@@ -18,7 +18,7 @@ from oil_agent.api.app import create_app
 from oil_agent.channels import FeishuAckVerifier
 from oil_agent.channels.common import FeishuSettings
 from oil_agent.contracts.dto import AckPayload
-from oil_agent.contracts.services import ServiceError
+from oil_agent.contracts.services import ErrorCode, ServiceError
 from oil_agent.storage.models import AckRow, DeliveryRow, IntentRow
 from oil_agent.storage.repository import Repository
 
@@ -212,6 +212,7 @@ async def test_T23_HTTP_sessions_csrf_forwarded_link_role_change_and_logout(
     with TestClient(create_app(app.settings, runtime=app)) as client:
         path = "/api/v1/events/" + item.event_id
         assert client.get(path).status_code == 401
+
         assert (
             client.get(path, headers={"x-actor-id": "e-admin", "x-role": "admin"}).status_code
             == 401
@@ -246,3 +247,41 @@ async def test_T23_HTTP_sessions_csrf_forwarded_link_role_change_and_logout(
         client.cookies.set("oil_session", e_actors["b"][1])
         e_repository.revoke_user("e-b")
         assert client.get(path).status_code == 401
+
+
+@pytest.mark.parametrize("unexpected", [False, True])
+def test_T26_HTTP_failures_do_not_export_synthetic_secret_canary(
+    e_repository,
+    e_actors,
+    caplog,
+    unexpected,
+):
+    canary = "SYNTHETIC-NONSECRET-E26-CANARY"
+
+    class FailedParser:
+        async def preview(self, request, *, context):
+            if unexpected:
+                raise RuntimeError("Synthetic nested upstream failure: " + canary)
+            raise ServiceError(ErrorCode.UNAVAILABLE, "Synthetic provider detail: " + canary)
+
+    app = runtime(e_repository, services(e_repository, ()))
+    app.services.quote_parser = FailedParser()
+    app.settings = app.settings.model_copy(update={"cookie_secure": False})
+    with TestClient(create_app(app.settings, runtime=app), raise_server_exceptions=False) as client:
+        client.cookies.set("oil_session", e_actors["admin"][1])
+        response = client.post(
+            "/api/v1/quotes/preview",
+            headers={
+                "x-csrf-token": e_actors["admin"][2],
+                "Authorization": "Bearer " + canary,
+            },
+            json={
+                "filename": "synthetic.csv",
+                "media_type": "text/csv",
+                "content_base64": "eA==",
+                "field_mapping": {},
+                "rights_ref": "fixture:synthetic-e-baseline",
+            },
+        )
+    assert response.status_code == (500 if unexpected else 503)
+    assert canary not in response.text and canary not in caplog.text
