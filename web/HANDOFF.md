@@ -8,7 +8,7 @@ Remote: <https://github.com/songconmaisaix31-design/oil-agent/tree/songconmaisai
 
 Verified frozen base: `dd01ee225ba36c1d7e75acdf5c96cd2d8e0df482`.
 Adopted C's exact authorized dependency commits by ordinary merges, latest runtime
-snapshot `88338fafc7f8be55ce0fe7e0e7edf62758b5f3de`; no edits to producer-owned files.
+snapshot `ffb62d282c3b65a742f303eeab7a61ade0e28643`; no edits to producer-owned files.
 
 Code increments:
 
@@ -59,8 +59,8 @@ are documented in `src/oil_agent/channels/REFERENCES.md`.
 - `DryRunChannel()` implements `send(intent, *, context) -> Delivery`.
 - `FeishuChannel(settings, *, recipients, authorize, public_base_url)` implements
   the same protocol; `authorize` must accept `RecipientAuthorization`, not
-  `NotificationIntent`. C has acknowledged adding `Runtime.authorize_recipient`;
-  that follow-up is not present in the adopted 88338fa snapshot. No bypass lambda.
+  `NotificationIntent`. Wire C's `Runtime.authorize_recipient`, available in the
+  adopted ffb62d snapshot. No bypass lambda.
 - `FeishuAckVerifier(settings, *, identity_resolver, delivery_matches)` requires
   C's `Runtime.resolve_identity` and `Runtime.verify_delivery_message`.
 - `await verifier.challenge(payload, *, context)` returns authenticated encrypted
@@ -91,3 +91,5 @@ lock screen, DND and offline behavior) remain **BLOCKED_EXTERNAL**. No account
 login, secret discovery, production deployment, paid calls, commercial-source calls
 or customer message was performed. Bootstrap/reverse-proxy wiring, durable replay,
 recipient/version enforcement and full PostgreSQL integration remain C/E/I work.
+Coordinator reports C/E's T04 late historical evidence test still failing at the
+adopted snapshot; D did not run or claim this cross-track test as passing.
