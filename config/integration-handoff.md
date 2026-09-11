@@ -17,9 +17,15 @@ unavailable. I changed only the explicitly transferred glue paths.
 - Producer merge checkpoint: `35217f41016c83fa76bda624cb3a31be67a3befc`.
 - I factory code: `a4617e9528177c536c1768297f1ff5783ee1f9ec`, pushed to the existing
   origin; `git ls-remote` matched exactly. No cherry-picks, resets or force pushes.
-- This report is a later evidence commit and is the PRELIMINARY handoff. Final
-  governance adoption and its exact final Actions HEAD will be reported through
-  the coordinator lifecycle receipt after the required governance merge.
+- PRELIMINARY evidence commit: `8feb61b8778ca847f3fd1be53124b89203024cb9`, accepted
+  by the coordinator after independent code, smoke and CI review.
+- Final governance `7839b316dad94296857c4b901fe11333a8d24644` was ordinary-merged
+  without conflicts. Only README.md and V01-TODO.md arrived from the coordinator;
+  I made no governance edits. All four producer commits and this governance
+  commit remain ancestors. This final report adoption update changes no code.
+- The completion receipt records the final pushed SHA, exact matching origin,
+  clean status and its own completed Actions run. The earlier code-run success
+  below is historical evidence and does not substitute for that final check.
 
 ## Shared factory and scope
 
