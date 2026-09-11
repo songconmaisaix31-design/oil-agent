@@ -15,7 +15,7 @@ quote import, mobile views and deployment checks. Real source, Feishu, phone and
 | M1 | AB replay/assessment + C transactional pipeline + D dry-run/ack | RUNNING local scope; real source/phone BLOCKED_EXTERNAL |
 | M2 | Revisions, independent evidence, failure recovery, authorization | RUNNING implementation; acceptance depends on M1 |
 | M3 | Daily reports, safe quote imports, five responsive views | RUNNING local scope |
-| M4 | E regression/security/PostgreSQL/Compose; separate I integration | BLOCKED_DEPENDENCY: tracks |
+| M4 | E regression/security/PostgreSQL/Compose; separate I integration | E RUNNING; I waits for completed tracks |
 | M5 | Authorized source/phone and >=14 days operation | BLOCKED_EXTERNAL |
 
 Ownership is recursive below; prefixes resolve against each track's actual
@@ -28,7 +28,7 @@ and B to reduce agent count; independent source and processing modules remain.
 | M | AGENTS.md, README.md, V01-TODO.md | decisions, status, acceptance / RUNNING |
 | C | src/oil_agent/contracts/, src/oil_agent/storage/, src/oil_agent/runtime/, src/oil_agent/api/, src/oil_agent/__init__.py, src/oil_agent/bootstrap.py, tests/contracts/, tests/conftest.py, tests/unit/storage/, tests/unit/runtime/, tests/unit/api/, pyproject.toml, uv.lock, .python-version, .env.example, .gitignore, alembic.ini, config/ | M-02 accepted; C-01..04 / RUNNING |
 | AB | src/oil_agent/ingestion/, src/oil_agent/intelligence/, src/oil_agent/reporting/, tests/unit/ingestion/, tests/unit/intelligence/, tests/unit/reporting/ | local increment accepted; integration pending; external source/model gates remain |
-| D | src/oil_agent/channels/, web/, tests/unit/channels/ | D-01..04 local scope / RUNNING |
+| D | src/oil_agent/channels/, web/, tests/unit/channels/ | local increment accepted; real API/phone acceptance pending |
 | E | tests/integration/, e2e/, fixtures/, deploy/, scripts/, .github/workflows/, docs/runbook.md | E-01..03 / RUNNING; E-04 external gates |
 | I | future separate worktree; merge commits and minimal bootstrap/import/config/type glue after transfer | final integration / BLOCKED_DEPENDENCY |
 
@@ -87,7 +87,7 @@ Worker success enters REVIEW until integration checks.
 | C | C:/Users/DW/orca/workspaces/oil-agent/oil-v01-c / songconmaisaix31-design/oil-v01-c | f5d5face60c160e70a7565498a6da54ed33c15fd; runtime starts at d31d8f9d410375dedb4727a3999ab56442c82df3 / ctx_1248df0f39e2 (task_ccc3fe1d6a12) | foundation accepted; RUNNING runtime in same session |
 | E | C:/Users/DW/orca/workspaces/oil-agent/oil-v01-e / songconmaisaix31-design/oil-v01-e | initial f5d5face60c160e70a7565498a6da54ed33c15fd; runtime starts at 49a1b9cb29d6d35029bba904a40f733e39580245 / ctx_d1f60fcc77b0 (task_514645bb2c7a) | baseline accepted; RUNNING tests/deployment in same session |
 | AB | C:/Users/DW/orca/workspaces/oil-agent/oil-v01-ab / songconmaisaix31-design/oil-v01-ab | dd01ee225ba36c1d7e75acdf5c96cd2d8e0df482 / ctx_ee9e5a943861 (task_0fb0fc0330b5) | local increment accepted; RETAINED for integration fixes |
-| D | C:/Users/DW/orca/workspaces/oil-agent/oil-v01-d / songconmaisaix31-design/oil-v01-d | dd01ee225ba36c1d7e75acdf5c96cd2d8e0df482 / ctx_628088790830 (task_59fba1d3c03e) | RUNNING channel and mobile implementation |
+| D | C:/Users/DW/orca/workspaces/oil-agent/oil-v01-d / songconmaisaix31-design/oil-v01-d | dd01ee225ba36c1d7e75acdf5c96cd2d8e0df482 / ctx_628088790830 (task_59fba1d3c03e) | local increment accepted; RETAINED for integration fixes |
 
 - Governance commit f5d5face60c160e70a7565498a6da54ed33c15fd pushed to origin.
   Initial direct pushes failed with connection reset/timeout; a process-scoped
@@ -179,3 +179,38 @@ Worker success enters REVIEW until integration checks.
   a second quote preview after time advances must remain import-idempotent. E will
   test these across real modules. Notification policy and channel readiness remain
   closed by default; configuration references do not constitute live acceptance.
+- C runtime 88338fafc7f8be55ce0fe7e0e7edf62758b5f3de is available for dependency
+  testing: worker 55 tests with PostgreSQL, Ruff/build/Alembic and real named tick
+  jobs passed. Main ran non-PostgreSQL tests -> 39 passed, 16 deselected, one
+  upstream warning; both C and E databases queried as migration 0002_runtime.
+  Empty configured worker ticks do not establish a business pipeline result.
+- C follow-up ffb62d282c3b65a742f303eeab7a61ade0e28643 is reviewed for dependency
+  adoption. Report delivery now runs on normal, event delivery on urgent with
+  filtered database claims. Runtime.authorize_recipient accepts D's actual
+  RecipientAuthorization type. Worker reports 61 tests. Full C acceptance pending.
+- D local increment accepted at 38a065e1a3f71631e4a8af915069982fe02303e6:
+  exact remote SHA and 32 exclusive D paths verified. Main ran locked channel and
+  contract tests -> 81 passed; frontend tests -> 11 passed; npm run build -> schema
+  consistency, TypeScript and Vite PASS. Main inspected the labeled 390px screenshot.
+  Worker reports six isolated Chrome checks, all using mocked HTTP; no real API or
+  phone acceptance. See web/HANDOFF.md. D stopped its dev server and retained session.
+- E deployment scaffold 5047d8bb78f8d092ece2e7398d0be3e568175881 is pushed;
+  worker reports Compose configuration, shell syntax and four boundary checks.
+  Local replay integration increment 4730819 has 35 passing checks. E's isolated
+  PostgreSQL is live at loopback 55434; application/container acceptance is ongoing.
+  E owns fixes for migrate command spelling, base64 upload proxy allowance and
+  copying authoritative OpenAPI into the frontend image build context.
+
+## Open integration blockers
+
+- T04 FAIL on C88338fa + AB25cceea + D e55c62c, actual E PostgreSQL 16.14:
+  tests/integration/test_postgres_pipeline.py::test_T04_independent_late_evidence_upgrades_same_persisted_event.
+  Late independent source creates revision 2 but remains credible_single_source.
+  C only supplied new claims and rejected historical evidence outside those claims.
+  Returned to C for bounded durable same-family history context and stale-head
+  checks; no weakened assertion or AB in-memory history workaround. C not complete.
+- C is adding bounded authoritative event/report content to NotificationIntent.body
+  so D can render fact/evidence status, publisher/time, cutoff and gaps without
+  inferring them from a notification kind or inventing unsupported numbers.
+- Real API browser checks, Linux full Compose build/worker recovery, backup restore,
+  remote CI and final separate I integration remain unaccepted at this snapshot.
