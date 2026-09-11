@@ -3,6 +3,8 @@ import { api, errorText, unwrap } from "./api";
 import type { Schema } from "./api";
 import { Fixture, label, Panel, time } from "./ui";
 
+const MAX_QUOTE_FILE_BYTES = 2_000_000;
+
 const dimensions = [
   "product",
   "spec",
@@ -31,7 +33,7 @@ export function comparable(rows: Schema<"MarketObservation">[]): string {
 }
 
 async function readBase64(file: File): Promise<string> {
-  if (file.size > 5 * 1024 * 1024) throw new Error("file_size");
+  if (file.size > MAX_QUOTE_FILE_BYTES) throw new Error("file_size");
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onerror = reject;
@@ -58,8 +60,8 @@ export function Quotes({ admin }: { admin: boolean }) {
     clear();
     setBusy(true);
     try {
-      if (file.size > 5 * 1024 * 1024) {
-        setError("文件超过 5 MiB，请缩小后重试。");
+      if (file.size > MAX_QUOTE_FILE_BYTES) {
+        setError("文件超过 2 MB（2,000,000 字节），请缩小后重试。");
         return;
       }
       const extension = file.name.split(".").at(-1)?.toLowerCase();
@@ -139,7 +141,7 @@ export function Quotes({ admin }: { admin: boolean }) {
         <>
           <Panel title="上传与字段映射">
             <label>
-              报价文件（CSV / XLSX，最大 5 MiB）
+              报价文件（CSV / XLSX，最大 2 MB / 2,000,000 字节）
               <input
                 type="file"
                 accept=".csv,.xlsx"
