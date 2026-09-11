@@ -23,7 +23,30 @@ Code increments:
 Changed paths are exclusively `src/oil_agent/channels/`, `tests/unit/channels/`
 and `web/`. Generated dependencies and local browser evidence are ignored.
 
-## Checks and evidence
+## D-FIX-UPLOAD follow-up
+
+Accepted starting SHA: `38a065e1a3f71631e4a8af915069982fe02303e6`.
+Repair code SHA: `b35e5a3945157a0c74a4f06410b822dd06c6bef8`, pushed to the same branch.
+
+The upload UI and both client size guards now use exactly **2,000,000 raw bytes
+(2 MB decimal)**. The previous 5 MiB allowance disagreed with AB/C validation.
+File type checks and field mappings are preserved; no server limits, DTOs,
+dependencies or other producer files were changed. E's `3m` gateway request limit
+allows JSON/base64 overhead and does not increase the raw file allowance.
+
+Two UI regressions exercise actual FileReader/request behavior: 2,000,000 bytes
+reach `POST /api/v1/quotes/preview` with the full decoded length, whereas 2,000,001
+bytes display the size error with no file read and no API call. The oversized
+regression failed on the original implementation before the fix.
+
+Follow-up checks from `web/`: `npm test` **13 passed**; `npm run typecheck`,
+`npm run build` (including `generate:check`) and `npm run format:check` passed.
+`git diff --check` passed. Only `web/src/quotes.tsx`, `web/src/test/app.test.tsx`,
+`web/README.md` and `web/HANDOFF.md` are in this repair's write scope.
+No development/browser service was restarted. These mocked UI boundary checks
+do not claim successful server parsing or replace E/I's final integration tests.
+
+## Initial D checks and evidence
 
 Executed in this D worktree, with no production credentials or customer sends:
 
@@ -81,10 +104,12 @@ concurrency. Those require authorized configuration and C/E/I integration.
 The current NotificationIntent lacks structured assertion/evidence status,
 publisher metadata and source publication times. D labels source record IDs,
 exact versions and excerpts, and clearly calls its timestamp notification creation.
-C has been asked to populate intent body from authoritative event/report fields
-with assertion/evidence labels, publishers, unknowns and report cutoff; never
-invent unavailable source times. The neutral first-report header avoids inferring
-urgency from notification kind alone.
+C delivered authoritative Chinese notification-body formatting in
+`ad19dce62819273765d67897d0fcfd392e17887b`; the prior body-content request is now
+producer-delivered, pending final integration. That producer commit was not merged
+or tested end-to-end in this bounded upload repair. The neutral first-report
+header avoids inferring urgency from notification kind alone, and unavailable
+source times must remain explicit rather than invented.
 
 Real SSO and phone tests (forwarded links, logout, revoked permissions, background,
 lock screen, DND and offline behavior) remain **BLOCKED_EXTERNAL**. No account
