@@ -218,6 +218,54 @@ describe("business views", () => {
       preview_id: "fixture-preview",
     });
   });
+  it("submits a quote file of exactly 2000000 bytes to the preview API", async () => {
+    const fetch = mock(() => respond({ code: "not_implemented" }, 501));
+    render(<Quotes admin />);
+    await userEvent.upload(
+      screen.getByLabelText(/报价文件/),
+      new File(["x".repeat(2_000_000)], "boundary.csv", { type: "text/csv" }),
+    );
+    await userEvent.type(
+      screen.getByLabelText("数据使用授权或来源依据"),
+      "fixture:boundary",
+    );
+    await userEvent.click(screen.getByRole("button", { name: "校验并预览" }));
+    await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
+    const request = fetch.mock.calls[0][0];
+    expect(new URL(request.url).pathname).toBe("/api/v1/quotes/preview");
+    expect(request.method).toBe("POST");
+    const body: Schema<"QuotePreviewRequest"> = await request.clone().json();
+    expect(atob(body.content_base64)).toHaveLength(2_000_000);
+    expect(body.filename).toBe("boundary.csv");
+    expect(body.media_type).toBe("text/csv");
+    expect(body.rights_ref).toBe("fixture:boundary");
+    expect(body.field_mapping).toEqual({});
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "此功能尚未配置，暂时不可用。",
+    );
+  });
+  it("rejects a quote file of 2000001 bytes before reading or invoking the API", async () => {
+    const fetch = mock(() => respond({ code: "not_implemented" }, 501));
+    const read = vi.spyOn(FileReader.prototype, "readAsDataURL");
+    render(<Quotes admin />);
+    await userEvent.upload(
+      screen.getByLabelText(/报价文件/),
+      new File(["x".repeat(2_000_001)], "oversized.csv", { type: "text/csv" }),
+    );
+    await userEvent.type(
+      screen.getByLabelText("数据使用授权或来源依据"),
+      "fixture:boundary",
+    );
+    await userEvent.click(screen.getByRole("button", { name: "校验并预览" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "文件超过 2 MB（2,000,000 字节），请缩小后重试。",
+    );
+    expect(fetch).not.toHaveBeenCalled();
+    expect(read).not.toHaveBeenCalled();
+    expect(screen.getByLabelText(/报价文件/)).toHaveAccessibleName(
+      "报价文件（CSV / XLSX，最大 2 MB / 2,000,000 字节）",
+    );
+  });
 });
 
 it("checks all quote dimensions without float conversion or fabricated zero changes", () => {

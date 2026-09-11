@@ -46,6 +46,12 @@ Only the CSRF value is kept in page memory. No localStorage/sessionStorage is us
 Loading, empty, error, fixture, expired-preview, unauthenticated and role-denied
 states are explicit. A successful button requires a successful API response.
 
+Quote files are limited to **2,000,000 raw bytes (2 MB decimal)**, matching the
+parser/runtime limit. Files above this limit show an error before file reading,
+base64 encoding or any preview API request. A file at the limit can reach preview
+but remains subject to server content validation. The gateway's separate `3m`
+request-body allowance accommodates JSON/base64 overhead, not a larger raw file.
+
 ## Browser check
 
 With the dev server running on the reserved port and Chrome installed:
