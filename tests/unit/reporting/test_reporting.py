@@ -257,3 +257,29 @@ async def test_conflicting_baseline_has_no_arbitrary_delta():
     )
     assert report.computed_metrics[-1].value is None
     assert any("Conflicting" in gap for gap in report.gaps)
+
+
+async def test_T05_report_uses_latest_event_revision_at_cutoff(source_record):
+    r = source_record.model_copy(
+        update=dict(
+            title="",
+            content_excerpt="The operator denies a closure occurred.",
+            content_hash=content_hash("", "The operator denies a closure occurred."),
+            published_at=NOW,
+            discovered_at=NOW,
+        )
+    )
+    event = (
+        await ConservativeAssessmentService(clock=lambda: NOW).assess((r,), context=context())
+    )[0]
+    from oil_agent.contracts.dto import AssertionStatus
+
+    old = event.model_copy(update={"assertion_status": AssertionStatus.OCCURRED})
+    corrected = event.model_copy(update={"revision": 2, "supersedes_revision": 1})
+    service = SnapshotReportService(clock=lambda: NOW)
+    report = await service.build(request((r,), events=(old, corrected)), context=context())
+    assert len(report.facts) == 1 and "(denied;" in report.facts[0].text
+    future = corrected.model_copy(update={"assessed_at": NOW + timedelta(seconds=1)})
+    historical = await service.build(request((r,), events=(old, future)), context=context())
+    assert len(historical.facts) == 1
+    assert any("after cutoff" in gap for gap in historical.gaps)

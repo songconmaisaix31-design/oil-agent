@@ -9,6 +9,7 @@ from oil_agent.ingestion.common import verify_record
 
 def index_records(records: Iterable[SourceRecord]) -> dict[tuple[str, int], SourceRecord]:
     index = {}
+    families = {}
     for record in records:
         verify_record(record)
         key = (record.record_id, record.revision)
@@ -16,6 +17,12 @@ def index_records(records: Iterable[SourceRecord]) -> dict[tuple[str, int], Sour
             raise ServiceError(
                 ErrorCode.INVALID_INPUT, "Duplicate evidence identity has conflicting content"
             )
+        family = (record.source_id, record.external_id, record.revision)
+        if family in families and families[family] != record:
+            raise ServiceError(
+                ErrorCode.INVALID_INPUT, "Source revision has ambiguous evidence IDs"
+            )
+        families[family] = record
         index[key] = record
     return index
 

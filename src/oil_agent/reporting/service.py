@@ -83,10 +83,19 @@ class SnapshotReportService:
 
         if len(available) < len(cutoff.records):
             gaps.add("Records unavailable at cutoff or with uncertain/future times were excluded")
+        current_events = {}
         for event in cutoff.events:
             if event.assessed_at > cutoff.cutoff_at:
                 gaps.add("Event assessment created after cutoff was excluded")
                 continue
+            prior = current_events.get(event.event_id)
+            if prior and prior.revision == event.revision and prior != event:
+                raise ServiceError(
+                    ErrorCode.INVALID_INPUT, "Event revision has conflicting content"
+                )
+            if prior is None or event.revision > prior.revision:
+                current_events[event.event_id] = event
+        for event in current_events.values():
             if not all(validate_reference(ref, available) for ref in event.evidence):
                 gaps.add("Event has unsupported or unavailable evidence and was excluded")
                 continue

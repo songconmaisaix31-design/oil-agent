@@ -322,3 +322,12 @@ async def test_T05_advisory_correction_and_first_report_gates(source_record):
     assert suggest_notification(previous, withdrawn) == "withdrawal"
     with pytest.raises(ValueError, match="matched"):
         suggest_notification(previous, previous.model_copy(update={"event_id": "different"}))
+
+
+async def test_same_source_revision_cannot_hide_conflicting_content(source_record):
+    a = record(source_record, "Synthetic original statement.")
+    b = record(
+        source_record, "Conflicting replacement.", "different-record", external_id=a.external_id
+    )
+    with pytest.raises(ServiceError, match="ambiguous"):
+        await ConservativeAssessmentService(clock=lambda: NOW).assess((a, b), context=context())

@@ -79,7 +79,10 @@ class ReplaySource:
         selected = self.records[offset:end]
         records = tuple(
             r.model_copy(update={"time_quality": TimeQuality.FUTURE_QUARANTINED})
-            if any(t and t > now for t in (r.published_at, r.occurred_at, r.provider_available_at))
+            if any(
+                t and t > now
+                for t in (r.published_at, r.occurred_at, r.provider_available_at, r.discovered_at)
+            )
             else r
             for r in selected
         )
@@ -90,7 +93,10 @@ class ReplaySource:
         if end < len(self.records):
             gap, reason = GapState.PAGINATION_LIMIT, "More arrival pages remain; resume this cursor"
         if self.retention_start and (
-            cursor is None or cursor.watermark is None or cursor.watermark < self.retention_start
+            cursor is None
+            or cursor.watermark is None
+            or cursor.watermark < self.retention_start
+            or cursor.gap_state == GapState.RETENTION_EXCEEDED
         ):
             gap, reason = (
                 GapState.RETENTION_EXCEEDED,

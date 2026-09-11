@@ -1,3 +1,4 @@
+import base64
 import io
 import json
 import zipfile
@@ -8,12 +9,20 @@ import pytest
 from openpyxl import Workbook
 
 from oil_agent.contracts.dto import GapState, SourceCheckpoint
-from oil_agent.contracts.services import CallContext, ErrorCode, ServiceError, SourceAdapter
+from oil_agent.contracts.http import QuoteParseRequest, QuotePreviewRequest
+from oil_agent.contracts.services import (
+    CallContext,
+    ErrorCode,
+    QuoteParser,
+    ServiceError,
+    SourceAdapter,
+)
 from oil_agent.ingestion import (
     BoundedHttpReader,
     EiaSeries,
     HttpResult,
     ReplaySource,
+    SafeQuoteParser,
     SourceSettings,
     UploadLimits,
     parse_eia,
@@ -83,6 +92,8 @@ async def test_T07_retention_future_and_invalid_cursor(source_record):
     batch = await source.fetch(None, context=context())
     assert batch.records[0].time_quality == "future_quarantined"
     assert batch.checkpoint.gap_state == "retention_exceeded"
+    resumed = await source.fetch(batch.checkpoint, context=context())
+    assert resumed.checkpoint.gap_state == "retention_exceeded"
     invalid = batch.checkpoint.model_copy(update={"cursor": "v1|99|bogus"})
     with pytest.raises(ServiceError, match="cursor"):
         await source.fetch(invalid, context=context())
@@ -294,3 +305,42 @@ async def test_T22_T28_authorization_redirects_and_budget_no_real_requests():
     with pytest.raises(ServiceError):
         await reader.read(context=ctx)
     assert reader.requests == 1
+
+
+async def test_frozen_quote_parser_envelope_outputs_and_errors():
+    data = csv_data()
+    upload = QuotePreviewRequest(
+        filename="fixture.csv",
+        media_type="text/csv",
+        content_base64=base64.b64encode(data + data.splitlines()[1] + b"\n").decode(),
+        field_mapping={c: c for c in data.decode().splitlines()[0].split(",")},
+        rights_ref="fixture:synthetic",
+    )
+    envelope = QuoteParseRequest(
+        upload=upload,
+        origin_publisher="Synthetic supplier",
+        discovered_at=NOW,
+        is_fixture=True,
+        provenance="fixture",
+        fixture_dataset="ab-parser-v1",
+    )
+    ctx = CallContext(
+        request_id="parser",
+        deadline_at=datetime.now(UTC) + timedelta(seconds=30),
+        timeout_seconds=10,
+    )
+    parser = SafeQuoteParser()
+    assert isinstance(parser, QuoteParser)
+    parsed = await parser.preview(envelope, context=ctx)
+    assert len(parsed.records) == len(parsed.observations) == 1
+    assert parsed.duplicate_rows == (3,)
+    assert parsed.records[0].fixture_dataset == "ab-parser-v1"
+    assert parsed.issues[0].code == "duplicate_row"
+    bad_upload = upload.model_copy(update={"content_base64": "not base64!"})
+    with pytest.raises(ServiceError, match="base64"):
+        await parser.preview(envelope.model_copy(update={"upload": bad_upload}), context=ctx)
+    wrong_type = upload.model_copy(update={"filename": "disguised.xlsx"})
+    with pytest.raises(ServiceError, match="media type"):
+        await parser.preview(envelope.model_copy(update={"upload": wrong_type}), context=ctx)
+    with pytest.raises(ServiceError, match="size"):
+        await SafeQuoteParser(limits=UploadLimits(max_bytes=10)).preview(envelope, context=ctx)
