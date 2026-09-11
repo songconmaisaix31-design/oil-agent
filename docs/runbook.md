@@ -44,6 +44,40 @@ open existing profiles. Real phone behavior and OAuth are separate external gate
 
 ## Linux Compose and local synthetic startup
 
+### Integrated API and worker factory
+
+The shared safe default is `oil_agent.bootstrap:build_runtime`. Both the API
+factory `oil_agent.bootstrap:create_app` and `python -m oil_agent.runtime.cli`
+load it when `OIL_RUNTIME_FACTORY` is unset or empty. `.env.example` and the base
+Compose environment name the same executable path. A trusted explicit environment
+override (or CLI `--factory`) is still honored; never accept a factory path from
+an HTTP request or source content.
+
+This factory constructs C's Runtime with the existing SafeQuoteParser,
+ConservativeAssessmentService, SnapshotReportService and DryRunChannel. It
+registers no sources or polling schedules and creates no users, recipients,
+sessions, business configuration or sample records. First-report policy remains
+unset; source/model/real identity gates remain disabled. Quote imports and daily
+reports retain C's fixture labeling and database authorization. Worker ticks can
+create an explicitly empty fixture report when due; that is not live monitoring.
+
+After explicitly injecting a newly authorized PostgreSQL URL, run `migrate`,
+`queue-schema` and `recover` in that order, then start the API and the separate
+ingest/urgent/normal workers using the commands below. For a host API use
+`uv run --locked uvicorn oil_agent.bootstrap:create_app --factory --host 127.0.0.1
+--port 8000` as one command. Application startup does not provision or log in users.
+`/readyz` validates the database schema, not any external capability. The separately
+labeled E fixture override and its exact database guard are unchanged; select it
+only for an explicitly scoped E rehearsal. I's fresh loopback 55435 database is
+separate from C/E, with no reuse of their credentials or revoked browser sessions.
+
+See [I's integration handoff](../config/integration-handoff.md) for the tested
+candidate and final CI evidence. The original E screenshots and eight browser
+flows remain evidence of the exact E/AB candidate recorded in runtime-checks.md;
+they are not relabeled as a new I browser run.
+
+### E-only rehearsal commands
+
 Inspect exact `oil-agent-e` labels, port 55434 and port 18084 before starting. All
 commands use the deliberately empty public `deploy/compose.env` to prevent automatic
 loading of an unrelated `.env`. Inject a new isolated database password through

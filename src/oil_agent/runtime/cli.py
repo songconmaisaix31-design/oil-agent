@@ -2,8 +2,8 @@
 
 Commands: migrate, queue-schema, recover, worker --queue ingest|urgent|normal,
 and provision-user (an explicit operator action, never a login bypass).
-An optional --factory module:function returns Runtime(settings=...). No domain
-implementation is imported unless a trusted integration factory is configured.
+An optional --factory module:function overrides the shared safe bootstrap factory.
+Factories return Runtime(settings=...) and are trusted server configuration.
 """
 
 import argparse
@@ -23,19 +23,15 @@ from oil_agent.runtime.queue import QUEUES, create_queue_app
 from oil_agent.runtime.service import Runtime
 from oil_agent.runtime.settings import Settings
 from oil_agent.runtime.tasks import register_tasks
-from oil_agent.storage.database import create_db_engine
-from oil_agent.storage.repository import Repository
 
 
 def load_runtime(settings, factory=None):
-    path = factory or settings.runtime_factory
-    if path:
-        module, name = path.split(":", 1)
-        runtime = getattr(importlib.import_module(module), name)(settings)
-        if not isinstance(runtime, Runtime):
-            raise TypeError("Runtime factory must return Runtime")
-        return runtime
-    return Runtime(Repository(create_db_engine(settings)), settings=settings)
+    path = factory or settings.runtime_factory or "oil_agent.bootstrap:build_runtime"
+    module, name = path.split(":", 1)
+    runtime = getattr(importlib.import_module(module), name)(settings)
+    if not isinstance(runtime, Runtime):
+        raise TypeError("Runtime factory must return Runtime")
+    return runtime
 
 
 async def run_async(args, runtime):
