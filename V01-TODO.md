@@ -14,8 +14,8 @@ quote import, mobile views and deployment checks. Real source, Feishu, phone and
 | M0 | Read-only baseline; C freezes contracts, dependencies and API schema | DONE for foundation scope on C branch; final integration pending |
 | M1 | AB replay/assessment + C transactional pipeline + D dry-run/ack | Local synthetic E gates PASS; final I pending; real source/phone BLOCKED_EXTERNAL |
 | M2 | Revisions, independent evidence, failure recovery, authorization | Local synthetic E gates PASS; full process-kill/load/external scope untested |
-| M3 | Daily reports, safe quote imports, five responsive views | E actual browser PASS; AB user-facing summary copy correction running |
-| M4 | E regression/security/PostgreSQL/Compose; separate I integration | E local and code CI accepted; separate I waits for AB copy correction |
+| M3 | Daily reports, safe quote imports, five responsive views | E actual browser PASS; AB summary copy correction accepted; final I pending |
+| M4 | E regression/security/PostgreSQL/Compose; separate I integration | All four local tracks accepted; separate I READY |
 | M5 | Authorized source/phone and >=14 days operation | BLOCKED_EXTERNAL |
 
 Ownership is recursive below; prefixes resolve against each track's actual
@@ -86,7 +86,7 @@ Worker success enters REVIEW until integration checks.
 | --- | --- | --- | --- |
 | C | C:/Users/DW/orca/workspaces/oil-agent/oil-v01-c / songconmaisaix31-design/oil-v01-c | f5d5face60c160e70a7565498a6da54ed33c15fd; runtime starts at d31d8f9d410375dedb4727a3999ab56442c82df3 / ctx_1248df0f39e2 (task_ccc3fe1d6a12) | local runtime accepted at 41a00ded; RETAINED |
 | E | C:/Users/DW/orca/workspaces/oil-agent/oil-v01-e / songconmaisaix31-design/oil-v01-e | initial f5d5face60c160e70a7565498a6da54ed33c15fd; runtime starts at 49a1b9cb29d6d35029bba904a40f733e39580245 / ctx_d1f60fcc77b0 (task_514645bb2c7a) | accepted at 06af7997; all owned containers stopped and retained |
-| AB | C:/Users/DW/orca/workspaces/oil-agent/oil-v01-ab / songconmaisaix31-design/oil-v01-ab | dd01ee225ba36c1d7e75acdf5c96cd2d8e0df482; current same-session ctx_7b2e5fa51a81 (task_d15236706ae5) | quote-default accepted at 026490a4; summary copy correction RUNNING |
+| AB | C:/Users/DW/orca/workspaces/oil-agent/oil-v01-ab / songconmaisaix31-design/oil-v01-ab | dd01ee225ba36c1d7e75acdf5c96cd2d8e0df482; latest same-session ctx_7b2e5fa51a81 (task_d15236706ae5) | copy-only final f3c83579 accepted; RETAINED |
 | D | C:/Users/DW/orca/workspaces/oil-agent/oil-v01-d / songconmaisaix31-design/oil-v01-d | dd01ee225ba36c1d7e75acdf5c96cd2d8e0df482; latest same-session follow-up ctx_5e6e04e2d3d2 (task_1f3366c05108) | local upload-limit fix accepted at 0bbdc217; RETAINED |
 
 - Governance commit f5d5face60c160e70a7565498a6da54ed33c15fd pushed to origin.
@@ -258,8 +258,10 @@ Worker success enters REVIEW until integration checks.
   Restored expired in-flight delivery became UNKNOWN without resend. Graceful
   Linux urgent restart passed; exhaustive SIGKILL/SLA/production rollback did not run.
 - Visual review found AB's developer coordination placeholder in change_summary.
-  Original AB session is replacing only that visible copy and its handoff; no
-  decision/hash/model/status changes. E evidence remains tied to AB026490a4.
+  AB final f3c835793da03a0b0f1b8fb130c6312db2094d80 replaces only that visible
+  copy and its handoff; main reviewed the two-file diff, clean state and remote.
+  Worker intelligence tests: 14 passed; scoped Ruff passed. No decision/hash/model/
+  status changes. E evidence remains tied to AB026490a4 until final I checks.
 
 After that copy-only handoff, I receives these exclusive glue write paths:
 src/oil_agent/bootstrap.py; .env.example; deploy/compose.yaml (factory default only);
