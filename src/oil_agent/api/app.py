@@ -26,6 +26,7 @@ from oil_agent.contracts.http import (
     QuotePreviewRequest,
     ReportList,
     RuntimeStatus,
+    SessionChallenge,
     SessionCreateRequest,
     SessionResponse,
 )
@@ -38,7 +39,7 @@ def not_implemented() -> NoReturn:
 
 def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or Settings()
-    app = FastAPI(title="Oil Agent API", version="0.1.0", separate_input_output_schemas=True)
+    app = FastAPI(title="Oil Agent API", version="0.2.0", separate_input_output_schemas=True)
     app.state.settings = settings
 
     @app.exception_handler(HTTPException)
@@ -72,6 +73,15 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     errors = {code: {"model": ApiError} for code in (401, 403, 422, 501)}
     router = APIRouter(prefix="/api/v1", responses=errors)
+
+    @router.get("/session/challenge", response_model=SessionChallenge, tags=["session"])
+    async def session_challenge():
+        not_implemented()
+
+    @router.post("/callbacks/ack", response_model=Ack, tags=["callbacks"])
+    async def callback_ack(request: Request):
+        """D verifies signature; C checks identity, current recipient grant and replay."""
+        not_implemented()
 
     @router.get(
         "/records/{record_id}/revisions/{revision}", response_model=SourceRecord, tags=["evidence"]
