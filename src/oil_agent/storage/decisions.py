@@ -114,6 +114,17 @@ class DecisionRepository:
                 )
                 decision_hash = fingerprint(decision)
                 previous = session.get(VersionRow, (subject.subject_id, subject.current_revision))
+                if previous:
+                    prior_refs = {
+                        ref["record_id"]: ref["revision"] for ref in previous.payload["evidence"]
+                    }
+                    if any(
+                        ref.revision < prior_refs.get(ref.record_id, ref.revision)
+                        for ref in candidate.evidence
+                    ):
+                        # A late processing lease must not regress a newer source revision.
+                        output.append(EventAssessment.model_validate(previous.payload))
+                        continue
                 if previous and previous.decision_hash == decision_hash:
                     output.append(EventAssessment.model_validate(previous.payload))
                     continue

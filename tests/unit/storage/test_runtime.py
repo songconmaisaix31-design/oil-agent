@@ -250,3 +250,29 @@ def test_budget_reserve_is_durable(repository):
     assert repository.charge_budget("model", 3, reserve=1, urgent=True) == 3
     with pytest.raises(ServiceError):
         repository.charge_budget("model", 3, reserve=1, urgent=True)
+
+
+def test_out_of_order_source_processing_cannot_regress_event(repository, actors, source_record):
+    repository.persist_batch(batch(source_record), expected=None)
+    older_claim = repository.claim_records()
+    newer = source_record.model_copy(
+        update={
+            "revision": 2,
+            "content_hash": "f" * 64,
+            "content_excerpt": "Newer source statement",
+        }
+    )
+    repository.persist_batch(batch(newer, "two"), expected=repository.checkpoint("replay"))
+    newer_claim = repository.claim_records()
+    first = repository.commit_assessments(newer_claim, (candidate(newer),))[0]
+    late = repository.commit_assessments(older_claim, (candidate(source_record),))[0]
+    assert late == first
+    assert (
+        repository.event_detail(actors["viewer"][0], first.event_id).current.evidence[0].revision
+        == 2
+    )
+    invalid_id = newer.model_copy(update={"record_id": "changed-record-identity", "revision": 3})
+    with pytest.raises(ServiceError):
+        repository.persist_batch(
+            batch(invalid_id, "three"), expected=repository.checkpoint("replay")
+        )
