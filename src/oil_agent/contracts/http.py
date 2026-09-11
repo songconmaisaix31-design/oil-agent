@@ -133,6 +133,7 @@ class BusinessConfig(DTO):
     sms_enabled: bool = False
     phone_enabled: bool = False
     outbound_mode: Literal["dry_run", "production"] = "dry_run"
+    notification_channel: Literal["dry_run", "feishu"] = "dry_run"
 
 
 class RuntimeStatus(DTO):
@@ -161,6 +162,12 @@ class SessionChallenge(DTO):
     authorization_url: str
     state: str
     expires_at: UtcDatetime
+
+
+class CallbackResponse(DTO):
+    """Provider acknowledgement only; internal Ack details stay server-side."""
+
+    challenge: str | None = None
 
 
 class SessionCreateRequest(DTO):
