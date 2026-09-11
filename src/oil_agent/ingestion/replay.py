@@ -32,19 +32,25 @@ class ReplaySource:
             raise ValueError("Replay corpus exceeds record bound")
         if retention_start is not None and retention_start.tzinfo is None:
             raise ValueError("Retention boundary must be timezone-aware")
-        unique = {}
-        identities = {}
+        unique: dict[tuple[str, int], SourceRecord] = {}
+        record_families: dict[str, tuple[str, str]] = {}
+        family_record_ids: dict[tuple[str, str], str] = {}
         for record in records:
             verify_record(record)
             if record.source_id != source_id or not record.is_fixture:
                 raise ValueError("Replay accepts only explicitly labeled records of this source")
-            family_revision = (record.external_id, record.revision)
-            if family_revision in identities and identities[family_revision] != record:
+            identity = (record.record_id, record.revision)
+            family = (record.source_id, record.external_id)
+            if identity in unique and unique[identity] != record:
                 raise ValueError("Conflicting source revision; preserve it as a new revision")
-            if record.record_id in unique and unique[record.record_id] != record:
-                raise ValueError("A record ID cannot refer to different evidence")
-            identities[family_revision] = record
-            unique[record.record_id] = record
+            if record.record_id in record_families and record_families[record.record_id] != family:
+                raise ValueError("A record ID cannot refer to different source families")
+            if family in family_record_ids and family_record_ids[family] != record.record_id:
+                raise ValueError("Conflicting source family alias; retain one stable record ID")
+            record_families[record.record_id] = family
+            family_record_ids[family] = record.record_id
+            # Preserve every immutable revision at its first arrival position.
+            unique.setdefault(identity, record)
         self.records = tuple(
             unique.values()
         )  # Arrival order; never discard late publication times.

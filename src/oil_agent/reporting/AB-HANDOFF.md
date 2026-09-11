@@ -27,7 +27,11 @@ durable revisions, grant recipient authorization, send messages or deploy.
 
 `ReplaySource` accepts only explicitly labeled fixture records, preserves arrival
 order, revisions and late publication times, and returns bounded pages. The
-checkpoint is a **candidate**; C must commit it with all returned records and
+immutable evidence identity is `(record_id, revision)`: every source/external-ID
+family keeps one stable record ID, and that ID cannot alias another family.
+Exact duplicate revisions collapse at their first arrival position; conflicting
+same-revision content or metadata is rejected. Distinct revisions share one log.
+The checkpoint is a **candidate**; C must commit it with all returned records and
 pending work atomically. Replaying a committed cursor is deterministic. Input is
 append-only; changed consumed prefixes fail. Pagination and retention gaps are
 explicit; retention debt remains until C deliberately resets/reconciles coverage.
@@ -160,7 +164,7 @@ authorized quote samples, model approval and budgets, deployed-network validatio
 phone acceptance and continuous operation. No real data/model requests, customer
 sends or deployment occurred.
 
-Recorded final local checks (Windows, CPython 3.13.13, frozen uv environment):
+Initial delivery checks (Windows, CPython 3.13.13, frozen uv environment):
 
 - Scoped Ruff check: passed.
 - `uv run --frozen pytest -m 'not postgres' -q`: 85 passed, 3 PostgreSQL tests
@@ -172,3 +176,33 @@ Recorded final local checks (Windows, CPython 3.13.13, frozen uv environment):
 
 The PostgreSQL tests were not run in AB: this track starts no extra database or
 Docker services and makes no database concurrency/transaction acceptance claim.
+
+## AB-FIX-REPLAY follow-up
+
+Base: `25cceea0bfb78930879060417054e4675d84956d`. E identified that the old
+record-ID-only deduplication rejected legal revisions sharing a stable ID.
+The correction uses composite evidence identity and enforces both directions of
+the source-family/record-ID mapping; cursor format and prefix hashing are unchanged.
+Only replay.py, its existing ingestion test file and this handoff were modified.
+
+Two new stable-ID pagination/extension tests failed on the original implementation
+before the fix. Regressions now cover one collection with revisions 1 and 2,
+page_size=1/max_pages=1, exact-duplicate collapse, repeated fetch, restart from the
+original committed cursor, append-only extension after checkpoint creation, exact
+old-evidence preservation, consumed-prefix content/rights/order/removal rejection,
+and conflicting same-revision payloads and aliases. The earlier pagination test
+was corrected to keep its record ID stable across revisions.
+
+Follow-up checks on the unchanged frozen dependency environment:
+
+- `uv run --frozen ruff check src/oil_agent/ingestion/replay.py tests/unit/ingestion/test_ingestion.py`: passed.
+- `uv run --frozen pytest tests/unit/ingestion/test_ingestion.py -q`: 25 passed.
+- `uv run --frozen pytest -m 'not postgres' -q`: 95 passed, 3 PostgreSQL tests
+  deselected, one existing Starlette/AnyIO deprecation warning.
+- `uv build --out-dir "$env:TEMP/oil-ab-fix-replay-ctx-e350f1136c55"`: wheel and
+  source distribution built successfully outside the repository.
+
+C's ffb62d ingestion code and E's PostgreSQL pipeline tests were read only;
+no shared contract or C/D/E/M file changed. Main/E must rerun actual PostgreSQL
+T09/T05 against the delivered fix SHA. No Docker, live source/model/API request,
+customer send or external acceptance was performed by this follow-up.
