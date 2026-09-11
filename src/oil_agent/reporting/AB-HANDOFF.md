@@ -69,7 +69,14 @@ product/spec/region/supplier/quote_type/tax_basis/delivery_basis/currency/unit,
 plus published_at. Missing basis remains uncomparable. File identity uses original
 bytes; row identity includes file, row number and canonical mapping.
 
-Defaults: 2 MB upload, 10 MB expanded XLSX, 200 ZIP entries, 100x expansion ratio,
+An empty mapping uses only exact canonical field names present in the validated
+header, retaining every present optional basis field and published_at. It still
+requires value and as_of; case variants, synonyms and missing columns are not
+guessed. A nonempty explicit mapping is validated as supplied and is never
+automatically completed. Equivalent derived/explicit mappings produce identical
+file/row identities and evidence; the caller's mapping is not mutated.
+
+Defaults: 2,000,000 raw upload bytes, 10 MB expanded XLSX, 200 ZIP entries, 100x expansion ratio,
 10,000 rows, 64 columns and 2,000 characters per cell. UTF-8 CSV and exactly one
 XLSX worksheet are supported. Macro/external/entity content, disguised extensions,
 bad archives and oversized data reject the file. Formula cells produce row errors;
@@ -206,3 +213,33 @@ C's ffb62d ingestion code and E's PostgreSQL pipeline tests were read only;
 no shared contract or C/D/E/M file changed. Main/E must rerun actual PostgreSQL
 T09/T05 against the delivered fix SHA. No Docker, live source/model/API request,
 customer send or external acceptance was performed by this follow-up.
+
+## AB-FIX-QUOTE-DEFAULT follow-up
+
+Base: `f3b726d1a194f192f7fc4dc5908882190b416b96`. E's actual browser/API path
+submitted the advertised default field_mapping={} and encountered an invalid-input
+response before the parser inspected standard headers. Empty-map derivation now
+runs only after file/header validation and feeds the existing strict mapping and
+row validation. The shared DTO, raw upload cap and production settings are unchanged.
+
+The new CSV and XLSX SafeQuoteParser regressions both failed before the fix.
+They now confirm default preview success, all standard basis/release values,
+trusted fixture provenance and identical file/row identities versus the same
+explicit mapping. Additional cases cover missing/near-match mandatory headers,
+unknown optional names, explicit-map validation/non-enrichment, invalid headers,
+formula rejection and the unchanged 2,000,000-byte raw limit.
+
+Checks on the frozen local environment:
+
+- `uv run --frozen ruff check src/oil_agent/ingestion/quotes.py tests/unit/ingestion/test_ingestion.py`: passed.
+- `uv run --frozen pytest tests/unit/ingestion/test_ingestion.py -q`: 42 passed.
+- `uv run --frozen pytest -m 'not postgres' -q`: 112 passed, 3 PostgreSQL tests
+  deselected, one existing Starlette/AnyIO deprecation warning.
+- `uv build --out-dir "$env:TEMP/oil-ab-fix-quote-default-ctx-10a78cbe3c9a"`: wheel
+  and source distribution built successfully outside the repository.
+
+Only quotes.py, the existing ingestion test file and this handoff changed.
+E's browser test and C/D/E/M files were not edited; no injected UI/test mapping
+workaround was used. Main/E must rerun the unchanged real browser/API/PostgreSQL
+default upload flow on the delivered SHA. No Docker, product model, source API or
+customer sending was used for this local fix; existing external limits remain.

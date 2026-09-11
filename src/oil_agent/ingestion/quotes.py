@@ -212,16 +212,13 @@ def preview_quotes(
 ) -> QuotePreview:
     """Mapping is canonical field -> column heading; missing basis stays uncomparable.
 
+    An empty mapping selects exact canonical names present in the validated header.
     File identity hashes original bytes; row identity includes file, row index and
-    mapping. Repeating identical bytes/mapping produces identical source IDs.
+    resolved mapping. Identical explicit/derived mappings produce identical IDs.
     """
     limits = limits or UploadLimits()
     if discovered_at.tzinfo is None or not rights_ref.strip() or not origin_publisher.strip():
         _reject("Timezone, rights reference and publisher are required")
-    if set(mapping) - set(FIELDS) or not {"value", "as_of"} <= set(mapping):
-        _reject("Mapping requires value and as_of and must use known fields")
-    if len(set(mapping.values())) != len(mapping):
-        _reject("A column cannot map to several fields")
     raw_rows = _rows(data, filename, limits)
     if not raw_rows:
         _reject("Upload needs a header")
@@ -230,6 +227,12 @@ def preview_quotes(
         _reject("Unsafe or oversized column heading")
     if len(set(header)) != len(header) or any(not c for c in header):
         _reject("Column headings must be unique and nonempty")
+    if not mapping:
+        mapping = {field: field for field in FIELDS if field in header}
+    if set(mapping) - set(FIELDS) or not {"value", "as_of"} <= set(mapping):
+        _reject("Mapping requires value and as_of and must use known fields")
+    if len(set(mapping.values())) != len(mapping):
+        _reject("A column cannot map to several fields")
     if set(mapping.values()) - set(header):
         _reject("Mapped column does not exist")
     digest = hashlib.sha256(data).hexdigest()
