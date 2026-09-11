@@ -11,8 +11,8 @@ quote import, mobile views and deployment checks. Real source, Feishu, phone and
 
 | Stage | Work | Gate/status |
 | --- | --- | --- |
-| M0 | Read-only baseline; C freezes contracts, dependencies and API schema | RUNNING |
-| M1 | AB replay/assessment + C transactional pipeline + D dry-run/ack | BLOCKED_DEPENDENCY: foundation |
+| M0 | Read-only baseline; C freezes contracts, dependencies and API schema | DONE for foundation scope on C branch; final integration pending |
+| M1 | AB replay/assessment + C transactional pipeline + D dry-run/ack | RUNNING local scope; real source/phone BLOCKED_EXTERNAL |
 | M2 | Revisions, independent evidence, failure recovery, authorization | BLOCKED_DEPENDENCY: M1 |
 | M3 | Daily reports, safe quote imports, five responsive views | BLOCKED_DEPENDENCY: contracts |
 | M4 | E regression/security/PostgreSQL/Compose; separate I integration | BLOCKED_DEPENDENCY: tracks |
@@ -84,8 +84,10 @@ Worker success enters REVIEW until integration checks.
 
 | Track | Worktree / branch | Base / dispatch | State |
 | --- | --- | --- | --- |
-| C | C:/Users/DW/orca/workspaces/oil-agent/oil-v01-c / songconmaisaix31-design/oil-v01-c | f5d5face60c160e70a7565498a6da54ed33c15fd / ctx_d958a55ca5fa (task_326ffc251dc0) | RUNNING foundation |
-| E | C:/Users/DW/orca/workspaces/oil-agent/oil-v01-e / songconmaisaix31-design/oil-v01-e | f5d5face60c160e70a7565498a6da54ed33c15fd / ctx_9c35869d31f1 (task_75d768b10019) | RUNNING acceptance corpus independent of contracts |
+| C | C:/Users/DW/orca/workspaces/oil-agent/oil-v01-c / songconmaisaix31-design/oil-v01-c | f5d5face60c160e70a7565498a6da54ed33c15fd; runtime starts at d31d8f9d410375dedb4727a3999ab56442c82df3 / ctx_1248df0f39e2 (task_ccc3fe1d6a12) | foundation accepted; RUNNING runtime in same session |
+| E | C:/Users/DW/orca/workspaces/oil-agent/oil-v01-e / songconmaisaix31-design/oil-v01-e | f5d5face60c160e70a7565498a6da54ed33c15fd / ctx_9c35869d31f1 (task_75d768b10019) | baseline accepted; same session RETAINED for integration dependencies |
+| AB | C:/Users/DW/orca/workspaces/oil-agent/oil-v01-ab / songconmaisaix31-design/oil-v01-ab | dd01ee225ba36c1d7e75acdf5c96cd2d8e0df482 / ctx_ee9e5a943861 (task_0fb0fc0330b5) | RUNNING local A/B implementation |
+| D | C:/Users/DW/orca/workspaces/oil-agent/oil-v01-d / songconmaisaix31-design/oil-v01-d | dd01ee225ba36c1d7e75acdf5c96cd2d8e0df482 / ctx_628088790830 (task_59fba1d3c03e) | RUNNING channel and mobile implementation |
 
 - Governance commit f5d5face60c160e70a7565498a6da54ed33c15fd pushed to origin.
   Initial direct pushes failed with connection reset/timeout; a process-scoped
@@ -101,3 +103,37 @@ Worker success enters REVIEW until integration checks.
   recovery acceptance will use Linux containers; do not infer graceful recovery
   from a Windows-only smoke test.
   https://procrastinate.readthedocs.io/en/stable/howto/basics/windows.html
+- C published contract baseline dd01ee225ba36c1d7e75acdf5c96cd2d8e0df482
+  (previous DTO commit 558010bee164f2161a0928384eb6aac36e001c07). Coordinator
+  reviewed UTC/Decimal, fixture isolation, exact evidence references, version
+  ownership, preallocated delivery ID and actor-scoped mobile acknowledgement.
+  Worker reports 24 contract/API tests and uv build passing; full database
+  foundation handoff and independent acceptance remain pending.
+- Host free memory measured near 1 GiB of 31.3 GiB. Stagger heavy tests/builds;
+  never stop unrelated user services. Existing user-requested long-lived track
+  sessions may be retained idle while their next dependencies are developed.
+
+## Accepted increments (not full product acceptance)
+
+- C-FOUNDATION: code 5ab55bf47a1cedc23abba981894fcfae13b0ae50; final handoff
+  d31d8f9d410375dedb4727a3999ab56442c82df3, pushed and clean. Worker: 42 tests
+  without skips, locked sync, Ruff, build, PostgreSQL 16.14 fresh migration,
+  Alembic drift check, real Procrastinate task, live HTTP smoke. Coordinator:
+  `uv run --locked pytest tests/contracts tests/unit/api -q` -> 32 passed;
+  `uv run --locked ruff check src tests` -> PASS; actual DB migration queried as
+  `0001_foundation`; scope/diff reviewed. One upstream AnyIO deprecation warning.
+  See C `config/foundation-handoff.md`. Business pipeline not yet implemented.
+- E-BASELINE: code 62bd7d699bd39e02586d616796f34f6d22dc45f7; final handoff
+  49a1b9cb29d6d35029bba904a40f733e39580245, pushed and clean. Coordinator reran
+  `python scripts/validate_scenario_corpus.py` -> PASS for 28 synthetic cases;
+  all 28 application cases remain NOT EXECUTED. Worker also checked 12 corrupt
+  variants, Ruff, links and missing-file failure. Exactly five E-owned files.
+  See E `e2e/baseline-checks.md` and `docs/runbook.md`.
+- C same-terminal reuse: `worker-start --terminal` returned agent_unconfigured;
+  no new Task/Dispatch was created (enumerated). Existing C session and completed
+  transcript remained proven. CLI-documented explicit `task-create`, `dispatch
+  --return-preamble` and `terminal send --wait-submit 10` reused the same terminal;
+  receipt c220f3ff-b9b5-4584-88e6-733938e931d3 confirms input_accepted and
+  turn_started. New runtime dispatch is a low-level dispatch, not a newly owned
+  supervised process; old C resource is explicitly retained for the user's
+  one-session-per-track requirement. No runtime patch or approval change made.
