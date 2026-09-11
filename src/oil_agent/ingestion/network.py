@@ -46,7 +46,7 @@ class SourceSettings:
             raise ServiceError(ErrorCode.INVALID_INPUT, "Source response bounds are invalid")
 
 
-def validate_target(url: str, hosts: tuple[str, ...], addresses: tuple[str, ...]) -> None:
+def _validate_url(url: str, hosts: tuple[str, ...]) -> str:
     try:
         target = urlsplit(url)
         if (
@@ -56,8 +56,17 @@ def validate_target(url: str, hosts: tuple[str, ...], addresses: tuple[str, ...]
             or target.username
             or target.password
             or target.fragment
-            or not addresses
         ):
+            raise ValueError
+        return target.hostname
+    except ValueError:
+        raise ServiceError(ErrorCode.FORBIDDEN, "Source URL is not allowed") from None
+
+
+def validate_target(url: str, hosts: tuple[str, ...], addresses: tuple[str, ...]) -> None:
+    _validate_url(url, hosts)
+    try:
+        if not addresses:
             raise ValueError
         for address in addresses:
             ip = ipaddress.ip_address(address)
@@ -98,13 +107,17 @@ class BoundedHttpReader:
             raise ServiceError(
                 ErrorCode.TIMEOUT, "Source request timed out", retryable=True
             ) from None
+        except (OSError, ValueError):
+            raise ServiceError(
+                ErrorCode.UNAVAILABLE, "Source resolution or transport failed", retryable=True
+            ) from None
 
     async def _read(self) -> bytes:
         url = self.settings.endpoint
         for redirect in range(self.settings.max_redirects + 1):
             # Reject disallowed host/protocol BEFORE resolver and transport invocation.
-            validate_target(url, self.settings.allowed_hosts, ("8.8.8.8",))
-            addresses = await self.resolver(urlsplit(url).hostname)
+            hostname = _validate_url(url, self.settings.allowed_hosts)
+            addresses = await self.resolver(hostname)
             validate_target(url, self.settings.allowed_hosts, addresses)
             if self.requests >= self.settings.request_limit:
                 self.blocked_requests += 1

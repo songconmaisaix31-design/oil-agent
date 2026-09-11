@@ -226,6 +226,8 @@ def preview_quotes(
     if not raw_rows:
         _reject("Upload needs a header")
     header = tuple(c.strip() for c in raw_rows[0])
+    if any(c.startswith(("=", "+", "-", "@")) or len(c) > limits.max_cell_chars for c in header):
+        _reject("Unsafe or oversized column heading")
     if len(set(header)) != len(header) or any(not c for c in header):
         _reject("Column headings must be unique and nonempty")
     if set(mapping.values()) - set(header):
