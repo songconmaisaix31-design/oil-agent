@@ -57,7 +57,9 @@ def record(base, number, **updates):
 
 async def test_T08_T09_pages_late_revision_restart_and_empty_title(source_record):
     records = tuple(record(source_record, n) for n in range(5))
-    revision = record(source_record, 6, external_id="external-0", revision=2)
+    revision = record(
+        source_record, 6, record_id=records[0].record_id, external_id="external-0", revision=2
+    )
     late = record(source_record, 7, published_at=NOW - timedelta(days=2))
     source = ReplaySource(
         (*records, revision, late, late), page_size=2, max_pages=1, clock=lambda: NOW
@@ -84,6 +86,104 @@ async def test_T08_T09_pages_late_revision_restart_and_empty_title(source_record
         (*records, revision, late), page_size=2, max_pages=1, clock=lambda: NOW
     )
     assert (await restarted.fetch(first.checkpoint, context=context())).records == records[2:4]
+
+
+async def test_T09_T05_stable_id_revisions_share_one_replay_cursor(source_record):
+    original = record(source_record, 1)
+    correction = record(
+        source_record, 2, record_id=original.record_id, external_id=original.external_id, revision=2
+    )
+    original_evidence = original.model_dump_json()
+    arrivals = (original, original.model_copy(), correction, correction.model_copy(), original)
+    source = ReplaySource(arrivals, page_size=1, max_pages=1, clock=lambda: NOW)
+    assert source.records == (original, correction)
+
+    first = await source.fetch(None, context=context())
+    assert first.records == (original,) and first.has_more
+    assert first.checkpoint.gap_state == GapState.PAGINATION_LIMIT
+    committed_cursor = first.checkpoint
+    second = await source.fetch(committed_cursor, context=context())
+    assert second.records == (correction,) and not second.has_more
+    assert second.checkpoint.gap_state == GapState.NONE
+    assert await source.fetch(committed_cursor, context=context()) == second
+
+    restarted = ReplaySource(arrivals, page_size=1, max_pages=1, clock=lambda: NOW)
+    assert await restarted.fetch(committed_cursor, context=context()) == second
+    assert (await restarted.fetch(None, context=context())).records[0].model_dump_json() == (
+        original_evidence
+    )
+    assert not (await restarted.fetch(second.checkpoint, context=context())).records
+    assert original.model_dump_json() == original_evidence
+    assert source.records[0].model_dump_json() == original_evidence
+    assert [(r.record_id, r.revision) for r in source.records] == [
+        (original.record_id, 1),
+        (original.record_id, 2),
+    ]
+
+
+async def test_T09_append_revision_after_checkpoint_keeps_consumed_prefix(source_record):
+    original = record(source_record, 1)
+    initial = ReplaySource((original,), page_size=1, max_pages=1, clock=lambda: NOW)
+    committed = await initial.fetch(None, context=context())
+    assert not committed.has_more
+    correction = record(
+        source_record, 2, record_id=original.record_id, external_id=original.external_id, revision=2
+    )
+    extended = ReplaySource(
+        (original, correction, correction), page_size=1, max_pages=1, clock=lambda: NOW
+    )
+    resumed = await extended.fetch(committed.checkpoint, context=context())
+    assert resumed.records == (correction,)
+    assert resumed.checkpoint.source_id == committed.checkpoint.source_id
+    assert (await extended.fetch(None, context=context())).checkpoint.cursor == (
+        committed.checkpoint.cursor
+    )
+    assert await extended.fetch(committed.checkpoint, context=context()) == resumed
+    assert initial.records == (original,)
+
+
+@pytest.mark.parametrize("mutation", ["content", "rights", "reorder", "remove"])
+async def test_T09_changed_consumed_prefix_rejected_with_stable_revision_ids(
+    source_record, mutation
+):
+    original = record(source_record, 1)
+    correction = record(
+        source_record, 2, record_id=original.record_id, external_id=original.external_id, revision=2
+    )
+    source = ReplaySource((original, correction), page_size=1, max_pages=1, clock=lambda: NOW)
+    committed = await source.fetch(None, context=context())
+    original_evidence = original.model_dump_json()
+    if mutation == "content":
+        changed = record(source_record, 1, content_excerpt="Changed old evidence with a valid hash")
+        arrivals = (changed, correction)
+    elif mutation == "rights":
+        arrivals = (original.model_copy(update={"rights_ref": "fixture:other-rights"}), correction)
+    elif mutation == "reorder":
+        arrivals = (correction, original)
+    else:
+        arrivals = (correction,)
+    mutated = ReplaySource(arrivals, page_size=1, max_pages=1, clock=lambda: NOW)
+    with pytest.raises(ServiceError, match="cursor is invalid"):
+        await mutated.fetch(committed.checkpoint, context=context())
+    assert original.model_dump_json() == original_evidence
+
+
+@pytest.mark.parametrize(
+    "updates,reason",
+    [
+        ({"external_id": "different-family", "revision": 2}, "source families"),
+        ({"record_id": "different-id", "revision": 2}, "stable record ID"),
+        ({"content_excerpt": "Different same-revision evidence"}, "Conflicting source revision"),
+        ({"rights_ref": "fixture:changed-rights"}, "Conflicting source revision"),
+    ],
+)
+def test_T09_replay_rejects_revision_conflicts_and_bidirectional_aliases(
+    source_record, updates, reason
+):
+    original = record(source_record, 1)
+    conflicting = record(source_record, 1, **updates)
+    with pytest.raises(ValueError, match=reason):
+        ReplaySource((original, conflicting))
 
 
 async def test_T07_retention_future_and_invalid_cursor(source_record):
