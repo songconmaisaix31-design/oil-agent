@@ -1,0 +1,8 @@
+**
+!web/
+!web/**
+web/node_modules
+web/dist
+web/.env*
+!deploy/
+!deploy/nginx.conf

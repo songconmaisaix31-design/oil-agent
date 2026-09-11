@@ -1,0 +1,13 @@
+**
+!pyproject.toml
+!uv.lock
+!LICENSE
+!alembic.ini
+!src/
+!src/**
+!deploy/
+!deploy/entrypoint.sh
+**/.env
+**/.env.*
+**/__pycache__
+**/*.pyc

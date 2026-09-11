@@ -1,0 +1,4 @@
+# Opt-in E host access for real PostgreSQL tests. Never use this for production.
+services:
+  postgres:
+    ports: ["127.0.0.1:55434:5432"]

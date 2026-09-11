@@ -1,0 +1,121 @@
+name: oil-agent-e
+
+x-app: &app
+  image: oil-agent-app:${OIL_IMAGE_TAG:-e-local}
+  build:
+    context: ..
+    dockerfile: deploy/app.Dockerfile
+  environment:
+    OIL_ENVIRONMENT: test
+    OIL_DATABASE_URL: ${OIL_DATABASE_URL:?Inject the authorized isolated database URL}
+    OIL_OUTBOUND_MODE: dry_run
+    OIL_REMINDERS_ENABLED: "false"
+    OIL_SMS_ENABLED: "false"
+    OIL_PHONE_ENABLED: "false"
+    OIL_ASGI_FACTORY: ${OIL_ASGI_FACTORY:-oil_agent.bootstrap:create_app}
+  networks: [backend]
+  read_only: true
+  tmpfs: [/tmp:size=32m,mode=1777]
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+  pids_limit: 64
+  cpus: 0.5
+  mem_limit: 256m
+  stop_grace_period: 30s
+  logging:
+    driver: json-file
+    options: {max-size: 5m, max-file: "2"}
+
+services:
+  postgres:
+    image: postgres:16-alpine@sha256:e013e867e712fec275706a6c51c966f0bb0c93cfa8f51000f85a15f9865a28cb
+    environment:
+      POSTGRES_DB: oil_e_test
+      POSTGRES_USER: oil_e_test
+      POSTGRES_PASSWORD: ${OIL_POSTGRES_PASSWORD:?Inject a new isolated test password}
+      TZ: UTC
+    command: [postgres, -c, timezone=UTC, -c, max_connections=40, -c, shared_buffers=32MB]
+    volumes: [postgres-data:/var/lib/postgresql/data]
+    networks: [backend]
+    restart: unless-stopped
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U oil_e_test -d oil_e_test]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
+    shm_size: 64m
+    mem_limit: 128m
+    cpus: 0.5
+    pids_limit: 64
+    security_opt: [no-new-privileges:true]
+    logging:
+      driver: json-file
+      options: {max-size: 5m, max-file: "2"}
+  init:
+    <<: *app
+    command: [init]
+    restart: "no"
+    depends_on:
+      postgres: {condition: service_healthy}
+  api:
+    <<: *app
+    command: [api]
+    restart: unless-stopped
+    depends_on:
+      init: {condition: service_completed_successfully}
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/readyz', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+  ingest:
+    <<: *app
+    command: [worker, --queue, ingest]
+    restart: unless-stopped
+    depends_on:
+      init: {condition: service_completed_successfully}
+  urgent:
+    <<: *app
+    command: [worker, --queue, urgent]
+    restart: unless-stopped
+    depends_on:
+      init: {condition: service_completed_successfully}
+  normal:
+    <<: *app
+    command: [worker, --queue, normal]
+    restart: unless-stopped
+    depends_on:
+      init: {condition: service_completed_successfully}
+  gateway:
+    image: oil-agent-web:${OIL_IMAGE_TAG:-e-local}
+    build:
+      context: ..
+      dockerfile: deploy/web.Dockerfile
+    ports: ["127.0.0.1:${OIL_HTTP_PORT:-18084}:8080"]
+    networks: [backend, ingress]
+    depends_on:
+      api: {condition: service_healthy}
+    restart: unless-stopped
+    read_only: true
+    tmpfs: [/tmp:size=32m,mode=1777]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 32
+    mem_limit: 64m
+    cpus: 0.25
+    healthcheck:
+      test: [CMD, wget, -q, --spider, http://127.0.0.1:8080/gateway-healthz]
+      interval: 15s
+      timeout: 3s
+      retries: 3
+    logging:
+      driver: json-file
+      options: {max-size: 5m, max-file: "2"}
+
+networks:
+  backend: {internal: true}
+  ingress: {}
+volumes:
+  postgres-data: {}
