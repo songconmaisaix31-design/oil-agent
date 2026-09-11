@@ -1,0 +1,12 @@
+**
+!web/
+!web/**
+web/node_modules
+web/dist
+web/.env*
+!deploy/
+!deploy/nginx.conf
+!src/
+!src/oil_agent/
+!src/oil_agent/contracts/
+!src/oil_agent/contracts/openapi.json

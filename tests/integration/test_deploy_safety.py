@@ -1,0 +1,67 @@
+"""Static deployment boundaries, separate from container/application acceptance."""
+
+from pathlib import Path
+
+import yaml
+
+ROOT = Path(__file__).resolve().parents[2]
+
+
+def test_database_is_internal_and_only_gateway_publishes_loopback():
+    config = yaml.safe_load((ROOT / "deploy/compose.yaml").read_text())
+    assert config["name"] == "oil-agent-e"
+    assert config["networks"]["backend"]["internal"] is True
+    for name, service in config["services"].items():
+        if name == "gateway":
+            assert all(port.startswith("127.0.0.1:") for port in service["ports"])
+        else:
+            assert not service.get("ports"), name
+            assert service["networks"] == ["backend"], name
+    override = yaml.safe_load((ROOT / "deploy/compose.e-test.yaml").read_text())
+    assert override["services"]["postgres"]["ports"] == ["127.0.0.1:55434:5432"]
+
+
+def test_one_application_image_safe_defaults_and_explicit_initialization():
+    services = yaml.safe_load((ROOT / "deploy/compose.yaml").read_text())["services"]
+    image = services["api"]["image"]
+    for name in ("api", "init", "ingest", "urgent", "normal"):
+        service = services[name]
+        assert service["image"] == image
+        assert service["environment"]["OIL_OUTBOUND_MODE"] == "dry_run"
+        assert service["environment"]["OIL_ENVIRONMENT"] == "test"
+        for key in ("OIL_REMINDERS_ENABLED", "OIL_SMS_ENABLED", "OIL_PHONE_ENABLED"):
+            assert service["environment"][key] == "false"
+        assert service["read_only"] is True
+        assert service["cap_drop"] == ["ALL"]
+        assert service["mem_limit"] and service["pids_limit"]
+        if name != "init":
+            assert service["depends_on"]["init"]["condition"] == "service_completed_successfully"
+    for queue in ("ingest", "urgent", "normal"):
+        assert services[queue]["command"] == ["worker", "--queue", queue]
+
+
+def test_reverse_proxy_preserves_api_path_and_disables_sensitive_access_log():
+    text = (ROOT / "deploy/nginx.conf").read_text()
+    assert "location /api/" in text
+    assert "proxy_pass http://api:8000;" in text
+    assert "access_log off;" in text
+    assert "listen 8080;" in text
+    assert "try_files $uri $uri/ /index.html;" in text
+
+
+def test_backup_restore_do_not_overwrite_or_delete_existing_state():
+    backup = (ROOT / "scripts/backup.sh").read_text()
+    restore = (ROOT / "scripts/restore-isolated.sh").read_text()
+    scope = (ROOT / "scripts/compose_scope.sh").read_text()
+    assert "set -C" in backup
+    assert "--format=custom" in backup
+    assert "--single-transaction" in restore
+    assert restore.index("createdb --username") < restore.index('--dbname="$oil_restore"')
+    assert "oil_e_restore_" in restore
+    assert "com.docker.compose.project" in scope and "com.docker.compose.service" in scope
+    for text in (backup, restore, scope):
+        assert "--clean" not in text
+        assert "dropdb" not in text
+        assert "volume rm" not in text
+        assert " down" not in text
+    assert "--env-file" in scope  # Never auto-read a pre-existing repository .env.

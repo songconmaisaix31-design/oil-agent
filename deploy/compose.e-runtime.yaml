@@ -1,0 +1,15 @@
+# Opt-in original synthetic services for local E browser/worker tests, never production.
+x-fixture: &fixture
+  volumes: ["../fixtures:/app/fixtures:ro"]
+  environment:
+    OIL_RUNTIME_FACTORY: fixtures.runtime_factory:create
+    OIL_COOKIE_SECURE: "false"
+    OIL_PUBLIC_ORIGIN: http://127.0.0.1:18084
+    PYTHONPATH: /app
+
+services:
+  init: *fixture
+  api: *fixture
+  ingest: *fixture
+  urgent: *fixture
+  normal: *fixture

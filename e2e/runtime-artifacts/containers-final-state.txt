@@ -1,0 +1,7 @@
+/oil-agent-e-init-1|exited|exit=0|oom=false
+/oil-agent-e-api-1|exited|exit=0|oom=false
+/oil-agent-e-ingest-1|exited|exit=0|oom=false
+/oil-agent-e-urgent-1|exited|exit=0|oom=false
+/oil-agent-e-normal-1|exited|exit=0|oom=false
+/oil-agent-e-gateway-1|exited|exit=0|oom=false
+/oil-agent-e-postgres-1|exited|exit=0|oom=false
