@@ -32,6 +32,7 @@ from oil_agent.storage.models import (
     IntentRow,
     ObservationRow,
     PreviewRow,
+    SourceCheckpointRow,
     SourceRecordRow,
     SubjectRow,
     UserRow,
@@ -363,15 +364,17 @@ class QueryRepository:
                 .where(
                     SourceRecordRow.discovered_at <= cutoff,
                     SourceRecordRow.processing_state.not_in(["quarantined", "failed"]),
+                    SourceRecordRow.payload["provenance"].astext == str(provenance),
+                    SourceRecordRow.payload["fixture_dataset"].astext == fixture_dataset,
                 )
                 .order_by(SourceRecordRow.record_id, SourceRecordRow.revision.desc())
+                .limit(5001)
             ).all()
-            latest = {}
+            available = {}
             for row in records:
                 record = SourceRecord.model_validate(row.payload)
-                if (record.provenance, record.fixture_dataset) == (provenance, fixture_dataset):
-                    latest.setdefault(record.record_id, record)
-            if len(latest) > 1000:
+                available[(record.record_id, record.revision)] = record
+            if len(available) > 5000:
                 reject(ErrorCode.QUOTA_EXHAUSTED, "Report snapshot exceeds configured local bound")
             events = []
             for row in session.scalars(
@@ -380,9 +383,12 @@ class QueryRepository:
                 .where(
                     SubjectRow.kind == "event",
                     VersionRow.created_at <= cutoff,
+                    VersionRow.payload["provenance"].astext == str(provenance),
+                    VersionRow.payload["fixture_dataset"].astext == fixture_dataset,
                 )
                 .distinct(VersionRow.subject_id)
                 .order_by(VersionRow.subject_id, VersionRow.revision.desc())
+                .limit(1001)
             ):
                 event = EventAssessment.model_validate(row.payload)
                 if (event.provenance, event.fixture_dataset) == (provenance, fixture_dataset):
@@ -390,8 +396,26 @@ class QueryRepository:
             observations = tuple(
                 MarketObservation.model_validate(row.payload)
                 for row in session.scalars(
-                    select(ObservationRow).where(ObservationRow.as_of <= cutoff)
+                    select(ObservationRow)
+                    .where(
+                        ObservationRow.as_of <= cutoff,
+                        ObservationRow.payload["provenance"].astext == str(provenance),
+                        ObservationRow.payload["fixture_dataset"].astext == fixture_dataset,
+                    )
+                    .limit(5001)
                 )
-                if row.payload["source_record_id"] in latest
             )
-            return tuple(latest.values()), tuple(events), observations
+            if len(events) > 1000 or len(observations) > 5000:
+                reject(ErrorCode.QUOTA_EXHAUSTED, "Report snapshot exceeds configured local bound")
+            return tuple(available.values()), tuple(events), observations
+
+    def coverage_gaps(self):
+        with self.sessions() as session:
+            return tuple(
+                f"Source {row.source_id} coverage gap: {row.gap_state}"
+                for row in session.scalars(
+                    select(SourceCheckpointRow)
+                    .where(SourceCheckpointRow.gap_state != "none")
+                    .limit(100)
+                )
+            )

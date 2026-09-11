@@ -25,6 +25,7 @@ from oil_agent.storage.models import (
     BusinessConfigRow,
     DeliveryRow,
     IntentRow,
+    SubjectRow,
     UserRow,
 )
 
@@ -37,6 +38,25 @@ class DeliveryClaim:
 
 
 class DeliveryRepository:
+    def authorize_recipient(self, scope):
+        with self.sessions() as session:
+            intents = session.scalars(
+                select(IntentRow)
+                .join(DeliveryRow)
+                .where(
+                    IntentRow.subject_id == scope.subject_id,
+                    IntentRow.revision == scope.revision,
+                    IntentRow.recipient_id == scope.recipient_id,
+                    DeliveryRow.state == "in_flight",
+                    DeliveryRow.lease_until > self.clock(),
+                )
+            ).all()
+            return any(
+                NotificationIntent.model_validate(row.payload).recipient_scope == scope
+                and self._live_grant(session, NotificationIntent.model_validate(row.payload))
+                for row in intents
+            )
+
     def authorize_intent(self, intent):
         with self.sessions() as session:
             row = session.get(DeliveryRow, intent.delivery_id)
@@ -193,6 +213,26 @@ class DeliveryRepository:
             select(UserRow).where(UserRow.recipient_id == intent.recipient_scope.recipient_id)
         )
         config = BusinessConfig.model_validate(session.get(BusinessConfigRow, 1).payload)
+        if intent.kind == "reminder":
+            if not grant or not grant.reminders_enabled or not config.reminders_enabled:
+                return False
+            existing_ack = session.scalar(
+                select(AckRow)
+                .join(DeliveryRow)
+                .join(IntentRow)
+                .where(
+                    IntentRow.subject_id == intent.subject_id,
+                    IntentRow.revision == intent.revision,
+                    IntentRow.recipient_id == intent.recipient_scope.recipient_id,
+                )
+                .limit(1)
+            )
+            if existing_ack:
+                return False
+        if intent.channel != config.notification_channel:
+            return False
+        if intent.channel == "feishu" and not self.production_gate():
+            return False
         return bool(
             grant
             and grant.active
@@ -203,19 +243,27 @@ class DeliveryRepository:
             and (not intent.is_fixture or user.is_test_recipient)
         )
 
-    def claim_deliveries(self, *, limit=1, lease_seconds=45):
+    def claim_deliveries(self, *, limit=1, lease_seconds=45, subject_type=None):
         now = self.clock()
         with self.sessions.begin() as session:
+            query = select(DeliveryRow)
+            if subject_type is not None:
+                if subject_type not in {"event", "report"}:
+                    reject(ErrorCode.INVALID_INPUT, "Unknown delivery lane")
+                query = (
+                    query.join(IntentRow)
+                    .join(SubjectRow, SubjectRow.subject_id == IntentRow.subject_id)
+                    .where(SubjectRow.kind == subject_type)
+                )
             rows = session.scalars(
-                select(DeliveryRow)
-                .where(
+                query.where(
                     DeliveryRow.state.in_(["pending", "failed_retryable"]),
                     DeliveryRow.attempt < 3,
                     or_(DeliveryRow.next_attempt_at.is_(None), DeliveryRow.next_attempt_at <= now),
                 )
                 .order_by(DeliveryRow.updated_at, DeliveryRow.delivery_id)
                 .limit(min(limit, 50))
-                .with_for_update(skip_locked=True)
+                .with_for_update(skip_locked=True, of=DeliveryRow)
             ).all()
             claims = []
             for row in rows:
@@ -264,13 +312,18 @@ class DeliveryRepository:
                 claim.intent.recipient_scope.recipient_id,
                 claim.intent.revision,
             )
-            if identity != expected or result.state not in {
-                "accepted",
-                "dry_run",
-                "failed_retryable",
-                "failed_final",
-                "unknown",
-            }:
+            if (
+                identity != expected
+                or result.attempt != claim.attempt
+                or result.state
+                not in {
+                    "accepted",
+                    "dry_run",
+                    "failed_retryable",
+                    "failed_final",
+                    "unknown",
+                }
+            ):
                 reject(ErrorCode.INVALID_OUTPUT, "Channel returned an invalid delivery result")
             if claim.intent.channel == "dry_run" and result.state == "accepted":
                 reject(ErrorCode.INVALID_OUTPUT, "Dry-run cannot claim platform acceptance")

@@ -64,6 +64,21 @@ def register_tasks(app, runtime):
                 break
 
     @app.task(
+        name="oil.deliver_report",
+        queue="normal",
+        retry=False,
+        lock="oil.deliver_report",
+        queueing_lock="oil.deliver_report.pending",
+    )
+    async def deliver_report():
+        for _ in range(20):
+            result = await known_failure(
+                "delivery:report", lambda: runtime.send_pending(subject_type="report")
+            )
+            if not result:
+                break
+
+    @app.task(
         name="oil.report",
         queue="normal",
         retry=retry,
@@ -73,7 +88,7 @@ def register_tasks(app, runtime):
     async def report():
         await known_failure("report", runtime.build_daily)
         if runtime.services.channels:
-            await defer(deliver)
+            await defer(deliver_report)
 
     @app.periodic(cron="* * * * *")
     @app.task(name="oil.tick.ingest", queue="ingest", retry=False)
@@ -111,12 +126,15 @@ def register_tasks(app, runtime):
     async def normal_tick(timestamp: int):
         if runtime.services.reports:
             await defer(report)
+        if runtime.services.channels:
+            await defer(deliver_report)
         await runtime.db(runtime.repository.health, "worker:normal")
 
     return {
         "ingest": ingest,
         "assess": assess,
         "deliver": deliver,
+        "deliver_report": deliver_report,
         "report": report,
         "ingest_tick": ingest_tick,
         "urgent_tick": urgent_tick,
