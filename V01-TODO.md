@@ -15,7 +15,7 @@ quote import, mobile views and deployment checks. Real source, Feishu, phone and
 | M1 | AB replay/assessment + C transactional pipeline + D dry-run/ack | Local synthetic E gates PASS; final I pending; real source/phone BLOCKED_EXTERNAL |
 | M2 | Revisions, independent evidence, failure recovery, authorization | Local synthetic E gates PASS; full process-kill/load/external scope untested |
 | M3 | Daily reports, safe quote imports, five responsive views | E actual browser PASS; AB summary copy correction accepted; final I pending |
-| M4 | E regression/security/PostgreSQL/Compose; separate I integration | All four local tracks accepted; separate I READY |
+| M4 | E regression/security/PostgreSQL/Compose; separate I integration | All four local tracks accepted; separate I RUNNING |
 | M5 | Authorized source/phone and >=14 days operation | BLOCKED_EXTERNAL |
 
 Ownership is recursive below; prefixes resolve against each track's actual
@@ -30,7 +30,7 @@ and B to reduce agent count; independent source and processing modules remain.
 | AB | src/oil_agent/ingestion/, src/oil_agent/intelligence/, src/oil_agent/reporting/, tests/unit/ingestion/, tests/unit/intelligence/, tests/unit/reporting/ | local increment accepted; integration pending; external source/model gates remain |
 | D | src/oil_agent/channels/, web/, tests/unit/channels/ | local increment accepted; real API/phone acceptance pending |
 | E | tests/integration/, e2e/, fixtures/, deploy/, scripts/, .github/workflows/, docs/runbook.md | local increment accepted at 06af7997; retained; external gates untested |
-| I | future separate worktree; merge commits and minimal bootstrap/import/config/type glue after transfer | final integration / BLOCKED_DEPENDENCY |
+| I | oil-v01-i; explicit glue transfers listed in the final integration boundary below | final integration / RUNNING |
 
 ## Verified baseline and decisions
 
@@ -88,6 +88,7 @@ Worker success enters REVIEW until integration checks.
 | E | C:/Users/DW/orca/workspaces/oil-agent/oil-v01-e / songconmaisaix31-design/oil-v01-e | initial f5d5face60c160e70a7565498a6da54ed33c15fd; runtime starts at 49a1b9cb29d6d35029bba904a40f733e39580245 / ctx_d1f60fcc77b0 (task_514645bb2c7a) | accepted at 06af7997; all owned containers stopped and retained |
 | AB | C:/Users/DW/orca/workspaces/oil-agent/oil-v01-ab / songconmaisaix31-design/oil-v01-ab | dd01ee225ba36c1d7e75acdf5c96cd2d8e0df482; latest same-session ctx_7b2e5fa51a81 (task_d15236706ae5) | copy-only final f3c83579 accepted; RETAINED |
 | D | C:/Users/DW/orca/workspaces/oil-agent/oil-v01-d / songconmaisaix31-design/oil-v01-d | dd01ee225ba36c1d7e75acdf5c96cd2d8e0df482; latest same-session follow-up ctx_5e6e04e2d3d2 (task_1f3366c05108) | local upload-limit fix accepted at 0bbdc217; RETAINED |
+| I | C:/Users/DW/orca/workspaces/oil-agent/oil-v01-i / songconmaisaix31-design/oil-v01-i | a187197f273a0abfcf84f84f241e7f4bac335b9d / ctx_12b1d40a4d65 (task_55bfd8a7d1fb) | RUNNING separate supervised integration worker |
 
 - Governance commit f5d5face60c160e70a7565498a6da54ed33c15fd pushed to origin.
   Initial direct pushes failed with connection reset/timeout; a process-scoped
@@ -277,3 +278,9 @@ final-head Linux CI. Existing C/E credential values are not to be discovered or
 their test guards broadened; CI supplies new isolated scopes for all PG tests.
 No new domain implementation or production activation. Real source, platform,
 phone and continuous-operation gates remain BLOCKED_EXTERNAL.
+
+I was created through Orca in the explicit new worktree. Terminal
+term_ef3b932c-59ff-4d86-9520-e42be2ffb98d accepted the task in request
+30294b31-75b6-4126-bf0f-d3337ccbbad8. Main then read the exact provider transcript
+and verified the agent's baseline acknowledgement and real handoff/plan read tools;
+the ready/input receipt alone was not treated as execution evidence.
