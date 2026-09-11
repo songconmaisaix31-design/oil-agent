@@ -252,6 +252,13 @@ class Actor(DTO):
     expires_at: UtcDatetime
 
 
+class ExternalIdentity(DTO):
+    """D-verified app/tenant identity; C maps only preprovisioned active users."""
+
+    provider: StableId
+    subject: StableId
+
+
 class RecipientAuthorization(DTO):
     recipient_id: StableId
     subject_type: Literal["event", "report"]

@@ -7,4 +7,4 @@ Python models are authoritative; generate mobile OpenAPI with
 coordinator handoff; consumers must not duplicate or relax these definitions.
 """
 
-CONTRACT_VERSION = "0.1.0"
+CONTRACT_VERSION = "0.2.0"

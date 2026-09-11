@@ -21,6 +21,7 @@ from oil_agent.contracts.dto import (
     Report,
     Revision,
     SourceCheckpoint,
+    SourceRecord,
     StableId,
     UtcDatetime,
 )
@@ -90,6 +91,16 @@ class QuotePreview(DTO):
     can_import: bool
 
 
+class ParsedQuotes(DTO):
+    """AB output only; C assigns the actor-bound preview ID and expiry."""
+
+    records: tuple[SourceRecord, ...]
+    observations: tuple[MarketObservation, ...]
+    issues: tuple[QuoteRowIssue, ...]
+    duplicate_rows: tuple[int, ...]
+    file_hash: Annotated[str, Field(pattern=r"^[0-9a-f]{64}$")]
+
+
 class QuoteImportRequest(DTO):
     preview_id: StableId
 
@@ -125,10 +136,22 @@ class RuntimeStatus(DTO):
     phone_enabled: bool
     business_api_implemented: bool
     sources: tuple[SourceCheckpoint, ...]
+    capabilities: tuple[str, ...] = ()
+    counters: dict[str, int] = Field(default_factory=dict)
+    health: dict[str, str] = Field(default_factory=dict)
 
 
 class SessionResponse(DTO):
     actor: Actor
+    csrf_token: str | None = None
+
+
+class SessionChallenge(DTO):
+    """Configured provider URL; browser binding is an HttpOnly cookie."""
+
+    authorization_url: str
+    state: str
+    expires_at: UtcDatetime
 
 
 class SessionCreateRequest(DTO):
@@ -138,4 +161,4 @@ class SessionCreateRequest(DTO):
 
 class HealthResponse(DTO):
     status: Literal["ok", "not_ready"]
-    stage: Literal["foundation"] = "foundation"
+    stage: Literal["foundation", "runtime"] = "foundation"

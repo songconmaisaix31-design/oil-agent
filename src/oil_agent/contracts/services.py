@@ -27,6 +27,7 @@ from oil_agent.contracts.dto import (
     AckPayload,
     Delivery,
     EventAssessment,
+    ExternalIdentity,
     FetchBatch,
     NotificationIntent,
     Report,
@@ -37,6 +38,7 @@ from oil_agent.contracts.dto import (
     UtcDatetime,
     VerifiedAck,
 )
+from oil_agent.contracts.http import ParsedQuotes, QuotePreviewRequest
 
 
 class CallContext(DTO):
@@ -104,3 +106,25 @@ class NotificationChannel(Protocol):
 @runtime_checkable
 class AckVerifier(Protocol):
     async def verify(self, payload: AckPayload, *, context: CallContext) -> VerifiedAck: ...
+
+
+@runtime_checkable
+class IdentityAdapter(Protocol):
+    """D validates configured app/tenant; C validates state before calling authenticate.
+
+    authorization_url is pure and must use the configured redirect URI. Neither
+    method provisions users or sessions; returned identities carry no role authority.
+    """
+
+    def authorization_url(self, state: str) -> str: ...
+
+    async def authenticate(self, code: str, *, context: CallContext) -> ExternalIdentity: ...
+
+
+@runtime_checkable
+class QuoteParser(Protocol):
+    """AB validates CSV/XLSX without executing formulas; C owns preview/import state."""
+
+    async def preview(
+        self, request: QuotePreviewRequest, *, context: CallContext
+    ) -> ParsedQuotes: ...
