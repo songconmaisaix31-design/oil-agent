@@ -1,7 +1,7 @@
 """Fail-closed session seam for D identity verification and C authorization.
 
-Runtime must replace resolve_session with database-backed, revocable session
-resolution. No token, header, actor ID or fixture credential is trusted here.
+Runtime resolves opaque cookies through database-backed, revocable sessions.
+No arbitrary token, header, actor ID or fixture credential is trusted here.
 Tests may override require_actor explicitly through FastAPI dependencies.
 """
 

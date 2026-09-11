@@ -1,4 +1,4 @@
-"""Minimal foundation persistence; later C runtime adds events/outbox/authorization.
+"""PostgreSQL runtime persistence for evidence, revisions, outbox and authorization.
 
 Source checkpoint and source record models intentionally share one database so
 runtime can commit them atomically. JSON payloads store validated DTO snapshots;

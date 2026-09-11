@@ -1,1 +1,1 @@
-"""C runtime ownership; the foundation registers no business workers or timers."""
+"""C runtime: explicit injected services and upstream Procrastinate named workers."""
