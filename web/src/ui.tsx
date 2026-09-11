@@ -124,11 +124,10 @@ export function State({
 export function Fixture({
   item,
 }: {
-  item: {
-    is_fixture: boolean;
-    provenance: string;
-    fixture_dataset?: string | null;
-  };
+  item: Pick<
+    Schema<"EventAssessment">,
+    "is_fixture" | "provenance" | "fixture_dataset"
+  >;
 }) {
   return item.is_fixture ? (
     <span className="badge fixture">演练数据 · {item.fixture_dataset}</span>
