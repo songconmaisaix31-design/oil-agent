@@ -7,7 +7,7 @@ Tests may override require_actor explicitly through FastAPI dependencies.
 
 from datetime import UTC, datetime
 
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, Request
 from fastapi.security import APIKeyCookie
 
 from oil_agent.contracts.dto import Actor, Role
@@ -15,8 +15,9 @@ from oil_agent.contracts.dto import Actor, Role
 session_cookie = APIKeyCookie(name="oil_session", auto_error=False)
 
 
-async def resolve_session(cookie: str | None = Depends(session_cookie)) -> Actor | None:
-    return None
+def resolve_session(request: Request, cookie: str | None = Depends(session_cookie)) -> Actor | None:
+    runtime = request.app.state.runtime
+    return runtime.repository.resolve_session(cookie) if runtime else None
 
 
 async def require_actor(actor: Actor | None = Depends(resolve_session)) -> Actor:
@@ -28,4 +29,17 @@ async def require_actor(actor: Actor | None = Depends(resolve_session)) -> Actor
 async def require_admin(actor: Actor = Depends(require_actor)) -> Actor:
     if actor.role != Role.ADMIN:
         raise HTTPException(status_code=403, detail="Administrator role required")
+    return actor
+
+
+def require_csrf(request: Request, actor: Actor = Depends(require_actor)) -> Actor:
+    runtime = request.app.state.runtime
+    if runtime is None:
+        return actor
+    origin = request.headers.get("origin")
+    if origin and origin != request.app.state.settings.public_origin:
+        raise HTTPException(403, "Cross-origin mutation forbidden")
+    if request.headers.get("sec-fetch-site") == "cross-site":
+        raise HTTPException(403, "Cross-site mutation forbidden")
+    runtime.repository.verify_csrf(actor, request.headers.get("x-csrf-token"))
     return actor
