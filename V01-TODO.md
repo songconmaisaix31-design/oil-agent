@@ -78,5 +78,26 @@ allowed; no commercial source requests, product model calls or customer sends ye
 
 ## Dispatch and acceptance log
 
-Pending actual Orca Run, task/dispatch IDs, worktrees, base SHAs and check receipts.
-Only M updates this board. Worker success enters REVIEW until integration checks.
+Run: run_64e3991f76b9. Coordinator handle:
+term_e5fa35a2-1d49-4a2c-8300-4fe6b1754ec9. Only M updates this board.
+Worker success enters REVIEW until integration checks.
+
+| Track | Worktree / branch | Base / dispatch | State |
+| --- | --- | --- | --- |
+| C | C:/Users/DW/orca/workspaces/oil-agent/oil-v01-c / songconmaisaix31-design/oil-v01-c | f5d5face60c160e70a7565498a6da54ed33c15fd / ctx_d958a55ca5fa (task_326ffc251dc0) | RUNNING foundation |
+| E | C:/Users/DW/orca/workspaces/oil-agent/oil-v01-e / songconmaisaix31-design/oil-v01-e | f5d5face60c160e70a7565498a6da54ed33c15fd / ctx_9c35869d31f1 (task_75d768b10019) | RUNNING acceptance corpus independent of contracts |
+
+- Governance commit f5d5face60c160e70a7565498a6da54ed33c15fd pushed to origin.
+  Initial direct pushes failed with connection reset/timeout; a process-scoped
+  existing local proxy restored push. No persistent network settings changed.
+- Docker engine verified 29.5.3 after startup. Existing unrelated containers are
+  running; do not touch them. Reserve C test port 55431, E test port 55434 and
+  integration test port 55435; verify availability before use.
+- Orca `worker-start --worktree new-child` returned selector_not_found before any
+  task/worker creation (confirmed empty run). Explicit Orca worktree creation and
+  exact path placement succeeded. Calls use the verified coordinator handle.
+- Windows is development-only for Procrastinate; official docs warn of abrupt
+  signal shutdown and no automated Windows test coverage. Production and worker
+  recovery acceptance will use Linux containers; do not infer graceful recovery
+  from a Windows-only smoke test.
+  https://procrastinate.readthedocs.io/en/stable/howto/basics/windows.html
