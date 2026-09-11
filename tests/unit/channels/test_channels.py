@@ -432,3 +432,96 @@ async def test_callback_resolver_deadline(settings, context):
             signed(settings, event_data(settings)),
             context=context.model_copy(update={"timeout_seconds": 0.01}),
         )
+
+
+async def test_expired_token_is_refreshed_on_next_explicit_attempt(settings, intent, context):
+    token_calls = 0
+    message_calls = 0
+
+    def handler(request):
+        nonlocal token_calls, message_calls
+        if request.url.path.endswith("internal"):
+            token_calls += 1
+            return token_reply()
+        message_calls += 1
+        if message_calls == 1:
+            return httpx.Response(400, json={"code": 99991663, "msg": "PRIVATE-TOKEN"})
+        return httpx.Response(200, json={"code": 0, "data": {"message_id": "om_synthetic"}})
+
+    bot = channel(settings, handler)
+    first = await bot.send(intent, context=context)
+    assert first.state == "failed_retryable" and message_calls == 1 and token_calls == 1
+    second = await bot.send(intent, context=context.model_copy(update={"attempt": 2}))
+    assert second.state == "accepted" and message_calls == token_calls == 2
+
+
+async def test_oversized_provider_response_is_unknown_with_no_retry(settings, intent, context):
+    def handler(request):
+        if request.url.path.endswith("internal"):
+            return token_reply()
+        return httpx.Response(200, content=b"x" * 262145)
+
+    result = await channel(settings, handler).send(intent, context=context)
+    assert result.state == "unknown" and result.platform_message_id is None
+
+
+@pytest.mark.parametrize("case", ["bad_padding", "duplicate_keys", "oversize", "missing_signature"])
+async def test_callback_malformed_envelopes_fail_closed(settings, context, case):
+    payload = signed(settings, event_data(settings))
+    if case == "missing_signature":
+        payload = payload.model_copy(update={"headers": {}})
+    else:
+        if case == "bad_padding":
+            body = json.dumps({"encrypt": base64.b64encode(bytes(32)).decode()}).encode()
+        elif case == "duplicate_keys":
+            body = b'{"schema":"2.0","schema":"1.0"}'
+        else:
+            body = b" " * 262145
+        headers = payload.headers.copy()
+        prefix = headers["X-Lark-Request-Timestamp"] + headers["X-Lark-Request-Nonce"]
+        headers["X-Lark-Signature"] = hashlib.sha256(
+            (prefix + settings.encrypt_key.get_secret_value()).encode() + body
+        ).hexdigest()
+        payload = payload.model_copy(update={"body": body, "headers": headers})
+    with pytest.raises(ServiceError, match="verification failed"):
+        await verifier(settings).verify(payload, context=context)
+
+
+@pytest.mark.parametrize("case", ["wrong_tenant", "missing_subject", "expired", "false_code"])
+async def test_oauth_identity_failures_do_not_provision(settings, context, case):
+    def handler(request):
+        if str(request.url) == TOKEN_URL:
+            return httpx.Response(
+                200,
+                json={
+                    "code": False if case == "false_code" else 0,
+                    "access_token": "SYNTHETIC-TOKEN",
+                    "token_type": "Bearer",
+                    "expires_in": 0 if case == "expired" else 60,
+                },
+            )
+        return httpx.Response(
+            200,
+            json={
+                "code": 0,
+                "data": {
+                    "tenant_key": "another-tenant" if case == "wrong_tenant" else "test-tenant",
+                    "open_id": None if case == "missing_subject" else "ou_synthetic",
+                },
+            },
+        )
+
+    adapter = FeishuIdentityAdapter(settings, transport=httpx.MockTransport(handler))
+    with pytest.raises(ServiceError):
+        await adapter.authenticate("synthetic-code", context=context)
+
+
+async def test_plaintext_challenge_cannot_bypass_encryption(settings, context):
+    data = {
+        "type": "url_verification",
+        "challenge": "synthetic",
+        "token": settings.verification_token.get_secret_value(),
+    }
+    payload = signed(settings, data, encrypted=False)
+    with pytest.raises(ServiceError, match="Challenge verification failed"):
+        await verifier(settings).challenge(payload, context=context)

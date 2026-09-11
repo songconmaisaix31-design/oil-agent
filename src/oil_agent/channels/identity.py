@@ -65,7 +65,12 @@ class FeishuIdentityAdapter:
                         "redirect_uri": redirect,
                     },
                 )
-                if status != 200 or not isinstance(data, dict) or data.get("code") != 0:
+                if (
+                    status != 200
+                    or not isinstance(data, dict)
+                    or type(data.get("code")) is not int
+                    or data.get("code") != 0
+                ):
                     raise safe_service_failure(status, data)
                 token = data.get("access_token")
                 if (
@@ -83,7 +88,12 @@ class FeishuIdentityAdapter:
                     seconds=budget(context),
                     headers={"Authorization": f"Bearer {token}"},
                 )
-                if status != 200 or not isinstance(data, dict) or data.get("code") != 0:
+                if (
+                    status != 200
+                    or not isinstance(data, dict)
+                    or type(data.get("code")) is not int
+                    or data.get("code") != 0
+                ):
                     raise safe_service_failure(status, data)
                 user = data.get("data")
                 if not isinstance(user, dict) or user.get("tenant_key") != self.settings.tenant_key:

@@ -83,7 +83,12 @@ class FeishuChannel:
                     "app_secret": self.settings.app_secret.get_secret_value(),
                 },
             )
-            if status != 200 or not isinstance(data, dict) or data.get("code") != 0:
+            if (
+                status != 200
+                or not isinstance(data, dict)
+                or type(data.get("code")) is not int
+                or data.get("code") != 0
+            ):
                 raise safe_service_failure(status, data)
             token, expire = data.get("tenant_access_token"), data.get("expire")
             if not isinstance(token, str) or not token or type(expire) is not int or expire <= 0:
