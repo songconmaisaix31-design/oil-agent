@@ -158,17 +158,29 @@ class Runtime:
         if not await self.db(self.repository.pending_record_exists):
             return ()
         await self._processing_budget(urgent=True, uses_model=self.services.assessment_uses_model)
-        claims = await self.db(self.repository.claim_records)
+        claims = await self.db(self.repository.claim_records, lease_seconds=90)
         if not claims:
             return ()
         try:
+            context = self.context(seconds=50, attempt=max(c.attempt for c in claims))
             candidates = await self.bounded(
                 lambda ctx: self.services.assessment.assess(
                     tuple(c.record for c in claims), context=ctx
                 ),
-                context=self.context(seconds=30, attempt=max(c.attempt for c in claims)),
+                context=context,
             )
-            result = await self.db(self.repository.commit_assessments, claims, candidates)
+            snapshot = await self.db(self.repository.prepare_assessment, claims, candidates)
+            if len(snapshot.records) > len(claims):
+                await self._processing_budget(
+                    urgent=True, uses_model=self.services.assessment_uses_model
+                )
+                candidates = await self.bounded(
+                    lambda ctx: self.services.assessment.assess(snapshot.records, context=ctx),
+                    context=context,
+                )
+            result = await self.db(
+                self.repository.commit_assessments, claims, candidates, snapshot=snapshot
+            )
             await self.db(self.repository.health, "assessment")
             return result
         except Exception as error:
@@ -178,7 +190,8 @@ class Runtime:
                     self.repository.fail_records,
                     claims,
                     code,
-                    retryable=code in {ErrorCode.TIMEOUT, ErrorCode.UNAVAILABLE},
+                    retryable=code
+                    in {ErrorCode.TIMEOUT, ErrorCode.UNAVAILABLE, ErrorCode.REVISION_MISMATCH},
                 )
             except ServiceError:
                 pass  # A newer attempt owns the row; never overwrite its result.
