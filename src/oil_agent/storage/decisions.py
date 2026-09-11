@@ -1,5 +1,6 @@
 """Stable explicit families, immutable versions and transactional outbox decisions."""
 
+from dataclasses import dataclass
 from datetime import timedelta
 
 from sqlalchemy import select
@@ -10,7 +11,68 @@ from oil_agent.storage.base import digest, fingerprint, lock_key, new_id, reject
 from oil_agent.storage.models import EvidenceRow, SourceRecordRow, SubjectRow, VersionRow
 
 
+def candidate_identity(candidate, namespace):
+    return fingerprint(
+        {
+            "namespace": namespace,
+            "family": candidate.event_id,
+            "provenance": candidate.provenance.value,
+            "fixture_dataset": candidate.fixture_dataset,
+        }
+    )
+
+
+@dataclass(frozen=True)
+class AssessmentSnapshot:
+    """Server-selected exact family evidence; ephemeral, never supplied by a model/API."""
+
+    records: tuple[SourceRecord, ...]
+    heads: dict[str, tuple[str | None, int]]
+    family_refs: dict[str, frozenset[tuple[str, int]]]
+
+
 class DecisionRepository:
+    def prepare_assessment(self, claims, candidates, *, namespace="assessment-v1"):
+        """Read current explicit-family evidence before a bounded second assessment.
+
+        No title/place/time matching or broad historical scan occurs here. Only
+        evidence already committed to the exact proposed family can be added.
+        Commit rechecks captured heads under locks; network/graphs run in between.
+        """
+        records = {(c.record.record_id, c.record.revision): c.record for c in claims}
+        claimed_refs = set(records)
+        heads, family_refs = {}, {}
+        with self.sessions() as session:
+            for candidate in candidates:
+                identity = candidate_identity(candidate, namespace)
+                if identity in heads:
+                    reject(ErrorCode.INVALID_OUTPUT, "Candidate family repeated")
+                refs = {(r.record_id, r.revision) for r in candidate.evidence}
+                if not refs <= claimed_refs:
+                    reject(ErrorCode.INVALID_OUTPUT, "Initial assessment referenced history")
+                self.validate_evidence(session, candidate)
+                subject = session.scalar(
+                    select(SubjectRow).where(SubjectRow.identity_key == identity)
+                )
+                heads[identity] = (
+                    (subject.subject_id, subject.current_revision) if subject else (None, 0)
+                )
+                if subject and subject.current_revision:
+                    previous = session.get(VersionRow, heads[identity])
+                    for ref in previous.payload["evidence"]:
+                        key = (ref["record_id"], ref["revision"])
+                        refs.add(key)
+                        if key not in records:
+                            row = session.get(SourceRecordRow, key)
+                            records[key] = SourceRecord.model_validate(row.payload)
+                family_refs[identity] = frozenset(refs)
+                if (
+                    len(records) > 64
+                    or sum(len(r.title) + len(r.content_excerpt) for r in records.values()) > 100000
+                ):
+                    reject(ErrorCode.INVALID_INPUT, "Explicit family history exceeds input bound")
+        return AssessmentSnapshot(tuple(records.values()), heads, family_refs)
+
     def validate_evidence(self, session, item):
         for ref in item.evidence:
             row = session.get(SourceRecordRow, (ref.record_id, ref.revision))
@@ -66,7 +128,12 @@ class DecisionRepository:
         )
 
     def commit_assessments(
-        self, claims, candidates: tuple[EventAssessment, ...], *, namespace="assessment-v1"
+        self,
+        claims,
+        candidates: tuple[EventAssessment, ...],
+        *,
+        namespace="assessment-v1",
+        snapshot: AssessmentSnapshot | None = None,
     ):
         with self.sessions.begin() as session:
             records = self.lock_claims(session, claims)
@@ -75,21 +142,27 @@ class DecisionRepository:
             ordered = sorted(candidates, key=lambda c: c.event_id)
             if len({c.event_id for c in ordered}) != len(ordered):
                 reject(ErrorCode.INVALID_OUTPUT, "Candidate family repeated in one assessment")
+            identities = {candidate_identity(c, namespace) for c in ordered}
+            if snapshot and identities != set(snapshot.heads):
+                reject(ErrorCode.INVALID_OUTPUT, "Reassessment changed explicit candidate families")
+            # Consistent ordering prevents cross-family deadlocks between workers.
+            for identity in sorted(identities):
+                lock_key(session, "event:" + identity)
+                if snapshot:
+                    head = session.scalar(
+                        select(SubjectRow).where(SubjectRow.identity_key == identity)
+                    )
+                    actual = (head.subject_id, head.current_revision) if head else (None, 0)
+                    if actual != snapshot.heads[identity]:
+                        reject(ErrorCode.REVISION_MISMATCH, "Event changed during reassessment")
             for candidate in ordered:
-                if not {(r.record_id, r.revision) for r in candidate.evidence} <= input_refs:
+                identity = candidate_identity(candidate, namespace)
+                allowed_refs = snapshot.family_refs[identity] if snapshot else input_refs
+                if not {(r.record_id, r.revision) for r in candidate.evidence} <= allowed_refs:
                     reject(
                         ErrorCode.INVALID_OUTPUT, "Assessment referenced records outside its input"
                     )
                 self.validate_evidence(session, candidate)
-                identity = fingerprint(
-                    {
-                        "namespace": namespace,
-                        "family": candidate.event_id,
-                        "provenance": candidate.provenance.value,
-                        "fixture_dataset": candidate.fixture_dataset,
-                    }
-                )
-                lock_key(session, "event:" + identity)
                 subject = session.scalar(
                     select(SubjectRow).where(SubjectRow.identity_key == identity)
                 )
