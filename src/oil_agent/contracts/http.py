@@ -14,6 +14,7 @@ from pydantic import Field
 from oil_agent.contracts.dto import (
     DTO,
     Actor,
+    Delivery,
     EventAssessment,
     FeedbackKind,
     MarketObservation,
@@ -38,10 +39,13 @@ class EventList(DTO):
 
 
 class EventDetail(DTO):
+    """C filters deliveries to the caller recipient and authorized event revisions."""
+
     current: EventAssessment
     timeline: tuple[EventAssessment, ...]
     can_ack: bool
     acknowledged_revision: Revision | None
+    deliveries: tuple[Delivery, ...]
 
 
 class AckRequest(DTO):

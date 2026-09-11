@@ -11,7 +11,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 from oil_agent.api.auth import require_actor, require_admin
-from oil_agent.contracts.dto import Ack, Actor, Feedback, Report, StableId
+from oil_agent.contracts.dto import Ack, Actor, Feedback, Report, Revision, SourceRecord, StableId
 from oil_agent.contracts.http import (
     AckRequest,
     ApiError,
@@ -63,7 +63,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         tags=["health"],
         responses={503: {"model": HealthResponse}},
     )
-    async def ready():
+    def ready():
         from oil_agent.storage.database import database_ready
 
         if not database_ready(settings):
@@ -72,6 +72,19 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     errors = {code: {"model": ApiError} for code in (401, 403, 422, 501)}
     router = APIRouter(prefix="/api/v1", responses=errors)
+
+    @router.get(
+        "/records/{record_id}/revisions/{revision}", response_model=SourceRecord, tags=["evidence"]
+    )
+    async def evidence_record(
+        record_id: StableId, revision: Revision, actor: Actor = Depends(require_actor)
+    ):
+        """Resolve cited evidence only through an event/report authorized for this actor.
+
+        C runtime must verify access and licensed excerpt rights; knowing an ID
+        is never sufficient. The returned source URL identifies the original.
+        """
+        not_implemented()
 
     @router.get("/events", response_model=EventList, tags=["events"])
     async def events(
@@ -126,7 +139,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         not_implemented()
 
     @router.get("/status", response_model=RuntimeStatus, tags=["configuration"])
-    async def status(actor: Actor = Depends(require_actor)):
+    def status(actor: Actor = Depends(require_actor)):
         from oil_agent.storage.database import database_ready
 
         database = (

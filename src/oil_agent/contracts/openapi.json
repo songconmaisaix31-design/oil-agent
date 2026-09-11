@@ -350,6 +350,109 @@
         "title": "ComputedMetric",
         "type": "object"
       },
+      "Delivery": {
+        "additionalProperties": false,
+        "properties": {
+          "accepted_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accepted At"
+          },
+          "attempt": {
+            "minimum": 0.0,
+            "title": "Attempt",
+            "type": "integer"
+          },
+          "delivery_id": {
+            "maxLength": 160,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9_.:-]+$",
+            "title": "Delivery Id",
+            "type": "string"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "intent_id": {
+            "maxLength": 160,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9_.:-]+$",
+            "title": "Intent Id",
+            "type": "string"
+          },
+          "platform_message_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Platform Message Id"
+          },
+          "recipient_id": {
+            "maxLength": 160,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9_.:-]+$",
+            "title": "Recipient Id",
+            "type": "string"
+          },
+          "revision": {
+            "minimum": 1.0,
+            "title": "Revision",
+            "type": "integer"
+          },
+          "state": {
+            "$ref": "#/components/schemas/DeliveryState"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "delivery_id",
+          "intent_id",
+          "recipient_id",
+          "revision",
+          "attempt",
+          "state",
+          "updated_at"
+        ],
+        "title": "Delivery",
+        "type": "object"
+      },
+      "DeliveryState": {
+        "enum": [
+          "pending",
+          "in_flight",
+          "accepted",
+          "acked",
+          "failed_retryable",
+          "failed_final",
+          "unknown",
+          "dry_run"
+        ],
+        "title": "DeliveryState",
+        "type": "string"
+      },
       "EventAssessment": {
         "additionalProperties": false,
         "properties": {
@@ -492,6 +595,7 @@
       },
       "EventDetail": {
         "additionalProperties": false,
+        "description": "C filters deliveries to the caller recipient and authorized event revisions.",
         "properties": {
           "acknowledged_revision": {
             "anyOf": [
@@ -512,6 +616,13 @@
           "current": {
             "$ref": "#/components/schemas/EventAssessment"
           },
+          "deliveries": {
+            "items": {
+              "$ref": "#/components/schemas/Delivery"
+            },
+            "title": "Deliveries",
+            "type": "array"
+          },
           "timeline": {
             "items": {
               "$ref": "#/components/schemas/EventAssessment"
@@ -524,7 +635,8 @@
           "current",
           "timeline",
           "can_ack",
-          "acknowledged_revision"
+          "acknowledged_revision",
+          "deliveries"
         ],
         "title": "EventDetail",
         "type": "object"
@@ -1607,6 +1719,161 @@
         "title": "SourceCheckpoint",
         "type": "object"
       },
+      "SourceRecord": {
+        "additionalProperties": false,
+        "properties": {
+          "content_excerpt": {
+            "maxLength": 20000,
+            "title": "Content Excerpt",
+            "type": "string"
+          },
+          "content_hash": {
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Content Hash",
+            "type": "string"
+          },
+          "discovered_at": {
+            "format": "date-time",
+            "title": "Discovered At",
+            "type": "string"
+          },
+          "external_id": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "External Id",
+            "type": "string"
+          },
+          "fixture_dataset": {
+            "anyOf": [
+              {
+                "maxLength": 160,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9_.:-]+$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fixture Dataset"
+          },
+          "is_fixture": {
+            "title": "Is Fixture",
+            "type": "boolean"
+          },
+          "occurred_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Occurred At"
+          },
+          "origin_publisher": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Origin Publisher",
+            "type": "string"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          },
+          "provider_available_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider Available At"
+          },
+          "published_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published At"
+          },
+          "record_id": {
+            "maxLength": 160,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9_.:-]+$",
+            "title": "Record Id",
+            "type": "string"
+          },
+          "revision": {
+            "minimum": 1.0,
+            "title": "Revision",
+            "type": "integer"
+          },
+          "rights_ref": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Rights Ref",
+            "type": "string"
+          },
+          "source_id": {
+            "maxLength": 160,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9_.:-]+$",
+            "title": "Source Id",
+            "type": "string"
+          },
+          "time_quality": {
+            "$ref": "#/components/schemas/TimeQuality"
+          },
+          "title": {
+            "maxLength": 2000,
+            "title": "Title",
+            "type": "string"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "format": "uri",
+                "maxLength": 2083,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          }
+        },
+        "required": [
+          "is_fixture",
+          "provenance",
+          "record_id",
+          "source_id",
+          "external_id",
+          "revision",
+          "content_hash",
+          "title",
+          "content_excerpt",
+          "url",
+          "origin_publisher",
+          "published_at",
+          "discovered_at",
+          "rights_ref",
+          "time_quality"
+        ],
+        "title": "SourceRecord",
+        "type": "object"
+      },
       "SupportedFact": {
         "additionalProperties": false,
         "properties": {
@@ -1631,6 +1898,16 @@
         ],
         "title": "SupportedFact",
         "type": "object"
+      },
+      "TimeQuality": {
+        "enum": [
+          "valid",
+          "unknown",
+          "future_quarantined",
+          "unreliable"
+        ],
+        "title": "TimeQuality",
+        "type": "string"
       }
     },
     "securitySchemes": {
@@ -2293,6 +2570,97 @@
         "summary": "Quote Preview",
         "tags": [
           "quotes"
+        ]
+      }
+    },
+    "/api/v1/records/{record_id}/revisions/{revision}": {
+      "get": {
+        "description": "Resolve cited evidence only through an event/report authorized for this actor.\n\nC runtime must verify access and licensed excerpt rights; knowing an ID\nis never sufficient. The returned source URL identifies the original.",
+        "operationId": "evidence_record_api_v1_records__record_id__revisions__revision__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "maxLength": 160,
+              "minLength": 1,
+              "pattern": "^[A-Za-z0-9_.:-]+$",
+              "title": "Record Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "revision",
+            "required": true,
+            "schema": {
+              "minimum": 1,
+              "title": "Revision",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceRecord"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Implemented"
+          }
+        },
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "summary": "Evidence Record",
+        "tags": [
+          "evidence"
         ]
       }
     },
