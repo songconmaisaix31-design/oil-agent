@@ -18,6 +18,7 @@ from oil_agent.contracts.dto import (
     EventAssessment,
     FeedbackKind,
     MarketObservation,
+    ProvenancedDTO,
     Report,
     Revision,
     SourceCheckpoint,
@@ -99,6 +100,14 @@ class ParsedQuotes(DTO):
     issues: tuple[QuoteRowIssue, ...]
     duplicate_rows: tuple[int, ...]
     file_hash: Annotated[str, Field(pattern=r"^[0-9a-f]{64}$")]
+
+
+class QuoteParseRequest(ProvenancedDTO):
+    """Trusted C-to-AB envelope; provenance/publisher never come from upload JSON."""
+
+    upload: QuotePreviewRequest
+    origin_publisher: Annotated[str, Field(min_length=1, max_length=2000)]
+    discovered_at: UtcDatetime
 
 
 class QuoteImportRequest(DTO):
