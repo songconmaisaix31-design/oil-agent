@@ -38,7 +38,7 @@ from oil_agent.contracts.dto import (
     UtcDatetime,
     VerifiedAck,
 )
-from oil_agent.contracts.http import ParsedQuotes, QuotePreviewRequest
+from oil_agent.contracts.http import ParsedQuotes, QuoteParseRequest
 
 
 class CallContext(DTO):
@@ -126,5 +126,5 @@ class QuoteParser(Protocol):
     """AB validates CSV/XLSX without executing formulas; C owns preview/import state."""
 
     async def preview(
-        self, request: QuotePreviewRequest, *, context: CallContext
+        self, request: QuoteParseRequest, *, context: CallContext
     ) -> ParsedQuotes: ...
