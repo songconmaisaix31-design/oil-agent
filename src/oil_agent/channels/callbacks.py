@@ -165,7 +165,7 @@ class FeishuAckVerifier:
             raise ServiceError(
                 ErrorCode.TIMEOUT, "Callback verification deadline elapsed"
             ) from None
-        except (ValueError, TypeError, KeyError, UnicodeError, ValidationError):
+        except (ValueError, TypeError, KeyError, UnicodeError, ValidationError, RecursionError):
             raise ServiceError(ErrorCode.FORBIDDEN, "Callback verification failed") from None
 
     async def challenge(self, payload: AckPayload, *, context: CallContext) -> str | None:

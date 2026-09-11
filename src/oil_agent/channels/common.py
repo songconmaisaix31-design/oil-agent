@@ -38,7 +38,7 @@ def https_url(value: str) -> str:
         raise ServiceError(
             ErrorCode.INVALID_INPUT, "Configured URL cannot contain query or fragment"
         )
-    return value.rstrip("/")
+    return value
 
 
 def budget(context: CallContext) -> float:

@@ -1,0 +1,418 @@
+:root {
+  font-family: Inter, "PingFang SC", "Microsoft YaHei", sans-serif;
+  color: #22352c;
+  background: #f4f5ef;
+  font-synthesis: none;
+  line-height: 1.65;
+  font-weight: 400;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+}
+a {
+  color: #176745;
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+button {
+  cursor: pointer;
+  background: #fff;
+  border: 1px solid #cdd6cc;
+  border-radius: 9px;
+  padding: 9px 15px;
+  min-height: 44px;
+  color: #254534;
+}
+button:hover:not(:disabled) {
+  background: #edf4ed;
+}
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+button.primary {
+  background: #215c43;
+  color: white;
+  border-color: #215c43;
+}
+button.primary:hover:not(:disabled) {
+  background: #174a35;
+}
+button.text-button {
+  border: 0;
+  background: transparent;
+  color: #176745;
+}
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 3px solid #d3a742;
+  outline-offset: 3px;
+}
+h1,
+h2,
+h3,
+p {
+  overflow-wrap: anywhere;
+}
+h1 {
+  font-size: 28px;
+  line-height: 1.3;
+  letter-spacing: -0.6px;
+  margin: 12px 0;
+}
+h2 {
+  font-size: 18px;
+  margin: 0 0 16px;
+}
+h3 {
+  font-size: 16px;
+  margin: 8px 0;
+}
+p {
+  margin: 8px 0;
+}
+small,
+.muted {
+  color: #68766a;
+  font-size: 13px;
+}
+ul {
+  padding-left: 22px;
+}
+.app {
+  max-width: 940px;
+  margin: 0 auto;
+}
+.app-header {
+  height: 86px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid #dce2d7;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 20px;
+  color: #214333;
+}
+.brand small {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 2px;
+  line-height: 1.2;
+}
+.brand-icon {
+  background: #214e39;
+  color: #eef5df;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  font-size: 20px;
+}
+.role {
+  font-size: 12px;
+  color: #68766a;
+}
+.app main {
+  padding: 24px;
+  max-width: 760px;
+  margin: auto;
+  min-height: 65vh;
+}
+.page-heading {
+  margin: 8px 0 26px;
+}
+.page-heading p {
+  color: #6a776b;
+}
+.eyebrow {
+  font-size: 11px;
+  letter-spacing: 2.2px;
+  font-weight: 700;
+  color: #748469;
+}
+.panel {
+  background: #fff;
+  border: 1px solid #e0e5dc;
+  border-radius: 16px;
+  padding: 22px;
+  margin: 16px 0;
+}
+.tags,
+.actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.badge {
+  display: inline-block;
+  font-size: 11px;
+  line-height: 1.5;
+  padding: 4px 8px;
+  border-radius: 5px;
+  background: #edf1e8;
+  color: #45613b;
+}
+.badge.urgent {
+  color: #a43932;
+  background: #fbebe6;
+}
+.badge.important {
+  color: #9a681c;
+  background: #f9f0d9;
+}
+.badge.fixture {
+  color: #635187;
+  background: #f0ecf8;
+}
+.status-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.status-grid strong {
+  display: block;
+  font-size: 16px;
+}
+.event-row {
+  display: block;
+  padding: 18px 0;
+  border-bottom: 1px solid #eef0e9;
+  color: inherit;
+}
+.event-row:last-child {
+  border-bottom: 0;
+}
+.event-row:hover {
+  background: #fbfcf8;
+  text-decoration: none;
+}
+.event-row small {
+  display: block;
+}
+.notice,
+.error,
+.success {
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+.notice {
+  background: #f6f1df;
+  color: #796120;
+}
+.error {
+  background: #fff0ec;
+  color: #993b30;
+}
+.success {
+  background: #e7f4e9;
+  color: #27683a;
+}
+.empty {
+  text-align: center;
+  color: #75816f;
+  padding: 26px 4px;
+}
+.timeline {
+  display: grid;
+  gap: 8px;
+}
+.timeline-row {
+  display: grid;
+  gap: 4px;
+  text-align: left;
+  border-left: 3px solid #ccd7c6;
+}
+.timeline-row[aria-pressed="true"] {
+  border-color: #2b6645;
+  background: #eef5ed;
+}
+.timeline-row span {
+  font-size: 13px;
+}
+.evidence {
+  padding: 12px 0;
+  border-bottom: 1px solid #eceee7;
+}
+.evidence blockquote {
+  margin: 8px 0;
+  padding: 0 0 0 12px;
+  border-left: 2px solid #bdd0ac;
+  font-size: 14px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.evidence small {
+  display: block;
+  overflow-wrap: anywhere;
+}
+.evidence p {
+  font-size: 13px;
+}
+label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin: 14px 0;
+}
+input,
+textarea,
+select {
+  display: block;
+  width: 100%;
+  border: 1px solid #ccd6c8;
+  border-radius: 8px;
+  padding: 10px;
+  background: #fff;
+  color: #253b2d;
+  min-height: 44px;
+  margin-top: 6px;
+}
+textarea {
+  min-height: 76px;
+  resize: vertical;
+}
+details {
+  margin: 14px 0;
+  font-size: 13px;
+}
+summary {
+  cursor: pointer;
+  padding: 8px 0;
+}
+.feedback {
+  border-top: 1px solid #e3e9df;
+  padding-top: 8px;
+  margin-top: 20px;
+}
+.quote-row,
+.metric {
+  padding: 16px 0;
+  border-bottom: 1px solid #e5e9e1;
+  overflow-wrap: anywhere;
+}
+dl {
+  font-size: 14px;
+}
+dt {
+  color: #71816f;
+}
+dd {
+  margin: 0 0 10px;
+}
+nav {
+  display: flex;
+  position: sticky;
+  bottom: 0;
+  gap: 8px;
+  justify-content: center;
+  background: #f4f5eff5;
+  border-top: 1px solid #d7dfd2;
+  padding: 12px 18px max(12px, env(safe-area-inset-bottom));
+  backdrop-filter: blur(8px);
+}
+nav a {
+  flex: 1;
+  max-width: 160px;
+  text-align: center;
+  min-height: 44px;
+  padding: 10px;
+  color: #6b7968;
+  border-radius: 8px;
+  font-size: 14px;
+}
+nav a[aria-current="page"] {
+  color: #205a3e;
+  background: #e4ecdf;
+  font-weight: 700;
+}
+.app main.login {
+  padding: 74px 24px;
+  max-width: 680px;
+}
+.login h1 {
+  font-size: 42px;
+  line-height: 1.35;
+  margin: 20px 0;
+}
+.login > p {
+  color: #71816d;
+}
+.login .primary {
+  margin: 28px 0 8px;
+}
+.login .error {
+  color: #993b30;
+}
+footer {
+  text-align: center;
+  color: #88927e;
+  font-size: 10px;
+  padding: 14px 18px 22px;
+}
+@media (max-width: 520px) {
+  .app-header {
+    height: 72px;
+    padding: 14px 18px;
+  }
+  .app main {
+    padding: 20px 14px;
+  }
+  .panel {
+    padding: 18px 16px;
+    border-radius: 12px;
+  }
+  h1 {
+    font-size: 26px;
+  }
+  .page-heading {
+    padding: 0 4px;
+  }
+  nav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10;
+  }
+  .app:has(nav) {
+    padding-bottom: 76px;
+  }
+  .status-grid {
+    gap: 10px;
+  }
+  .app main.login {
+    padding: 56px 24px;
+  }
+  .login h1 {
+    font-size: 38px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    scroll-behavior: auto !important;
+  }
+}

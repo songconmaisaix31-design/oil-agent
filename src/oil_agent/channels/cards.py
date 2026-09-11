@@ -8,7 +8,7 @@ from oil_agent.channels.common import https_url
 from oil_agent.contracts.dto import NotificationIntent
 
 LABELS = {
-    "first_report": ("紧急关注 · 首报", "red"),
+    "first_report": ("事件首报", "red"),
     "update": ("事件进展", "orange"),
     "correction": ("更正通知", "orange"),
     "withdrawal": ("撤回说明", "orange"),
@@ -36,7 +36,7 @@ def notification_text(intent: NotificationIntent) -> str:
 
 
 def build_message(intent: NotificationIntent, *, public_base_url: str) -> tuple[str, str]:
-    base = https_url(public_base_url)
+    base = https_url(public_base_url).rstrip("/")
     route = "events" if intent.subject_type == "event" else "reports"
     link = f"{base}/#/{route}/{quote(intent.subject_id, safe='')}?revision={intent.revision}"
     label, color = LABELS[intent.kind]
