@@ -27,9 +27,9 @@ and B to reduce agent count; independent source and processing modules remain.
 | --- | --- | --- |
 | M | AGENTS.md, README.md, V01-TODO.md | decisions, status, acceptance / RUNNING |
 | C | src/oil_agent/contracts/, src/oil_agent/storage/, src/oil_agent/runtime/, src/oil_agent/api/, src/oil_agent/__init__.py, src/oil_agent/bootstrap.py, tests/contracts/, tests/conftest.py, tests/unit/storage/, tests/unit/runtime/, tests/unit/api/, pyproject.toml, uv.lock, .python-version, .env.example, .gitignore, alembic.ini, config/ | M-02 accepted; C-01..04 / RUNNING |
-| AB | src/oil_agent/ingestion/, src/oil_agent/intelligence/, src/oil_agent/reporting/, tests/unit/ingestion/, tests/unit/intelligence/, tests/unit/reporting/ | A-01..04 and B-01..04 / RUNNING |
+| AB | src/oil_agent/ingestion/, src/oil_agent/intelligence/, src/oil_agent/reporting/, tests/unit/ingestion/, tests/unit/intelligence/, tests/unit/reporting/ | local increment accepted; integration pending; external source/model gates remain |
 | D | src/oil_agent/channels/, web/, tests/unit/channels/ | D-01..04 local scope / RUNNING |
-| E | tests/integration/, e2e/, fixtures/, deploy/, scripts/, .github/workflows/, docs/runbook.md | E-01..03 and explicit E-04 manual gates / BLOCKED_DEPENDENCY |
+| E | tests/integration/, e2e/, fixtures/, deploy/, scripts/, .github/workflows/, docs/runbook.md | E-01..03 / RUNNING; E-04 external gates |
 | I | future separate worktree; merge commits and minimal bootstrap/import/config/type glue after transfer | final integration / BLOCKED_DEPENDENCY |
 
 ## Verified baseline and decisions
@@ -85,8 +85,8 @@ Worker success enters REVIEW until integration checks.
 | Track | Worktree / branch | Base / dispatch | State |
 | --- | --- | --- | --- |
 | C | C:/Users/DW/orca/workspaces/oil-agent/oil-v01-c / songconmaisaix31-design/oil-v01-c | f5d5face60c160e70a7565498a6da54ed33c15fd; runtime starts at d31d8f9d410375dedb4727a3999ab56442c82df3 / ctx_1248df0f39e2 (task_ccc3fe1d6a12) | foundation accepted; RUNNING runtime in same session |
-| E | C:/Users/DW/orca/workspaces/oil-agent/oil-v01-e / songconmaisaix31-design/oil-v01-e | f5d5face60c160e70a7565498a6da54ed33c15fd / ctx_9c35869d31f1 (task_75d768b10019) | baseline accepted; same session RETAINED for integration dependencies |
-| AB | C:/Users/DW/orca/workspaces/oil-agent/oil-v01-ab / songconmaisaix31-design/oil-v01-ab | dd01ee225ba36c1d7e75acdf5c96cd2d8e0df482 / ctx_ee9e5a943861 (task_0fb0fc0330b5) | RUNNING local A/B implementation |
+| E | C:/Users/DW/orca/workspaces/oil-agent/oil-v01-e / songconmaisaix31-design/oil-v01-e | initial f5d5face60c160e70a7565498a6da54ed33c15fd; runtime starts at 49a1b9cb29d6d35029bba904a40f733e39580245 / ctx_d1f60fcc77b0 (task_514645bb2c7a) | baseline accepted; RUNNING tests/deployment in same session |
+| AB | C:/Users/DW/orca/workspaces/oil-agent/oil-v01-ab / songconmaisaix31-design/oil-v01-ab | dd01ee225ba36c1d7e75acdf5c96cd2d8e0df482 / ctx_ee9e5a943861 (task_0fb0fc0330b5) | local increment accepted; RETAINED for integration fixes |
 | D | C:/Users/DW/orca/workspaces/oil-agent/oil-v01-d / songconmaisaix31-design/oil-v01-d | dd01ee225ba36c1d7e75acdf5c96cd2d8e0df482 / ctx_628088790830 (task_59fba1d3c03e) | RUNNING channel and mobile implementation |
 
 - Governance commit f5d5face60c160e70a7565498a6da54ed33c15fd pushed to origin.
@@ -160,3 +160,22 @@ Worker success enters REVIEW until integration checks.
   terminal produced request 782d62a4-f9fb-46a5-b7ff-078305a9d1ea with
   input_accepted and turn_started; exact provider transcript subsequently shows
   real task work and D acknowledged the contract. No duplicate worker was started.
+- AB final local increment: 25cceea0bfb78930879060417054e4675d84956d. Code
+  includes d6c9e64 (ingestion), 8a359497520ee12a46dc94fbffa579ece110f209
+  (assessment/reports), and the final parser/handoff commit. Main verified exact
+  remote SHA, clean status, exclusive 18-file AB diff against bb39ece and ran
+  `uv run --frozen pytest tests/unit/ingestion tests/unit/intelligence tests/unit/reporting tests/contracts -q`
+  -> 74 passed. Worker full non-PostgreSQL selection -> 85 passed, 3 PostgreSQL
+  tests deselected; Ruff and wheel/sdist build passed. No live transport/model,
+  PostgreSQL, phone or continuous-operation claim. See AB-HANDOFF.md in reporting/.
+- E resumed using the same documented low-level path as C after worker-start
+  returned agent_unconfigured without a task. Exact live preamble delivered once;
+  request 4ff12822-4293-4050-af2f-3a4fe856e825 proves turn_started on original
+  process incarnation 790338b3-5161-4cbb-8046-abb0df1b37fd. Current dispatch is
+  unsupervised in resource accounting; original retained terminal remains live.
+  E may adopt exact reviewed C/AB commits for its tests, preserving producer files.
+- Runtime review returned concrete fixes to C: loss of occurred assertion routes
+  as a correction; empty/duplicate ticks must not consume processing/model budget;
+  a second quote preview after time advances must remain import-idempotent. E will
+  test these across real modules. Notification policy and channel readiness remain
+  closed by default; configuration references do not constitute live acceptance.
