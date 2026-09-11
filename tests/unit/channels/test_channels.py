@@ -4,6 +4,7 @@ import asyncio
 import base64
 import hashlib
 import json
+from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from urllib.parse import parse_qs
 
@@ -525,3 +526,10 @@ async def test_plaintext_challenge_cannot_bypass_encryption(settings, context):
     payload = signed(settings, data, encrypted=False)
     with pytest.raises(ServiceError, match="Challenge verification failed"):
         await verifier(settings).challenge(payload, context=context)
+
+
+def test_oauth_redirect_preserves_exact_registered_trailing_slash(settings):
+    configured = replace(settings, redirect_uri="https://example.invalid/oauth/callback/")
+    adapter = FeishuIdentityAdapter(configured)
+    query = parse_qs(adapter.authorization_url("synthetic-state-0001").split("?", 1)[1])
+    assert query["redirect_uri"] == [configured.redirect_uri]
