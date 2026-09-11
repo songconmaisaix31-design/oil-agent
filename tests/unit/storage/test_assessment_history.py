@@ -1,6 +1,7 @@
 """Bounded durable evidence handoff and stale-head protection on real PostgreSQL."""
 
 import os
+from datetime import timedelta
 from importlib import import_module
 
 import pytest
@@ -10,7 +11,7 @@ from test_runtime_api import runtime_for
 
 from oil_agent.contracts.dto import EventAssessment
 from oil_agent.contracts.services import ErrorCode, ServiceError
-from oil_agent.storage.models import SourceRecordRow
+from oil_agent.storage.models import BudgetRow, SourceRecordRow
 
 pytestmark = pytest.mark.postgres
 
@@ -98,6 +99,41 @@ def test_reassessment_cannot_overwrite_concurrent_family_head(repository, actors
     assert repository.event_detail(actors["viewer"][0], first.event_id).current == latest
     with repository.sessions() as session:
         assert session.get(SourceRecordRow, (second.record_id, 1)).processing_state == "processing"
+
+
+@pytest.mark.asyncio
+async def test_second_pass_budget_defers_without_consuming_retry(repository, actors, source_record):
+    first = event(repository, source_record)
+    second = second_record(source_record)
+    repository.persist_batch(batch(second, "two"), expected=repository.checkpoint("replay"))
+    calls = []
+
+    class Assessment:
+        async def assess(self, records, *, context):
+            calls.append(records)
+            return (candidate(records[0]),) if len(records) == 1 else (combined(records),)
+
+    rt = runtime_for(repository, assessment=Assessment())
+    rt.settings = rt.settings.model_copy(update={"daily_processing_calls": 2})
+    repository.charge_budget("processing", 2)  # Only one unit remains for the first pass.
+    with pytest.raises(ServiceError) as error:
+        await rt.assess_pending()
+    assert error.value.code == ErrorCode.QUOTA_EXHAUSTED and len(calls) == 1
+    now = repository.clock()
+    reset = (now + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+    with repository.sessions() as session:
+        row = session.get(SourceRecordRow, (second.record_id, 1))
+        assert (row.processing_state, row.attempt, row.next_attempt_at) == ("pending", 0, reset)
+        assert row.lease_token is None and row.lease_until is None
+        assert session.get(BudgetRow, (now.date(), "processing")).used == 2
+    assert await rt.assess_pending() == () and len(calls) == 1
+    repository.clock = lambda: reset
+    updated = (await rt.assess_pending())[0]
+    assert (updated.event_id, updated.revision) == (first.event_id, 2)
+    assert updated.evidence_status == "independent_multi_source" and len(calls) == 3
+    with repository.sessions() as session:
+        assert session.get(SourceRecordRow, (second.record_id, 1)).attempt == 1
+        assert session.get(BudgetRow, (reset.date(), "processing")).used == 2
 
 
 @pytest.mark.asyncio
