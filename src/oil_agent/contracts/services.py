@@ -105,6 +105,10 @@ class NotificationChannel(Protocol):
 
 @runtime_checkable
 class AckVerifier(Protocol):
+    async def challenge(self, payload: AckPayload, *, context: CallContext) -> str | None:
+        """Validate a provider URL challenge, or return None for ordinary callbacks."""
+        return None
+
     async def verify(self, payload: AckPayload, *, context: CallContext) -> VerifiedAck: ...
 
 

@@ -16,6 +16,7 @@ from oil_agent.contracts.http import (
     AckRequest,
     ApiError,
     BusinessConfig,
+    CallbackResponse,
     EventDetail,
     EventList,
     FeedbackRequest,
@@ -78,7 +79,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     async def session_challenge():
         not_implemented()
 
-    @router.post("/callbacks/ack", response_model=Ack, tags=["callbacks"])
+    @router.post("/callbacks/ack", response_model=CallbackResponse,
+                 response_model_exclude_none=True, tags=["callbacks"])
     async def callback_ack(request: Request):
         """D verifies signature; C checks identity, current recipient grant and replay."""
         not_implemented()

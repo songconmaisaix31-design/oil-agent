@@ -201,6 +201,15 @@
             ],
             "title": "First Report Policy"
           },
+          "notification_channel": {
+            "default": "dry_run",
+            "enum": [
+              "dry_run",
+              "feishu"
+            ],
+            "title": "Notification Channel",
+            "type": "string"
+          },
           "outbound_mode": {
             "default": "dry_run",
             "enum": [
@@ -282,6 +291,25 @@
           }
         },
         "title": "BusinessConfig",
+        "type": "object"
+      },
+      "CallbackResponse": {
+        "additionalProperties": false,
+        "description": "Provider acknowledgement only; internal Ack details stay server-side.",
+        "properties": {
+          "challenge": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Challenge"
+          }
+        },
+        "title": "CallbackResponse",
         "type": "object"
       },
       "ComputedMetric": {
@@ -1995,7 +2023,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Ack"
+                  "$ref": "#/components/schemas/CallbackResponse"
                 }
               }
             },
