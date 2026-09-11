@@ -13,8 +13,8 @@ quote import, mobile views and deployment checks. Real source, Feishu, phone and
 | --- | --- | --- |
 | M0 | Read-only baseline; C freezes contracts, dependencies and API schema | DONE for foundation scope on C branch; final integration pending |
 | M1 | AB replay/assessment + C transactional pipeline + D dry-run/ack | RUNNING local scope; real source/phone BLOCKED_EXTERNAL |
-| M2 | Revisions, independent evidence, failure recovery, authorization | BLOCKED_DEPENDENCY: M1 |
-| M3 | Daily reports, safe quote imports, five responsive views | BLOCKED_DEPENDENCY: contracts |
+| M2 | Revisions, independent evidence, failure recovery, authorization | RUNNING implementation; acceptance depends on M1 |
+| M3 | Daily reports, safe quote imports, five responsive views | RUNNING local scope |
 | M4 | E regression/security/PostgreSQL/Compose; separate I integration | BLOCKED_DEPENDENCY: tracks |
 | M5 | Authorized source/phone and >=14 days operation | BLOCKED_EXTERNAL |
 
@@ -26,9 +26,9 @@ and B to reduce agent count; independent source and processing modules remain.
 | Track | Exclusive write_paths | Initial work / state |
 | --- | --- | --- |
 | M | AGENTS.md, README.md, V01-TODO.md | decisions, status, acceptance / RUNNING |
-| C | src/oil_agent/contracts/, src/oil_agent/storage/, src/oil_agent/runtime/, src/oil_agent/api/, src/oil_agent/__init__.py, src/oil_agent/bootstrap.py, tests/contracts/, tests/conftest.py, tests/unit/storage/, tests/unit/runtime/, tests/unit/api/, pyproject.toml, uv.lock, .python-version, .env.example, .gitignore, alembic.ini, config/ | M-02 then C-01..04 / READY |
-| AB | src/oil_agent/ingestion/, src/oil_agent/intelligence/, src/oil_agent/reporting/, tests/unit/ingestion/, tests/unit/intelligence/, tests/unit/reporting/ | A-01..04 and B-01..04 / BLOCKED_DEPENDENCY |
-| D | src/oil_agent/channels/, web/, tests/unit/channels/ | D-01..04 local scope / BLOCKED_DEPENDENCY |
+| C | src/oil_agent/contracts/, src/oil_agent/storage/, src/oil_agent/runtime/, src/oil_agent/api/, src/oil_agent/__init__.py, src/oil_agent/bootstrap.py, tests/contracts/, tests/conftest.py, tests/unit/storage/, tests/unit/runtime/, tests/unit/api/, pyproject.toml, uv.lock, .python-version, .env.example, .gitignore, alembic.ini, config/ | M-02 accepted; C-01..04 / RUNNING |
+| AB | src/oil_agent/ingestion/, src/oil_agent/intelligence/, src/oil_agent/reporting/, tests/unit/ingestion/, tests/unit/intelligence/, tests/unit/reporting/ | A-01..04 and B-01..04 / RUNNING |
+| D | src/oil_agent/channels/, web/, tests/unit/channels/ | D-01..04 local scope / RUNNING |
 | E | tests/integration/, e2e/, fixtures/, deploy/, scripts/, .github/workflows/, docs/runbook.md | E-01..03 and explicit E-04 manual gates / BLOCKED_DEPENDENCY |
 | I | future separate worktree; merge commits and minimal bootstrap/import/config/type glue after transfer | final integration / BLOCKED_DEPENDENCY |
 
@@ -41,8 +41,8 @@ and B to reduce agent count; independent source and processing modules remain.
 - Coordinator branch: coord/oil-v01-20260912. Commit code only to this authorized
   remote; do not copy private business documents or customer data into public Git.
 - Python 3.13.13; uv 0.11.26; Node 24.16.0; npm 11.13.0; Orca 1.4.199.
-- Docker CLI installed; engine initially unavailable. Existing Docker Desktop start
-  requested with a hidden window; service readiness still to verify.
+- Docker CLI installed; engine initially unavailable. Existing Docker Desktop
+  started with a hidden window; engine later verified (see dispatch log).
 - Ports 5432, 8000, 5173, 55432 and 18080 were unoccupied at baseline. Per-track
   PostgreSQL databases, test ports and Compose project names must be distinct.
 - No reusable project implementation. Referenced PRD/source-report DOCX not found
@@ -137,3 +137,26 @@ Worker success enters REVIEW until integration checks.
   turn_started. New runtime dispatch is a low-level dispatch, not a newly owned
   supervised process; old C resource is explicitly retained for the user's
   one-session-per-track requirement. No runtime patch or approval change made.
+
+## Active integration decisions and evidence
+
+- C contract increment e09683409550bbe7238396bc2506def3969ad202 adds
+  IdentityAdapter, session challenge/CSRF response and quote parser seams.
+  Follow-up bb39ece229c32131025b4a4ead7d7502ba471e0b supplies the trusted
+  QuoteParseRequest envelope. Coordinator reviewed both. Consumers may merge
+  these exact upstream commits normally; no manual edits to producer-owned files.
+- IdentityAdapter uses configured authorization_url(state) and authenticate(code).
+  C owns browser-bound one-time state, preprovisioned active identity mapping,
+  revocable hashed sessions and CSRF. D callback verification uses an injected
+  server identity resolver; C rechecks current recipient/version grants on ack.
+- C owns quote preview persistence and derives provenance/publisher/time from
+  server configuration. AB parses the bounded uploaded CSV/XLSX. A client cannot
+  turn fixture data into production data by selecting metadata.
+- AB first code increment d6c9e64 is pushed. Worker reports 34 ingestion/contract
+  tests, Ruff and build passing. Coordinator reviewed parser/network boundaries;
+  no commercial source socket transport or live-source acceptance is included.
+- D initially had input_accepted but no working-turn/transcript evidence. The
+  existing PTY was preserved. A distinct coordinator follow-up in that same
+  terminal produced request 782d62a4-f9fb-46a5-b7ff-078305a9d1ea with
+  input_accepted and turn_started; exact provider transcript subsequently shows
+  real task work and D acknowledged the contract. No duplicate worker was started.
