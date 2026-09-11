@@ -186,13 +186,16 @@ class Runtime:
         except Exception as error:
             code = error.code if isinstance(error, ServiceError) else ErrorCode.INVALID_OUTPUT
             try:
-                await self.db(
-                    self.repository.fail_records,
-                    claims,
-                    code,
-                    retryable=code
-                    in {ErrorCode.TIMEOUT, ErrorCode.UNAVAILABLE, ErrorCode.REVISION_MISMATCH},
-                )
+                if code == ErrorCode.QUOTA_EXHAUSTED:
+                    await self.db(self.repository.defer_records_for_budget, claims)
+                else:
+                    await self.db(
+                        self.repository.fail_records,
+                        claims,
+                        code,
+                        retryable=code
+                        in {ErrorCode.TIMEOUT, ErrorCode.UNAVAILABLE, ErrorCode.REVISION_MISMATCH},
+                    )
             except ServiceError:
                 pass  # A newer attempt owns the row; never overwrite its result.
             await self.db(self.repository.health, "assessment", "degraded", code.value)

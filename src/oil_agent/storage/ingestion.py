@@ -184,6 +184,20 @@ class IngestionRepository:
                 row.lease_until = None
                 row.error_code = str(code)
 
+    def defer_records_for_budget(self, claims):
+        """Budget reset uses UTC like the durable ledger; deferral spends no retry."""
+        tomorrow = (self.clock() + timedelta(days=1)).replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
+        with self.sessions.begin() as session:
+            for row in self.lock_claims(session, claims):
+                row.processing_state = "pending"
+                row.attempt -= 1
+                row.next_attempt_at = tomorrow
+                row.lease_token = None
+                row.lease_until = None
+                row.error_code = ErrorCode.QUOTA_EXHAUSTED.value
+
     def recover_records(self):
         with self.sessions.begin() as session:
             rows = session.scalars(
