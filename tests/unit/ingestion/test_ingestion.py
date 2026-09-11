@@ -231,8 +231,9 @@ def csv_data(rows=None):
     return (head + (rows if rows is not None else row)).encode()
 
 
-def preview(data, name="quotes.csv", **kwargs):
-    mapping = {c: c for c in csv_data().decode().splitlines()[0].split(",")}
+def preview(data, name="quotes.csv", *, mapping=None, **kwargs):
+    if mapping is None:
+        mapping = {c: c for c in csv_data().decode().splitlines()[0].split(",")}
     return preview_quotes(
         data,
         name,
@@ -278,10 +279,12 @@ def test_T22_csv_size_extension_formula_and_timestamp_guards():
     assert future.rows[0].observation.quality_state == "invalid"
 
 
-def xlsx_data(formula=False):
+def xlsx_data(formula=False, *, rows=None):
     workbook = Workbook()
-    for row in csv_data().decode().splitlines():
-        workbook.active.append(row.split(","))
+    if rows is None:
+        rows = [row.split(",") for row in csv_data().decode().splitlines()]
+    for row in rows:
+        workbook.active.append(row)
     if formula:
         workbook.active["J2"] = "=1+2"
     output = io.BytesIO()
@@ -444,3 +447,137 @@ async def test_frozen_quote_parser_envelope_outputs_and_errors():
         await parser.preview(envelope.model_copy(update={"upload": wrong_type}), context=ctx)
     with pytest.raises(ServiceError, match="size"):
         await SafeQuoteParser(limits=UploadLimits(max_bytes=10)).preview(envelope, context=ctx)
+
+
+@pytest.mark.parametrize("file_kind", ["csv", "xlsx"])
+async def test_empty_mapping_standard_columns_preserve_basis_and_identity(file_kind):
+    data = csv_data() if file_kind == "csv" else xlsx_data()
+    upload = QuotePreviewRequest(
+        filename=f"fixture.{file_kind}",
+        media_type="text/csv"
+        if file_kind == "csv"
+        else ("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
+        content_base64=base64.b64encode(data).decode(),
+        field_mapping={},
+        rights_ref="fixture:synthetic",
+    )
+    envelope = QuoteParseRequest(
+        upload=upload,
+        origin_publisher="Synthetic supplier",
+        discovered_at=NOW,
+        is_fixture=True,
+        provenance="fixture",
+        fixture_dataset="ab-parser-v1",
+    )
+    ctx = CallContext(
+        request_id="default-mapping",
+        deadline_at=datetime.now(UTC) + timedelta(seconds=30),
+        timeout_seconds=10,
+    )
+    parser = SafeQuoteParser()
+    default = await parser.preview(envelope, context=ctx)
+    explicit_mapping = {c: c for c in csv_data().decode().splitlines()[0].split(",")}
+    explicit = await parser.preview(
+        envelope.model_copy(
+            update={
+                "upload": upload.model_copy(update={"field_mapping": explicit_mapping}),
+            }
+        ),
+        context=ctx,
+    )
+    assert not default.issues and not default.duplicate_rows
+    assert len(default.observations) == len(default.records) == 1
+    observation = default.observations[0]
+    expected = dict(
+        product="diesel",
+        spec="VI",
+        region="Shandong",
+        supplier="Synthetic supplier",
+        quote_type="offer",
+        tax_basis="included",
+        delivery_basis="pickup",
+        currency="CNY",
+        unit="tonne",
+        value=Decimal("7000.10"),
+        as_of=datetime(2026, 9, 11, 1, tzinfo=UTC),
+        published_at=datetime(2026, 9, 11, 1, 1, tzinfo=UTC),
+    )
+    assert {field: getattr(observation, field) for field in expected} == expected
+    assert observation.quality_state == "valid" and comparison_key(observation) is not None
+    assert validate_observation(observation, default.records[0])
+    assert default.records[0].fixture_dataset == "ab-parser-v1"
+    assert default == explicit  # Same file hash, row/observation IDs and supporting evidence.
+    assert envelope.upload.field_mapping == {}  # Do not mutate the caller's mapping.
+    low_level = preview(data, upload.filename, mapping={})
+    assert low_level == preview(data, upload.filename, mapping=explicit_mapping)
+
+
+@pytest.mark.parametrize("file_kind", ["csv", "xlsx"])
+@pytest.mark.parametrize(
+    "field,replacement", [("value", None), ("as_of", None), ("value", "Value"), ("as_of", "as of")]
+)
+def test_empty_mapping_requires_exact_mandatory_headers(file_kind, field, replacement):
+    rows = [row.split(",") for row in csv_data().decode().splitlines()]
+    position = rows[0].index(field)
+    if replacement is None:
+        for row in rows:
+            row.pop(position)
+    else:
+        rows[0][position] = replacement
+    data = (
+        "\n".join(",".join(row) for row in rows).encode()
+        if file_kind == "csv"
+        else xlsx_data(rows=rows)
+    )
+    with pytest.raises(ServiceError, match="requires value and as_of"):
+        preview(data, f"fixture.{file_kind}", mapping={})
+
+
+def test_empty_mapping_ignores_noncanonical_optional_columns_and_keeps_missing_basis_unknown():
+    data = b"value,as_of,Tax_Basis,note\n7000.10,2026-09-11T01:00:00Z,included,synthetic\n"
+    result = preview(data, mapping={})
+    row = result.rows[0]
+    assert not row.errors
+    assert row.mapped == {"value": "7000.10", "as_of": "2026-09-11T01:00:00Z"}
+    assert row.observation.tax_basis == "unknown" and row.observation.product is None
+    assert row.observation.published_at is None and comparison_key(row.observation) is None
+    assert row.observation.quality_state == "incomplete"
+
+
+@pytest.mark.parametrize(
+    "mapping,reason",
+    [
+        ({"value": "value"}, "requires value and as_of"),
+        ({"value": "value", "as_of": "as_of", "unknown": "spec"}, "known fields"),
+        ({"value": "value", "as_of": "value"}, "several fields"),
+        ({"value": "absent", "as_of": "as_of"}, "does not exist"),
+    ],
+)
+def test_explicit_mapping_remains_strict(mapping, reason):
+    with pytest.raises(ServiceError, match=reason):
+        preview(csv_data(), mapping=mapping)
+
+
+def test_explicit_custom_mapping_is_not_automatically_enriched():
+    data = b"Price,Time,product,tax_basis\n7000.10,2026-09-11T01:00:00Z,diesel,included\n"
+    result = preview(data, mapping={"value": "Price", "as_of": "Time"})
+    row = result.rows[0]
+    assert not row.errors and row.observation.value == Decimal("7000.10")
+    assert row.mapped == {"value": "7000.10", "as_of": "2026-09-11T01:00:00Z"}
+    assert row.observation.product is None and row.observation.tax_basis == "unknown"
+
+
+def test_empty_mapping_preserves_header_formula_and_raw_size_defenses():
+    with pytest.raises(ServiceError, match="unique and nonempty"):
+        preview(b"value,value,as_of\n1,2,2026-09-11T01:00:00Z\n", mapping={})
+    with pytest.raises(ServiceError, match="Unsafe"):
+        preview(b"value,as_of,=1+2\n1,2026-09-11T01:00:00Z,3\n", mapping={})
+    for data, name in (
+        (csv_data().replace(b"7000.10", b"=1+2"), "fixture.csv"),
+        (xlsx_data(True), "fixture.xlsx"),
+    ):
+        result = preview(data, name, mapping={})
+        assert "formula_or_executable_cell" in result.rows[0].errors
+        assert result.rows[0].record is None and result.rows[0].observation is None
+    with pytest.raises(ServiceError, match="exceeds size limit"):
+        preview(csv_data().ljust(2_000_001, b" "), mapping={})
