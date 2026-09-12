@@ -6,11 +6,13 @@
 
 The user reports having obtained application credentials and has edited the
 project-private configuration locally. C's latest read-only check on
-2026-09-12 at 08:22 UTC, against integrated
-`41cfed431d8c8ac882d4cee88267cc20299b3c83`, passed JSON/schema, path/ACL and actual
-isolated process injection checks. Its redacted state is `CREATED`,
-`NOT_CONFIGURED`, missing `app_id`, `tenant_key`, `recipient_open_id` and
-`host_binding`, with start `NOT_AUTHORIZED`. Both helper commands returned exit 2
+2026-09-12 at 09:31 UTC, against integrated
+`fe4b76c2f8b1f17130bd442812cbc046eed1f325`, passed JSON/schema, path/ACL and actual
+isolated process injection checks. The existing `app_id` already matches the
+user-supplied identifier: no private file was written or created. Its redacted
+state is `CREATED`, `NOT_CONFIGURED`, missing `tenant_key`,
+`recipient_open_id` and `host_binding`, with start `NOT_AUTHORIZED`.
+Both helper commands returned exit 2
 as designed for incomplete preparation. This proves local loading only, not
 platform authentication, credential rotation, application ownership or binding.
 No private value is recorded here. The display name remains
@@ -70,6 +72,23 @@ D's redacted check through the committed C helper still reported `CREATED` /
 `host_binding`, with zero product requests. An earlier path/ACL denial from D's
 older helper context did not reproduce with C's helper; no ACL or private file
 was changed. No message was attempted and the window must not renew silently.
+M checked the clock at 09:25 UTC: that window has expired. The user's subsequent
+instruction to continue development does not authorize a replacement window.
+
+The current bounded increment addresses the reproduced pre-binding tenant-query
+gap, not new product features. C task `task_9f68896111b5` / `ctx_1e8f29b67faa`
+completed the App ID comparison and two redacted checks without writes or calls.
+D task `task_1633a8eef6b0` / `ctx_e8b25d459470` reproduced the missing fixed tenant
+lookup transport; C confirmed that the full C1 permission and active delivery
+claim currently require bindings which this lookup must obtain first. D owns the
+fixed token/query transport, C the existing permission and request-ledger seam,
+and I task `task_d068a6cef6c0` / `ctx_9fd45f0998ab` the narrow assembly review.
+One immutable app-window request budget must cover lookup and later sending;
+tenant discovery never supplies recipient authorization or resets twenty calls.
+E task `task_14da0342346c` / `ctx_c02dde905576` checks only exact previously
+identified E-owned PostgreSQL test resources before proposing targeted execution
+of the eleven pending C1 storage regressions. No shared service restart, unknown
+resource operation or live test-host approval is inferred.
 
 This bounded preparation is owned by C (runtime/private setup), D (channel and
 preview), I (existing explicit assembly seams), and E (independent focused
