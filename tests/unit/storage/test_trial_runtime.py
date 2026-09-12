@@ -10,7 +10,13 @@ from sqlalchemy import func, select
 from test_runtime import batch, candidate, event
 
 from oil_agent.api.app import create_app
-from oil_agent.contracts.dto import Delivery, EventAssessment, ExternalIdentity, SourceRecord
+from oil_agent.contracts.dto import (
+    Delivery,
+    EventAssessment,
+    ExternalIdentity,
+    SourceRecord,
+    VerifiedAck,
+)
 from oil_agent.contracts.http import BusinessConfig, QuotePreviewRequest, SessionCreateRequest
 from oil_agent.contracts.services import ErrorCode, ServiceError
 from oil_agent.ingestion import SafeQuoteParser
@@ -312,6 +318,75 @@ async def test_expired_trial_permission_rejects_session_and_queued_send(reposito
     assert channel.calls == []
     with repository.sessions() as session:
         assert session.scalar(select(DeliveryRow.state)) == "pending"
+
+
+@pytest.mark.asyncio
+async def test_changed_same_identity_approval_cannot_revive_session_api_or_callback(
+    repository, source_record
+):
+    now = repository.clock()
+    repository.clock = lambda: now
+    initial = settings_for(repository, outbound_mode="trial")
+    values = initial.model_dump()
+    values["identity_permission"]["expires_at"] = now + timedelta(seconds=30)
+    initial = Settings.model_validate(values)
+    channel = Channel(repository)
+    rt = runtime_for_trial(
+        repository, settings=initial, assessment=Assessment(), channels={"feishu": channel}
+    )
+    token, _, actor = await login(rt)
+    config = BusinessConfig(
+        recipient_ids=("trial-recipient",),
+        first_report_policy="credible_single_source",
+        outbound_mode="trial",
+        notification_channel="feishu",
+    )
+    repository.update_config(actor, config)
+    repository.persist_batch(batch(record_in_scope(source_record)), expected=None)
+    assessment = (await rt.assess_pending())[0]
+    delivery = (await rt.send_pending())[0]
+    assert delivery.state == "accepted" and rt.resolve_session(token) == actor
+    assert await rt.resolve_identity(IDENTITY) == (actor.actor_id, actor.recipient_id)
+
+    now += timedelta(seconds=31)
+    assert rt.resolve_session(token) is None
+    extended_values = initial.model_dump()
+    extended_values["identity_permission"]["expires_at"] = now + timedelta(hours=1)
+    extended = Settings.model_validate(extended_values)
+    restarted = runtime_for_trial(repository, settings=extended)
+    assert restarted.resolve_session(token) is None
+    with TestClient(create_app(extended, runtime=restarted)) as client:
+        client.cookies.set("oil_session", token)
+        assert client.get("/api/v1/session").status_code == 401
+        assert client.get("/api/v1/events").status_code == 401
+    with pytest.raises(ServiceError):
+        repository.update_config(actor, config)
+    with pytest.raises(ServiceError) as error:
+        await restarted.resolve_identity(IDENTITY)
+    assert error.value.code == ErrorCode.FORBIDDEN
+    with pytest.raises(ServiceError):
+        await restarted.provision_trial_user(actor.actor_id)
+    verified = VerifiedAck(
+        delivery_id=delivery.delivery_id,
+        subject_id=assessment.event_id,
+        revision=assessment.revision,
+        recipient_id=actor.recipient_id,
+        actor_id=actor.actor_id,
+        callback_id="synthetic-expired-approval-callback",
+        verified_at=now,
+    )
+    with pytest.raises(ServiceError):
+        repository.acknowledge(verified)
+    with repository.sessions() as session:
+        assert session.get(DeliveryRow, delivery.delivery_id).state == "accepted"
+
+    # A distinct approval can authorize a new login, never the old scoped session.
+    fresh_values = extended.model_dump()
+    fresh_values["identity_permission"]["approval_id"] = "fresh-identity-scope"
+    fresh = runtime_for_trial(repository, settings=Settings.model_validate(fresh_values))
+    new_token, _, new_actor = await login(fresh)
+    assert fresh.resolve_session(new_token) == new_actor
+    assert fresh.resolve_session(token) is None
 
 
 @pytest.mark.asyncio

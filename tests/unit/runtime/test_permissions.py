@@ -1,5 +1,6 @@
 """Explicit trial authorization accepts only bounded, distinct and correctly scoped inputs."""
 
+from contextlib import nullcontext
 from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
 
@@ -7,9 +8,13 @@ import pytest
 from pydantic import ValidationError
 
 from oil_agent.contracts.dto import Report
+from oil_agent.contracts.services import ErrorCode, ServiceError
 from oil_agent.runtime.authorization import RuntimeAuthorization
 from oil_agent.runtime.permissions import IdentityPermission, ModelPermission, SourcePermission
 from oil_agent.runtime.settings import Settings
+from oil_agent.storage.base import fingerprint
+from oil_agent.storage.models import PermissionRow
+from oil_agent.storage.permissions import PermissionRepository
 
 NOW = datetime(2026, 9, 12, tzinfo=UTC)
 
@@ -175,7 +180,9 @@ def test_trial_process_environment_parses_explicit_null_and_typed_permissions(mo
 
 def test_trial_report_reminder_is_denied_without_event_severity_access():
     authorization = RuntimeAuthorization()
-    authorization.repository = SimpleNamespace(clock=lambda: NOW)
+    authorization.repository = SimpleNamespace(
+        clock=lambda: NOW, permission_is_current=lambda permission, **kwargs: True
+    )
     identity = identity_permission()
     authorization.settings = Settings(
         data_provenance="trial",
@@ -224,3 +231,66 @@ def test_trial_report_reminder_is_denied_without_event_severity_access():
     assert authorization.trial_item_allowed(report, user, "daily_report") is True
     assert authorization.trial_item_allowed(report, user, "reminder") is False
     assert authorization.settings.reminders_enabled is False
+
+
+def test_identity_use_requires_original_bound_approval_not_same_id_extended_expiry():
+    original = IdentityPermission.model_validate(
+        identity_permission().model_dump() | {"expires_at": NOW + timedelta(seconds=30)}
+    )
+    # Synthetic stored rows test the actual read-only scope checker without claiming
+    # PostgreSQL transaction coverage; the storage regression covers that separately.
+    rows = {
+        original.approval_id: PermissionRow(
+            approval_id=original.approval_id,
+            scope_digest=fingerprint(original.model_dump(mode="json")),
+            blocked=False,
+        )
+    }
+    repository = PermissionRepository()
+    now = NOW
+    repository.clock = lambda: now
+    repository.sessions = lambda: nullcontext(
+        SimpleNamespace(get=lambda model, key, **kwargs: rows.get(key))
+    )
+    authorization = RuntimeAuthorization()
+    authorization.repository = repository
+
+    def configure(permission):
+        authorization.settings = Settings(
+            data_provenance="trial",
+            fixture_dataset=None,
+            identity_enabled=True,
+            identity_permission=permission,
+        )
+
+    configure(original)
+    assert authorization.current_identity_permission() == original
+    now += timedelta(seconds=31)
+    with pytest.raises(ServiceError):
+        authorization.current_identity_permission()
+    extended = IdentityPermission.model_validate(
+        original.model_dump() | {"expires_at": now + timedelta(hours=1)}
+    )
+    configure(extended)
+    with pytest.raises(ServiceError) as error:
+        authorization.approved_identity(
+            SimpleNamespace(provider=original.provider, subject=original.identities[0].subject)
+        )
+    assert error.value.code == ErrorCode.FORBIDDEN
+    assert rows[original.approval_id].scope_digest == fingerprint(original.model_dump(mode="json"))
+
+    fresh = IdentityPermission.model_validate(
+        extended.model_dump() | {"approval_id": "fresh-approval"}
+    )
+    configure(fresh)
+    with pytest.raises(ServiceError):
+        authorization.current_identity_permission()
+    rows[fresh.approval_id] = PermissionRow(
+        approval_id=fresh.approval_id,
+        scope_digest=fingerprint(fresh.model_dump(mode="json")),
+        blocked=False,
+    )
+    assert authorization.current_identity_permission() == fresh
+    rows[fresh.approval_id].blocked = True
+    with pytest.raises(ServiceError):
+        authorization.current_identity_permission()

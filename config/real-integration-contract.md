@@ -106,6 +106,9 @@ no session and invokes no provider. The old runtime.cli provision-user command r
 real/trial settings; there is no fixture alias. Real sessions are issued only after
 the configured identity adapter and are bound to the current identity approval ID;
 null-scope local/test sessions are rejected by real runtime API authorization.
+Every scoped session/API/recipient/callback use also reads the immutable stored
+identity approval. Extending expiry or otherwise changing the same approval ID
+cannot revive old sessions; a distinct approved ID permits only a new scoped login.
 
 Runtime data scope filters pending claims, source checkpoint reuse, event/report views,
 evidence/feedback/ack/import access, report snapshots, outbox claims and recovery.
