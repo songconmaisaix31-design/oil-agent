@@ -1,5 +1,36 @@
 # D track handoff — 2026-09-12
 
+## R3 real-integration preparation
+
+Code `cfda44473a0c260b51f9762624166a6b419a6ce0` is pushed on the existing D branch.
+Clean prior D HEAD was normally merged with accepted local-only I baseline
+`ed1de2e24634e8471e0979cfc168eebec4c12e4c` and governance `57e72ee`, producing
+merge checkpoint `151aa69`. No C/I/AB/E/M-owned file was edited.
+
+OAuth and callback identity now use the approved exact `tenant_key:app_id:open_id`
+binding, with no legacy alias. Export `oil_agent.channels.feishu_identity` for
+provisioning; the existing three adapter constructors and settings fields stay
+unchanged. Trial sends require both recipient-map and intent test flags before
+token HTTP. Cards/text label fixture, real trial and production explicitly; a
+synthetic urgent exercise remains visibly distinct from real news.
+
+The web rejects missing/duplicate/denied OAuth return parameters before any API
+call, clears transient URL values, shows a restart message and never echoes
+provider errors. Existing same-origin HttpOnly session and memory CSRF flow is
+preserved. Trial/production data labels and trial runtime wording are explicit.
+
+Checks: `uv run --locked pytest tests/unit/channels tests/contracts -q` **98 passed**;
+Ruff check/format passed; `npm test` **18 passed**, `npm run typecheck`,
+`npm run build` (including authoritative `generate:check`), Prettier and
+`git diff --check` passed. All HTTP evidence is mocked, no browser/service restart.
+
+[Construction APIs, minimal injection inputs and executable trial procedure](../src/oil_agent/channels/TRIAL.md)
+separate implementation work (C permissions/I assembly/generated status DTO),
+missing authorization (exact app/recipients/URLs/budget/secrets injection), and
+implemented-awaiting-real-test (OAuth/send/callback/phone). Product source/model/
+Feishu calls and paid cost remain **0**. This is an incremental handoff, not
+production or phone acceptance; D stays available for C-schema and E/I fixes.
+
 ## Delivery
 
 Branch: `songconmaisaix31-design/oil-v01-d`
