@@ -20,6 +20,26 @@ public run/job conclusion and approved producer ancestry. This accepts the trial
 code with synthetic provider responses; real source/model/login/phone acceptance
 is NOT EXECUTED. Final report/governance adoption changes no application code.
 
+Delivery interruption: I ordinary-merged E evidence 4676827 and M governance
+0696b29 into local `930250f8606221bafe797dbb7aa90cd36d8d30d1`, then its exact
+original terminal displayed a provider usage-limit error (verified rendered
+screen). Accepted code 63627ee is already pushed; the I handoff documentation is
+still modified and the final document delivery is not pushed. No code changed.
+M requested either restored capacity for that original I session or an explicit
+one-time exception limited to the four reviewed document paths. M has not taken
+over integration, changed models or bought credits.
+
+Recovery authorization: the user subsequently stated that the account was
+changed and explicitly requested new subagents with transferred context. M
+verified both old I/E terminals ended on usage-limit errors, stopped/fenced their
+dispatches, archived/released I's exhausted terminal through its actual resource
+owner, and stopped E's exhausted supervised terminal. Worktrees, branches,
+commits and I's uncommitted evidence draft remain intact. Two fresh replacement
+workers will resume I and E on those exact separate worktrees and exclusive paths;
+AB/C/D implementations remain accepted. No project rebuild or feature expansion
+is authorized by this recovery. The previous request for a main integration
+exception is superseded by this explicit new-worker instruction.
+
 Initial read-only audit: M HEAD `7839b316dad94296857c4b901fe11333a8d24644`; AB
 `f3c835793da03a0b0f1b8fb130c6312db2094d80`; C
 `41a00ded1f949aee8099b549d5d419f0487dd0f9`; D
@@ -108,6 +128,7 @@ implementation. No additional workers/worktrees/branches are needed.
 | R-08 | 已有实现待实测 | Authorized real quote sample, external deployment probes and 7/14-day operation | Outside this increment's first chain; preserve prior gates and do not claim production acceptance |
 | R-13 | 代码尚未实现 | Production assembly / I | Deliberately rejected by build_runtime; outside the current trial-first increment. It is missing implementation, not merely missing credentials |
 | R-14 | 已有实现待实测 | Local container final-state verification / C + E + I | Docker Linux named pipe disappeared during I final image refresh; C/I had stopped their own containers, E was interrupted. Preserve resources; remote isolated PostgreSQL CI supplies testing while host recovery remains pending |
+| R-15 | 执行环境受限 | Final document delivery / I | User authorized fresh workers after changing account; exhausted I/E attempts are fenced and context/ownership transfers to replacements on the same worktrees. Final documentation delivery awaits their verified execution and final receipt; this is separate from R-05/R-06 product authorization |
 
 Resolved during this phase: R-09 fixture/identity test migrations (E d4d772a and
 6be21de), R-10 immutable approval on session/API/callback use (C 1723886), R-11

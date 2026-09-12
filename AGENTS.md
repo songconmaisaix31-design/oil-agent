@@ -11,6 +11,11 @@ bounded LangGraph processing and React/Vite. Do not build an agent scheduler.
   branch, recorded base SHA and exclusive write paths listed in V01-TODO.md.
 - Read anywhere in this repository; edit only assigned paths. Request cross-track
   changes through the coordinator. Do not spawn additional workers.
+- The user's 2026-09-12 account-change instruction explicitly authorizes fresh
+  replacement I/E workers with transferred context. Stop/fence the exhausted
+  attempts first, preserve their worktrees/branches and evidence, and give each
+  replacement the same exclusive paths. This exception does not expand features
+  or authorize live provider calls, purchases or additional recipients.
 - Each verified increment must be committed and pushed to the existing origin.
   Never force push, overwrite public history, delete unknown work or expose secrets.
 - Use English in code and technical artifacts, Chinese for user-facing discussion.
