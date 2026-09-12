@@ -497,6 +497,32 @@ failure is missing external authorization. **Full acceptance remains FAIL** unti
 the original owners' fixes arrive through I and pass independent acceptance.
 No real product call or additional local container operation was performed.
 
+### Candidate 9: configured shared factory and Compose assertion migration
+
+E normally merged exact I **`8de731b259b676a3187b2b04a63010f59d9371d4`** at
+`88bb9f9237f901a4a7dec20b97b4e86067118f78`. It adds the configured trial factory,
+I-owned source/model/OAuth/callback PostgreSQL tests and C's explicit rejection of
+unsupported trial report reminders. This candidate does not include fixes for
+the two recorded domain failures; those required assertions remain unchanged.
+
+I's authorized Compose environment now uses `${OIL_OUTBOUND_MODE:-dry_run}` and
+`${OIL_ENVIRONMENT:-test}`. The old E literal-value assertion was stale. E migrated
+only `test_deploy_safety.py` to verify those precise safe fallback expressions and
+the complete shared application environment after YAML anchor resolution for API,
+init and all three workers. It additionally checks fixture defaults, disabled
+external capabilities, absent permissions, zero model budgets, empty provider
+credential defaults, mandatory database credential injection and Secure cookies.
+Existing network exposure, resource, startup, image and backup safety checks stay.
+
+`uv run --locked pytest tests/integration/test_deploy_safety.py -q --tb=short`:
+**4 passed, 0 failed, 0 skipped, 1.91 seconds**, Windows Python 3.13.13. Ruff
+check/format and diff-check PASS. This is a static Compose boundary check, not a
+container start, provider egress, deployment or credential acceptance. No domain,
+factory, Compose or I-owned test file was edited by E. Docker remains unavailable;
+the coordinator directed remaining PostgreSQL acceptance to Linux CI and forbade
+a shared daemon restart. Final candidate acceptance remains pending its complete
+CI, independent factory checks and the two owner fixes. Product calls/cost stay 0.
+
 ## Verified checkpoint, 2026-09-11 UTC
 
 - Dependencies: reviewed C `41a00ded1f949aee8099b549d5d419f0487dd0f9`,
