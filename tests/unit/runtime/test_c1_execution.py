@@ -60,6 +60,7 @@ def inputs():
             database_url="postgresql+psycopg://synthetic:DB_CANARY@localhost/synthetic",
             permission=dict(
                 approval_id="synthetic-foreground-start",
+                app_request_approval_id="synthetic-foreground-app-window",
                 authorization_ref="synthetic:user-start",
                 budget_ref="synthetic:zero-fee",
                 valid_from=now.isoformat(),
@@ -77,7 +78,13 @@ def inputs():
             ),
         )
     ).encode()
-    return config, raw
+    data = json.loads(raw)
+    data["app_request_permission"] = {
+        key: value
+        for key, value in data["permission"].items()
+        if key not in {"approval_id", "app_request_approval_id", "tenant_key", "identity"}
+    } | {"approval_id": "synthetic-foreground-app-window"}
+    return config, json.dumps(data).encode()
 
 
 def test_private_send_once_reaches_only_fixed_isolated_product(monkeypatch, capsys):

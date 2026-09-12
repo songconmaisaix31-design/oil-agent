@@ -1,7 +1,8 @@
 """Prepare/check one approved Windows private JSON or inject one fixed local process.
 
-Usage: python -m oil_agent.runtime.c1_private prepare|check|inject-check|preview|send-once
-No dotenv, arbitrary path/command/factory, global environment, daemon or provider.
+Usage: python -m oil_agent.runtime.c1_private <mode>
+Modes: prepare, check, inject-check, preview, send-once, tenant-lookup.
+No dotenv, arbitrary path/command/factory, global environment or daemon.
 ACL validation is performed by the fixed adjacent, source-controlled PS script;
 no private file content or exception detail is passed to its command line/logs.
 """
@@ -111,24 +112,34 @@ def inject_check(config):
 
 
 def inject_send_once(config, raw, execution):
+    return _inject_execution(config, raw, execution, mode="send-once")
+
+
+def inject_tenant_lookup(config, raw, execution):
+    return _inject_execution(config, raw, execution, mode="tenant-lookup")
+
+
+def _inject_execution(config, raw, execution, *, mode):
     """Explicit active start only; malformed/lost child results are UNKNOWN."""
     from oil_agent.runtime.c1_execution import (
         checked_outcome,
         execution_settings,
         outcome,
         parse_execution,
+        tenant_lookup_settings,
     )
 
-    if parse_execution(raw) != execution:
+    if parse_execution(raw, mode=mode) != execution:
         raise PreparationError("C1_INVALID_EXECUTION", ("execution",))
-    execution_settings(config, execution)  # Before starting any child or database work.
+    settings_factory = execution_settings if mode == "send-once" else tenant_lookup_settings
+    settings_factory(config, execution)  # Before starting any child or database work.
     child_env = {
         key: os.environ[key] for key in ("SystemRoot", "WINDIR", "TEMP", "TMP") if key in os.environ
     }
     child_env.update(injection_fields(config))
     try:
         result = subprocess.run(
-            [sys.executable, "-I", "-B", "-m", "oil_agent.runtime.c1_product", "send-once"],
+            [sys.executable, "-I", "-B", "-m", "oil_agent.runtime.c1_product", mode],
             input=raw,
             env=child_env,
             capture_output=True,
@@ -136,7 +147,12 @@ def inject_send_once(config, raw, execution):
             check=False,
             creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
         )
-        return checked_outcome(json.loads(result.stdout), result.returncode)
+        safe = checked_outcome(json.loads(result.stdout), result.returncode)
+        if (mode == "tenant-lookup" and safe["status"] == "C1_ACCEPTED") or (
+            mode == "send-once" and safe["status"] == "C1_TENANT_LOOKUP_COMPLETED"
+        ):
+            return outcome("C1_UNKNOWN")
+        return safe
     except OSError:
         return outcome("C1_EXECUTION_FAILED")
     except Exception:
@@ -166,13 +182,21 @@ def prepare_preview():
 def main(argv=None):
     args = sys.argv[1:] if argv is None else argv
     try:
-        if args not in (["prepare"], ["check"], ["inject-check"], ["preview"], ["send-once"]):
+        if args not in (
+            ["prepare"],
+            ["check"],
+            ["inject-check"],
+            ["preview"],
+            ["send-once"],
+            ["tenant-lookup"],
+        ):
             raise PreparationError("INVALID_COMMAND", ("command",))
-        if args == ["send-once"]:
+        if args in (["send-once"], ["tenant-lookup"]):
             from oil_agent.runtime.c1_execution import EXECUTION_EXITS, read_execution
 
-            raw, execution = read_execution(sys.stdin)
-            result = inject_send_once(load_private_config(), raw, execution)
+            raw, execution = read_execution(sys.stdin, mode=args[0])
+            operation = inject_send_once if args[0] == "send-once" else inject_tenant_lookup
+            result = operation(load_private_config(), raw, execution)
             print(json.dumps(result))
             return EXECUTION_EXITS[result["status"]]
         if args == ["preview"]:
