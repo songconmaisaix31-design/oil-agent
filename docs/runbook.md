@@ -76,6 +76,41 @@ candidate and final CI evidence. The original E screenshots and eight browser
 flows remain evidence of the exact E/AB candidate recorded in runtime-checks.md;
 they are not relabeled as a new I browser run.
 
+### Explicit trial assembly
+
+`oil_agent.bootstrap:build_runtime` remains the common API/worker dispatcher.
+Its `build_fixture_runtime(settings)` branch preserves the local defaults above;
+`build_trial_runtime(settings)` selects the existing AB and D adapters only from
+explicit C settings. Use `OIL_DATA_PROVENANCE=trial` and
+`OIL_FIXTURE_DATASET=null` for nonfixture data. A fixture exercise retains its
+fixture provenance/dataset and separately requires C's matching exercise/send
+permission. Production assembly currently rejects startup.
+
+Each enabled capability requires its own typed permission JSON and fixed project
+environment fields documented in `.env.example`; disabled capabilities read no
+provider secret. Jin10 uses provider `jin10`, exact approved source/rights fields,
+and explicitly reviewed MCP argument JSON. OpenAI uses provider `openai` and the
+approved model; neither a model name nor business rules are supplied by default.
+Load AB's rules through bounded `OIL_APPROVED_RULES_JSON`. Every model/send
+`rules_ref` must exactly equal the loaded `authorization_ref@version`, with `@`
+forbidden inside either component. Permission validity must fit the rule validity
+and provenance, and enabled source IDs must match the rule source scope.
+
+Assessment uses the urgent lane's actual client and durable C request/token
+callbacks; normal-lane reports keep SnapshotReportService and no model client.
+Source-only or identity-only trial remains dry-run unless separately approved for
+trial sending. Feishu identity, channel and signed callback use one exact approved
+tenant/app mapping. Constructors never provision principals, create sessions,
+migrate, or call a provider. C's separate approved-identity provisioning command
+is documented in [the runtime contract](../config/real-integration-contract.md).
+
+API and every worker receive the same factory/environment fields through the
+Compose application anchor. The local Compose backend remains internal-only:
+environment wiring does not enable provider egress, public TLS, or a deployment.
+Do not print rendered configuration containing injected values. Actual provider
+requests, rules acceptance, login and exact-recipient sends still require scoped
+user approval and independent real test evidence.
+
 ### E-only rehearsal commands
 
 Inspect exact `oil-agent-e` labels, port 55434 and port 18084 before starting. All
