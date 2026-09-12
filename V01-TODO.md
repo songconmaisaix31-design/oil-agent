@@ -2,6 +2,70 @@
 
 ## Current phase: controlled real integration
 
+### Resumed after user-started Docker: targeted SQL and C1 assembly
+
+The user reports starting Docker and requests continued parallel development.
+The starting integration delivery is
+`4ec6c480dc971d44d176c3539bcbcade4ee7f802`; its adapter/routing integration passed
+independent E review. The old missing-engine observation must be refreshed on
+the exact previously identified E resource, not treated as current failure.
+This instruction does not start a Feishu window or authorize provider requests.
+
+| Owner | Current bounded task | Boundary and acceptance |
+| --- | --- | --- |
+| E | Reconfirm exact E PostgreSQL identity/isolation, then execute the existing 21 C1 SQL cases on fresh disposable E schemas. | Preserve all old data and resources; actual PostgreSQL transactions/concurrency, no SQLite substitute. Report any failure before owner repair. Record evidence in the existing runtime checks. |
+| C | Review the existing C1 private-entry to isolated-trial-database assembly on the already confirmed Windows host. Resolve technical configuration mappings; identify only concrete execution blockers. | Read existing project configuration/code only, no credentials or platform calls. No feature expansion or new approval registry. Any reproduced runtime defect stays with C; deployment glue goes to E/I through M. |
+| I | Integrate verified owner increments and this board on the existing branch, then request E final review. | Original assertions, provenance, exact identity and twenty-request/three-send gates remain intact. |
+
+Only the existing E test database may be used for the SQL task. Match container
+ID/name/project/service/worktree, volume, loopback port, database and user before
+connecting. A missing or mismatched resource does not authorize replacement,
+unknown-volume cleanup or a shared Docker restart. The user-started engine is
+not evidence that the container is running. Keep synthetic tests separate from
+the future C1 trial database. C's assembly review must produce concrete field
+mapping or a reproduced blocker, not a second plan. Retain AB/D when no bounded
+task exists; preserve all original sessions and ownership. No full-suite replay,
+production factory expansion, source/model call, message, new phone window,
+service purchase or public network opening is authorized by this increment.
+
+E task `task_fbae471e7c81` / `ctx_58cfd161bf0b` confirmed the original E
+PostgreSQL container is already running and healthy after the user's Docker
+startup. Its full ID, project/service, E deployment paths, pinned image, retained
+volume and loopback `127.0.0.1:55434` mapping match the recorded E scope. No
+container start/stop occurred. The E-only existing synthetic database password
+may be read once from only that container's `POSTGRES_PASSWORD` into process
+memory and injected only into the test child; no full environment dump, secret
+output/file, credential search or password change is authorized.
+
+C completed `task_fac942c8c794` / `ctx_393ca3e4ccd4` with no code changes.
+The existing C1 structured stdin maps `database_url` directly to the fixed
+isolated child; both lookup and send need the same persistent approved database.
+Existing migration-only CLI is sufficient and no generic user/session setup is
+needed. C reproduced a deployment mismatch offline: general controlled-trial
+Compose publishes no PostgreSQL host port, its validator rejects adding one,
+and its wrapper requires TLS plus unrelated services/queue/recovery startup.
+These restrictions must remain intact. There is no reproduced C runtime defect.
+
+For the reproduced deployment blocker, C owns a minimal project-local runtime
+helper under `src/oil_agent/runtime/` and corresponding unit tests/config notes;
+E owns the separate database-only Compose definition under `deploy/`, focused
+integration checks and existing runtime evidence after its SQL task. The fixed
+candidate resource contract is Compose project `oil-agent-feishu-trial`, service
+`postgres`, database/user `oil_c1_trial`, named volume `c1-data`, internal backend
+network and only `127.0.0.1:55436:5432`. These are proposed local resource names,
+not created or approved live resource identities. Compose accepts only the
+process-injected `OIL_C1_DB_PASSWORD`; no real value is stored in repository files.
+Reuse the fixed C1 process and existing migration-only CLI, with bounded
+structured input and process-only injection, without a new approval registry.
+Do not write a generic Docker manager or change global environment. The candidate
+must use an explicitly scoped loopback endpoint, independent database/user/volume,
+safe disabled capabilities and preserved fixture exercise labeling. No general
+trial gate, existing E resources, provenance or production marker may be relaxed.
+Prepare and verify this concrete deployment result before requesting any missing
+new database activation scope; do not create the future C1 database, enable
+outbound access or start a phone window as part of code preparation. I integrates
+each verified increment; E reviews the final candidate independently.
+
 ### Bounded increment: C1 PostgreSQL test adapter
 
 The user's new multi-agent development instruction resumes the existing C/E/I
