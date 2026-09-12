@@ -4,6 +4,33 @@
 
 ### Active C1: local code accepted; phone test not executed
 
+At 10:59 UTC on 2026-09-12, D's computer-use self-binding attempt ended
+without copying an identity or modifying private configuration. After the Orca
+runtime restarted, M rebound the existing Run and resumed the same D Task in
+its original worktree. D's fresh desktop discovery found no external browser;
+`orca computer list-windows --app Tabbit --json` returned `app_not_found`.
+The explicitly authorized attempt to open the official API Explorer with the
+existing Windows HTTPS handler was rejected before execution by automatic
+approval review, with only `blocked by policy` as its reason. This is a local
+execution restriction, not missing application credentials or a product-code
+defect. No alternate shell or browser API was used to evade the rejection.
+
+The prior browser URL/application match is historical and was not reverified
+after the restart. Exact self selection, clipboard copy and C's recipient
+mapping remain **NOT EXECUTED**. The immediate manual prerequisite is to open
+the existing browser at `https://open.feishu.cn/api-explorer`; D can then resume
+the approved current-application/self-only UI step. Existing bot/self-only
+availability and host confirmations remain accepted, without another scope
+question. No message, token acquisition, source/model call or new phone window
+was initiated. Browser background request counts remain **UNKNOWN**; these
+observations do not establish compliance with the twenty-request live budget.
+No paid service was added; development-session cost is not available from the
+product ledger. D's source remains `da65fb1f2f80a455c058e3107a3df3964c22fbd5`;
+the integrated product source remains `9dfd0a54063b1b9c909d6dd322bbfb23567e27a3`.
+This increment records the attempted real setup and its limitation only;
+no code fix, repeated mock acceptance, database/service change or container
+operation is warranted by this observation. D's session and work are retained.
+
 At 10:31 UTC on 2026-09-12, the user confirmed that the existing application's
 bot is enabled and its availability is restricted to the user alone. Record
 both facts as **USER CONFIRMED**; do not ask for that scope again. This is not
