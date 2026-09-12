@@ -2,6 +2,56 @@
 
 ## Current phase: event business, daily analysis and operating usability
 
+**Verified business increment:** I source candidate
+`69a43a8cc9842ed5acbe9f5def7b93034f4049d9` passed E's independent bounded
+acceptance in `task_6fa17c0da1b2` / `ctx_f87717803d13`. AB delivered
+`19c9194164eb42f6e16a29c628039118a20aeef4`, C delivered
+`0593954a18837b9c9d4ec732b8f7cc27e9d4fe57`, and E froze regressions and
+baseline evidence at `8fbf808cb8e015f5688c646caa2e2e6acdaf21d6` before I
+integrated them. All source commits were normally pushed to their existing
+branches; I preserved owner blobs and original assertions without domain edits.
+
+- Daily reports now separate cited source facts, cautious Chinese supply/transport
+  implications, verification items and data gaps. Only cutoff-valid current
+  revisions support analysis; corrected source records cannot revive old facts.
+  Missing prices remain unknown. The generated, explicitly synthetic Chinese
+  example and replay command are in `src/oil_agent/reporting/AB-HANDOFF.md`.
+- Report timeout, quota refusal and unexpected failure now persist safe degraded
+  health; successful commit restores healthy state. Existing leases, current-day
+  selection, urgent reserves and unique report/recipient intents remain intact.
+- Ordinary silence, same-origin repetition, independent follow-up, original-scope
+  correction, exercise/denial protection and midnight freshness passed focused
+  regressions. No event-rule relaxation or new infrastructure was introduced.
+
+I ran the focused intelligence/reporting/R16/rules/daily-health/API/report union:
+**217 passed**, no failures/skips, 6.19 seconds, one existing AnyIO warning.
+Scoped Ruff/format/diff checks and an offline wheel/sdist build passed. E inspected
+the actual I receipts and existing archives, then independently ran the frozen
+34-case business/PostgreSQL/queue selection: **34 passed**, no failures/skips,
+6.31 seconds. Exact commands and final evidence are in `e2e/runtime-checks.md`.
+The final SQL child ran at 14:49:57-14:50:05 UTC on 2026-09-12, with measured
+wall time 8.214 seconds and cycle-body time 0.947 seconds. Three accelerated
+business dates, three Runtime/Repository reconstructions and six real queue
+triggers recovered three reports and six unique intents. The original E database
+snapshot remained identical: one schema, 73 relations, 29 data objects and 818
+table rows plus sequence states. The same running container/volume state remained.
+
+E's initial positive fixture contained exercise text and was invalid as evidence
+of an occurred event. It was retained as a negative; the corrected positive first
+asserts occurred/credible-single-source/urgent. Its qualified baseline reproduced
+empty analysis and superseded facts (2 failed/5 passed); actual SQL independently
+reproduced missing/stale failure health. Acceptance changed none of those guards.
+
+**Remaining limits:** finite phrase-based analysis is implemented, not general
+causal understanding or verified market accuracy. Fourteen-day live operation,
+OS-process crash recovery, SLA and installed-package execution remain untested;
+accelerated dates and synthetic fault stimuli do not establish them. Source,
+model, platform and phone acceptance still require the already recorded external
+scope and real evidence; production factory remains unimplemented and outside
+this increment. Product source/model/Feishu requests and model tokens were zero,
+new service cost was zero, and development-agent billing was unavailable. No
+continuous monitoring, sending, new resource or additional phone window began.
+
 The user's current instruction stops deeper infrastructure work and authorizes
 parallel product development in these three areas. Start from accepted delivery
 `78e5363d7c7da5d6bb76c3be6296b1f6e4010d87`; preserve the stack, data boundaries
