@@ -54,9 +54,9 @@ The latest instruction makes actual personal Feishu notification the first
 completion condition. D has published status cards and the existing sender
 hooks at `d7958ae21d3ba3879926d898ff7b3f004e8c22a8`; AB has published the
 bounded DeepSeek adapter at `0559e85804232ab0d21cd19bf1c1a6d899b3be60`.
-These owner checks remain simulated, with zero actual provider requests so far.
+These owner checks remain simulated; they made zero actual provider requests.
 C's status contracts are published at `b67f714154ce9e0cf16b477fb9e3b0ad6e72dbfd`;
-runtime assembly and independent integrated acceptance are still in progress.
+runtime assembly and independent integrated acceptance are recorded below.
 
 The existing private configuration may receive one initially null
 `personal_status_scope` field through C's protected, byte-preserving update;
@@ -69,6 +69,49 @@ a process-local keep-awake request only for this dated scope, while on mains,
 with release on stop or by 08:15; do not change the global power plan.
 Task registration and the keep-awake process must use the accepted integrated
 entry. Configuration and synthetic launcher checks do not prove deployment.
+
+C published the runtime at `5104672b7b1f7aa897bd539eda273582f28358c7`.
+I then reproduced a path-dependent test defect at
+`test_status_runtime.py::test_exact_integrated_source_gate_prevents_local_scope_mutation`:
+the test called `prepare_scope()` from the real I path, reached protected
+configuration preparation and timed out connecting to PostgreSQL (17 passed,
+1 failed). This invalidates an unqualified no-private-access/no-connection-attempt
+claim for that check. No successful SQL or provider request was observed.
+C owns the test isolation repair and narrowly scoped effects check; the original
+source-mismatch assertion stays in place. No actual onboarding scope is to be
+activated until the repaired candidate passes E's focused independent check.
+The one-file C repair `fb7767c2304efbb7ea91e85d0892e1290e210b3f` preserves
+that assertion and forbids preparation effects. C's subsequent controlled
+read-only inspection found no status scope, unchanged observed config mtime,
+the original container with zero restarts, and no residual bridge; it did not
+claim historical database-content equality without a prior baseline.
+
+I published executable `c99d327b3bf76a06878401dc17c6e87c4ffeb614` after the
+repair, affected checks and offline build. E independently passed its six
+frozen PostgreSQL cases on that exact source, including real queue timing,
+deduplication, shared budgets and UNKNOWN stop behavior with synthetic HTTP.
+E's earlier NULL-purpose SQL concern came from an old draft: the published
+owner predicate passed a real PostgreSQL probe, so no repair was needed.
+
+Actual personal onboarding has now been accepted by Feishu through that
+integrated product version, using the existing app alias `oil-agent-feishu-trial`
+and sole confirmed self recipient. D ran the fixed `status_local prepare`,
+`onboarding` and `status` commands, then released the short-lived DB bridge.
+
+| Actual evidence | Recorded value |
+| --- | --- |
+| Task | `status-0314f358609a564a9bcaec24cc97f775` |
+| Feishu platform message | `om_x100b656c94d934a0b1f957753d920c2` |
+| Platform acceptance | `2026-09-12T17:36:33.625046Z` / Shanghai 2026-09-13 01:36:33 |
+| Attempts and requests | 1 send attempt; 4 reserved, 4 started, 4 responded; 0 uncertain or transport failures |
+| Product readback | Same accepted task/receipt; morning `STATUS_WAITING`, due 00:00Z, expiry 00:15Z |
+| Phone display | User feedback requested; not yet observed |
+| Costs | No new paid service or recharge; no source/model request. Provider invoice cost is not returned by these records. |
+
+The first platform acceptance is real evidence, not proof of phone display,
+login/callback confirmation, live news/model integration or production readiness.
+E's independent real-record readback and actual one-shot host registration are
+the remaining execution steps. Do not manually run the morning notification.
 
 ## Previous phase: minimal autonomous Feishu notification exercise
 
