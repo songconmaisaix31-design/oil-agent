@@ -18,6 +18,38 @@ All six worktrees are clean. Original terminals are live, exact, connected and
 writable; old dispatches are settled and require fresh dispatch authority.
 Run remains `run_64e3991f76b9`. Public origin and directory ownership are unchanged.
 
+All five original workers have acknowledged v1.1 and executed tools in their exact
+existing sessions. AB/C/D/E reused the supervised worker-start path. I's
+worker-start returned agent_unconfigured before task creation; the verified live
+I terminal was reused through a fresh documented low-level task/dispatch. A
+screen check proved the pasted task was still at the composer, and one submit
+completed delivery; exact transcript and I's acknowledgement then proved actual
+execution. I remains an unsupervised dispatch, with its original resource retained.
+No duplicate worker, terminal, worktree or Run was created.
+
+| Track | Current task / dispatch | Current state |
+| --- | --- | --- |
+| AB | task_57bc94c427ee / ctx_04bfbd1d58de | Implementing documented source/model/rule clients |
+| C | task_5614734edbd3 / ctx_96bb71f83ff1 | Implementing scoped trial permissions/runtime |
+| D | task_c2c9686439df / ctx_87f9412b8dde | Reusing and adapting Feishu/phone interfaces |
+| E | task_826e16b53577 / ctx_2437b4eb6866 | Independent preparation; exact I candidates pending |
+| I | task_642b869e5aaa / ctx_faf7e2afa63d | Baseline/governance merged; incremental integration active |
+
+Construction decisions: AB calls C authorization before every provider request,
+including MCP setup/discovery/pagination; no hidden retries. C returns durable
+request reservation IDs and records model input/output usage; missing usage stays
+unknown and retains its reservation. New real Feishu identity subjects are exactly
+tenant_key:app_id:open_id, with no fallback alias from fixture identity/session.
+The Jin10 guide documents the MCP endpoint and flash result shape but omits tool
+arguments; AB will discover and validate inputSchema and explicit argument bindings
+instead of guessing them. The official OpenAI Responses client is an implementation
+candidate only; provider/model/rules/call approval remain pending.
+
+Early E evidence: 10 focused HTTP/session/OAuth-adapter cases passed against the
+isolated migrated E PostgreSQL, zero skips. Provider responses were synthetic
+httpx transports, not a real Feishu login. E stopped and retained its exact test
+container afterward. These preparation checks do not accept the future I candidate.
+
 ### One-page incremental execution and ownership
 
 | Increment / owner | Bounded work | Integration and acceptance |
