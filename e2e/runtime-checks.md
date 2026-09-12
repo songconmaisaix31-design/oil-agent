@@ -2511,3 +2511,45 @@ transport, migrations, queue installation, runner lifecycle, elapsed 120-second
 automation, real Feishu delivery or phone receipt. C's transport and the later
 I runner integration still require their own concrete candidate and independent
 acceptance. No C/I source or test was edited by E.
+
+### Final ready C/D card and request-observation checkpoint
+
+M subsequently requested the concrete ready checkpoint
+`d27368a37af85be7ab3ec87a1a948dd8c24b9dc8` in `msg_b8d6a5afbe13`.
+Independent `git ls-remote` matched that exact I SHA; I HEAD matched and
+`git status --porcelain=v1` was empty. It normally merges D
+`7a74236c1a6cf68ab5eef8438f7520772ddf60b3` onto the checked compatibility
+checkpoint `1b28e6b`. All ten new channel/test/document blobs matched D exactly,
+and the prior seven C/M paths were unchanged: **17 authorized paths total**
+versus accepted `6f702957`, with no other change. AST comparison of every
+preexisting test function in the two affected channel test files passed.
+
+E normally merged this exact checkpoint at
+`8ab2788643afd16f4c8f3ecc6d1a2619cb9f4f09`, keeping the already pushed
+diagnosis/compatibility evidence `dc4f57668b8de05a35a974f180702e1adf20f9c9`.
+E was clean before execution; all tracked paths equaled the candidate except
+the existing E evidence file. Only the direct two-card and request-observation
+selection was executed, without repeating the compatibility or full channel
+suite:
+
+```text
+uv run --offline --locked --no-sync python -B -m pytest tests/unit/channels/test_c1.py tests/unit/channels/test_tenant_lookup.py -k 'autonomous_exercise or two_exercise_tasks or c1_observes or observer_failure or observed_transport or observed_http or response_observation or tenant_lookup_observes' -q --tb=short -p no:cacheprovider
+```
+
+Result: **27 passed, 56 deselected, 0 skipped, 0 failed, 0.21 seconds, exit 0**.
+The selection checks both exact exercise cards, noninteractive fixture labels,
+rejection of altered scope before a request, distinct stable task send keys,
+reservation/start/response ordering, omission of cached token requests, and
+safe classifications for pre-request recorder failure, post-response recorder
+failure/timeout, transport failure and nonaccepting HTTP responses. It also
+checks tenant-query observation with the exact reservation. All requests use
+`httpx.MockTransport` with synthetic identities and responses. No real provider
+request, recorder persistence, private configuration or database operation ran.
+
+**PASS for the bounded C/D local implementation checkpoint.** M reported I's
+separate 44-case run; E did not repeat it. No runner, durable recorder or new
+runtime integration glue is accepted by this checkpoint. Authenticated database
+transport/migration, actual runtime lifecycle, first accepted-at plus 120-second
+timing, platform acceptance and phone receipt remain unexecuted and require the
+later concrete C/I delivery and explicitly authorized exercise. Only this
+evidence append was authored by E; owner source and assertions remain intact.
