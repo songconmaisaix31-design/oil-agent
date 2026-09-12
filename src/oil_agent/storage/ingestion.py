@@ -34,12 +34,13 @@ class IngestionRepository:
             )
             return SourceRecord.model_validate(row.payload) if row else None
 
-    def pending_record_exists(self):
+    def pending_record_exists(self, *, provenance=None, fixture_dataset=None):
         with self.sessions() as session:
             return (
                 session.scalar(
                     select(SourceRecordRow.record_id)
                     .where(
+                        *self.record_scope(provenance, fixture_dataset),
                         SourceRecordRow.processing_state == "pending",
                         SourceRecordRow.attempt < 3,
                         or_(
@@ -54,13 +55,30 @@ class IngestionRepository:
 
     def checkpoint(self, source_id):
         with self.sessions() as session:
+            self.check_source_scope(session, source_id)
             row = session.get(SourceCheckpointRow, source_id)
             return self._checkpoint(row) if row else None
 
     def _checkpoint(self, row):
         return SourceCheckpoint(**{key: getattr(row, key) for key in SourceCheckpoint.model_fields})
 
+    def check_source_scope(self, session, source_id):
+        scope = self.data_scope()
+        if scope is not None and session.scalar(
+            select(SourceRecordRow.record_id)
+            .where(
+                SourceRecordRow.source_id == source_id,
+                or_(
+                    SourceRecordRow.payload["provenance"].astext.is_distinct_from(str(scope[0])),
+                    SourceRecordRow.payload["fixture_dataset"].astext.is_distinct_from(scope[1]),
+                ),
+            )
+            .limit(1)
+        ):
+            reject(ErrorCode.FORBIDDEN, "Source ID is already bound to another data scope")
+
     def _insert_record(self, session, record: SourceRecord, *, state="pending", rediscovered=False):
+        self.require_data_scope(record)
         family = session.scalar(
             select(SourceRecordRow.record_id)
             .where(
@@ -114,6 +132,7 @@ class IngestionRepository:
     def persist_batch(self, batch: FetchBatch, *, expected: SourceCheckpoint | None):
         with self.sessions.begin() as session:
             lock_key(session, "source:" + batch.checkpoint.source_id)
+            self.check_source_scope(session, batch.checkpoint.source_id)
             current = session.get(SourceCheckpointRow, batch.checkpoint.source_id)
             if (self._checkpoint(current) if current else None) != expected:
                 reject(ErrorCode.REVISION_MISMATCH, "Source checkpoint changed during fetch")
@@ -132,12 +151,28 @@ class IngestionRepository:
             )
             return inserted
 
-    def claim_records(self, *, limit=50, lease_seconds=60):
+    def record_scope(self, provenance, fixture_dataset):
+        configured = self.data_scope()
+        if configured is not None:
+            if provenance is not None and (provenance, fixture_dataset) != configured:
+                reject(ErrorCode.FORBIDDEN, "Claim scope differs from runtime data scope")
+            provenance, fixture_dataset = configured
+        return (
+            ()
+            if provenance is None
+            else (
+                SourceRecordRow.payload["provenance"].astext == str(provenance),
+                SourceRecordRow.payload["fixture_dataset"].astext == fixture_dataset,
+            )
+        )
+
+    def claim_records(self, *, limit=50, lease_seconds=60, provenance=None, fixture_dataset=None):
         now = self.clock()
         with self.sessions.begin() as session:
             rows = session.scalars(
                 select(SourceRecordRow)
                 .where(
+                    *self.record_scope(provenance, fixture_dataset),
                     SourceRecordRow.processing_state == "pending",
                     SourceRecordRow.attempt < 3,
                     or_(
@@ -218,6 +253,7 @@ class IngestionRepository:
                 select(SourceRecordRow)
                 .where(
                     SourceRecordRow.processing_state == "processing",
+                    *self.record_scope(None, None),
                     SourceRecordRow.lease_until <= self.clock(),
                 )
                 .with_for_update(skip_locked=True)

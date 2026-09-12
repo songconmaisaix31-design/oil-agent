@@ -98,6 +98,7 @@ class SessionRow(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    authentication_scope: Mapped[str | None] = mapped_column(String(160))
 
 
 class LoginStateRow(Base):
@@ -272,3 +273,31 @@ class RuntimeHealthRow(Base):
     last_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     status: Mapped[str] = mapped_column(String(32), nullable=False)
     detail: Mapped[str | None] = mapped_column(String(128))
+
+
+class PermissionRow(Base):
+    """One immutable nonsecret approval scope; changing settings cannot reset its budget."""
+
+    __tablename__ = "permission_scopes"
+    approval_id: Mapped[str] = mapped_column(String(160), primary_key=True)
+    scope_digest: Mapped[str] = mapped_column(String(64), nullable=False)
+    blocked: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+
+
+class ProviderCallRow(Base):
+    """Conservative reservation and optional reported usage; no prompt/credential content."""
+
+    __tablename__ = "provider_calls"
+    __table_args__ = (
+        CheckConstraint("reserved_tokens >= 0", name="ck_call_reservation_nonnegative"),
+    )
+    reservation_id: Mapped[str] = mapped_column(String(160), primary_key=True)
+    approval_id: Mapped[str] = mapped_column(
+        ForeignKey("permission_scopes.approval_id"), nullable=False
+    )
+    kind: Mapped[str] = mapped_column(String(32), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    reserved_tokens: Mapped[int] = mapped_column(Integer, nullable=False)
+    input_tokens: Mapped[int | None] = mapped_column(Integer)
+    output_tokens: Mapped[int | None] = mapped_column(Integer)
+    usage_recorded: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)

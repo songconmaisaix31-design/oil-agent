@@ -11,6 +11,7 @@ from oil_agent.storage.decisions import DecisionRepository
 from oil_agent.storage.delivery import DeliveryRepository
 from oil_agent.storage.ingestion import IngestionRepository
 from oil_agent.storage.operations import OperationsRepository
+from oil_agent.storage.permissions import PermissionRepository
 from oil_agent.storage.queries import QueryRepository
 
 
@@ -21,6 +22,7 @@ class Repository(
     DeliveryRepository,
     QueryRepository,
     OperationsRepository,
+    PermissionRepository,
     RepositoryBase,
 ):
     pass

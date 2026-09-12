@@ -98,6 +98,7 @@ class DecisionRepository:
                 reject(ErrorCode.INVALID_OUTPUT, "Evidence was unavailable at report cutoff")
 
     def _store_version(self, session, subject, item, decision_hash, *, kind):
+        self.require_data_scope(item)
         payload = item.model_dump(mode="json")
         session.add(
             VersionRow(

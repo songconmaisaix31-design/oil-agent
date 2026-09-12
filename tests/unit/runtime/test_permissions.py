@@ -26,7 +26,7 @@ def source_permission():
     return SourcePermission(
         **grant("synthetic-source"),
         source_id="jin10-trial",
-        provider="jin10_mcp",
+        provider="jin10",
         rights_ref="synthetic:source-rights",
         credentials_ref="project-injection:source",
     )
@@ -153,3 +153,18 @@ def test_permissions_reject_invalid_limits_dates_and_identity_rebinding():
         )
     with pytest.raises(ValidationError):
         IdentityPermission.model_validate(identity.model_dump() | {"tenant_key": "other-tenant"})
+
+
+def test_trial_process_environment_parses_explicit_null_and_typed_permissions(monkeypatch):
+    import json
+
+    monkeypatch.setenv("OIL_DATA_PROVENANCE", "trial")
+    monkeypatch.setenv("OIL_FIXTURE_DATASET", "null")
+    monkeypatch.setenv("OIL_EXTERNAL_SOURCES_ENABLED", "true")
+    monkeypatch.setenv(
+        "OIL_SOURCE_PERMISSIONS", json.dumps([source_permission().model_dump(mode="json")])
+    )
+    settings = Settings()
+    assert settings.data_provenance == "trial" and settings.fixture_dataset is None
+    assert settings.source_permissions[0].provider == "jin10"
+    assert settings.outbound_mode == "dry_run" and not settings.production_ready

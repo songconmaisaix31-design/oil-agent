@@ -32,7 +32,7 @@ def test_fresh_runtime_alembic_chain(repository, monkeypatch):
         with engine.connect() as connection:
             assert connection.execute(
                 text("SELECT version_num FROM alembic_version")
-            ).scalar_one() == ("0002_runtime")
+            ).scalar_one() == ("0003_trial")
             payload = connection.execute(text("SELECT payload FROM business_config")).scalar_one()
             assert payload["outbound_mode"] == "dry_run"
             assert payload["first_report_policy"] is None and not payload["recipient_ids"]

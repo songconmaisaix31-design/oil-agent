@@ -12,8 +12,10 @@ from sqlalchemy import or_, select
 from oil_agent.contracts.dto import (
     Ack,
     Delivery,
+    EventAssessment,
     NotificationIntent,
     RecipientAuthorization,
+    Report,
     SourceRecord,
     VerifiedAck,
 )
@@ -29,6 +31,7 @@ from oil_agent.storage.models import (
     SourceRecordRow,
     SubjectRow,
     UserRow,
+    VersionRow,
 )
 from oil_agent.storage.notification_text import notification_body
 
@@ -107,6 +110,8 @@ class DeliveryRepository:
             # Fixture data is never disclosed to production recipients, even in dry-run.
             if item.is_fixture and not user.is_test_recipient:
                 continue
+            if not self.recipient_scope_gate(item, user):
+                continue
             grant = AuthorizationRow(
                 subject_id=subject.subject_id,
                 revision=item.revision,
@@ -119,6 +124,15 @@ class DeliveryRepository:
             session.add(grant)
             session.flush()
             if prior is not None and user.recipient_id not in prior:
+                continue
+            if config.outbound_mode == "trial" and not self.trial_item_gate(item, user, kind):
+                continue
+            if (
+                item.provenance == "trial"
+                and subject.kind == "event"
+                and kind not in {"correction", "withdrawal"}
+                and item.severity != "urgent"
+            ):
                 continue
             if subject.kind == "event" and kind not in {"correction", "withdrawal"}:
                 if (
@@ -142,9 +156,10 @@ class DeliveryRepository:
     def _intent(self, session, subject, item, grant, user, kind):
         config = BusinessConfig.model_validate(session.get(BusinessConfigRow, 1).payload)
         channel = config.notification_channel
-        if channel != "dry_run" and (
-            not self.production_gate() or config.outbound_mode != "production"
-        ):
+        live_allowed = (config.outbound_mode == "production" and self.production_gate()) or (
+            self.trial_config_gate(config) and self.trial_item_gate(item, user, kind)
+        )
+        if channel != "dry_run" and not live_allowed:
             reject(ErrorCode.FORBIDDEN, "Live channel readiness gates are not satisfied")
         key = digest(f"{subject.subject_id}:{item.revision}:{kind}:{channel}:{user.recipient_id}")
         exists = session.scalar(
@@ -186,6 +201,7 @@ class DeliveryRepository:
                     )
                     for ref in item.evidence
                 },
+                exercise=config.outbound_mode == "trial" and item.is_fixture,
             ),
             evidence=item.evidence,
             is_fixture=item.is_fixture,
@@ -242,8 +258,24 @@ class DeliveryRepository:
                 return False
         if intent.channel != config.notification_channel:
             return False
-        if intent.channel == "feishu" and not self.production_gate():
+        version = session.get(VersionRow, (intent.subject_id, intent.revision))
+        item_type = EventAssessment if intent.subject_type == "event" else Report
+        if not version or not user:
             return False
+        item = item_type.model_validate(version.payload)
+        scope = self.data_scope()
+        if scope is not None and (item.provenance, item.fixture_dataset) != scope:
+            return False
+        if not self.recipient_scope_gate(item, user):
+            return False
+        if intent.channel == "feishu":
+            if config.outbound_mode == "trial":
+                if not self.trial_config_gate(config) or not self.trial_item_gate(
+                    item, user, intent.kind
+                ):
+                    return False
+            elif config.outbound_mode != "production" or not self.production_gate():
+                return False
         return bool(
             grant
             and grant.active
@@ -254,17 +286,29 @@ class DeliveryRepository:
             and (not intent.is_fixture or user.is_test_recipient)
         )
 
-    def claim_deliveries(self, *, limit=1, lease_seconds=45, subject_type=None):
+    def claim_deliveries(
+        self, *, limit=1, lease_seconds=45, subject_type=None, provenance=None, fixture_dataset=None
+    ):
+        scope = self.data_scope()
+        if scope is not None:
+            if provenance is not None and (provenance, fixture_dataset) != scope:
+                reject(ErrorCode.FORBIDDEN, "Delivery claim differs from runtime data scope")
+            provenance, fixture_dataset = scope
         now = self.clock()
         with self.sessions.begin() as session:
             query = select(DeliveryRow)
+            if subject_type is not None or provenance is not None:
+                query = query.join(IntentRow)
+            if provenance is not None:
+                query = query.where(
+                    IntentRow.payload["provenance"].astext == str(provenance),
+                    IntentRow.payload["fixture_dataset"].astext == fixture_dataset,
+                )
             if subject_type is not None:
                 if subject_type not in {"event", "report"}:
                     reject(ErrorCode.INVALID_INPUT, "Unknown delivery lane")
-                query = (
-                    query.join(IntentRow)
-                    .join(SubjectRow, SubjectRow.subject_id == IntentRow.subject_id)
-                    .where(SubjectRow.kind == subject_type)
+                query = query.join(SubjectRow, SubjectRow.subject_id == IntentRow.subject_id).where(
+                    SubjectRow.kind == subject_type
                 )
             rows = session.scalars(
                 query.where(
@@ -355,11 +399,13 @@ class DeliveryRepository:
         with self.sessions.begin() as session:
             rows = session.scalars(
                 select(DeliveryRow)
+                .join(IntentRow)
                 .where(
                     DeliveryRow.state == "in_flight",
+                    *self.payload_scope(IntentRow.payload),
                     DeliveryRow.lease_until <= self.clock(),
                 )
-                .with_for_update(skip_locked=True)
+                .with_for_update(skip_locked=True, of=DeliveryRow)
             ).all()
             for row in rows:
                 row.state, row.error_code = "unknown", "lease_expired_after_possible_send"
