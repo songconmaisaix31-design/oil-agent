@@ -147,3 +147,48 @@ def test_preparation_double_does_not_create_start_window(local, monkeypatch):
     )
     c1_local.prepare_database()
     assert updates == ["database_container_id"]
+
+
+@pytest.mark.parametrize("owner", [True, False])
+def test_live_status_reuses_only_verified_owned_bridge(local, monkeypatch, owner):
+    from contextlib import contextmanager
+
+    from oil_agent.runtime import c1_stdio
+
+    selected = config(
+        database_password="DB_CANARY", database_container_id=c1_local.database.STDIO_CONTAINER_ID
+    )
+
+    @contextmanager
+    def occupied(*args, **kwargs):
+        raise PreparationError("C1_DB_PORT_BUSY", ("database_port",))
+        yield  # pragma: no cover
+
+    monkeypatch.setattr(c1_stdio, "database_bridge", occupied)
+    monkeypatch.setattr(c1_local, "existing_bridge_owned", lambda: owner)
+    if owner:
+        with c1_local.local_database_bridge(selected, allow_existing=True):
+            pass
+    else:
+        with pytest.raises(PreparationError, match="C1_DB_PORT_BUSY"):
+            with c1_local.local_database_bridge(selected, allow_existing=True):
+                pytest.fail("Unknown listener was adopted")
+
+
+def test_existing_bridge_owner_check_does_not_log_or_execute_owner_text(local, monkeypatch):
+    calls = []
+
+    def run(args, **kwargs):
+        calls.append(args)
+        assert args[-1].startswith("$ErrorActionPreference")
+        assert "SECRET_CANARY" not in str(args)
+        return SimpleNamespace(
+            returncode=0,
+            stdout=(
+                str(c1_local.INTERPRETER) + " -I -B -m oil_agent.runtime.c1_local start"
+            ).encode(),
+        )
+
+    monkeypatch.setattr(c1_local.subprocess, "run", run)
+    assert c1_local.existing_bridge_owned()
+    assert len(calls) == 1
