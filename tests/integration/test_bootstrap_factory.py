@@ -8,6 +8,7 @@ the factory constructs services and C's database authorization remains unchanged
 import json
 from datetime import timedelta
 from decimal import Decimal
+from types import SimpleNamespace
 
 import httpx
 import pytest
@@ -40,6 +41,44 @@ from oil_agent.storage.models import (
 from oil_agent.storage.repository import Repository
 
 pytestmark = pytest.mark.postgres
+
+
+def test_offline_factory_ordinary_trial_requires_approved_news_rules(monkeypatch):
+    """Record the pre-C1 blocker and retain the ordinary trial's rule gate."""
+    monkeypatch.delenv("OIL_APPROVED_RULES_JSON", raising=False)
+    runtime = SimpleNamespace(
+        settings=SimpleNamespace(model_calls_enabled=False, outbound_mode="trial")
+    )
+    with pytest.raises(ValueError, match="OIL_APPROVED_RULES_JSON is required"):
+        bootstrap._wire_assessment(runtime)
+
+
+@pytest.mark.parametrize(
+    "missing", ["OIL_FEISHU_REDIRECT_URI", "OIL_FEISHU_ENCRYPT_KEY"]
+)
+def test_offline_factory_ordinary_trial_requires_web_configuration(monkeypatch, missing):
+    """Construction only: synthetic bindings never authorize a real operation."""
+    for field in (
+        "OIL_FEISHU_REDIRECT_URI",
+        "OIL_FEISHU_APP_SECRET",
+        "OIL_FEISHU_ENCRYPT_KEY",
+        "OIL_FEISHU_VERIFICATION_TOKEN",
+    ):
+        monkeypatch.delenv(field, raising=False)
+    if missing != "OIL_FEISHU_REDIRECT_URI":
+        monkeypatch.setenv("OIL_FEISHU_REDIRECT_URI", "https://fixture.example.invalid/oauth")
+        monkeypatch.setenv("OIL_FEISHU_APP_SECRET", "synthetic-construction-only")
+    permission = SimpleNamespace(
+        app_id="fixture_app", tenant_key="fixture_tenant", identities=()
+    )
+    runtime = SimpleNamespace(
+        settings=SimpleNamespace(
+            identity_enabled=True, identity_permission=permission, outbound_mode="trial"
+        ),
+        services=SimpleNamespace(identity=None),
+    )
+    with pytest.raises(ValueError, match=f"{missing} is required"):
+        bootstrap._wire_feishu(runtime)
 
 
 @pytest.fixture
