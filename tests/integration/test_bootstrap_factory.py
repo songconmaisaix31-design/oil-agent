@@ -20,7 +20,7 @@ from test_postgres_operations import csv_request
 from test_postgres_security import signed_callback
 
 from oil_agent import bootstrap
-from oil_agent.channels import FeishuChannel, FeishuIdentityAdapter
+from oil_agent.channels import FeishuChannel, FeishuIdentityAdapter, FeishuTenantLookup
 from oil_agent.contracts.dto import NotificationIntent
 from oil_agent.contracts.http import BusinessConfig, SessionCreateRequest
 from oil_agent.contracts.services import ServiceError
@@ -29,7 +29,12 @@ from oil_agent.ingestion.http import PinnedHttpClient
 from oil_agent.intelligence.rules import ApprovedRules, PublicationRule
 from oil_agent.runtime.c1_product import build_c1_runtime
 from oil_agent.runtime.cli import load_runtime
-from oil_agent.runtime.permissions import C1Permission, ModelPermission, SourcePermission
+from oil_agent.runtime.permissions import (
+    C1AppRequestPermission,
+    C1Permission,
+    ModelPermission,
+    SourcePermission,
+)
 from oil_agent.runtime.settings import Settings
 from oil_agent.storage.models import (
     AckRow,
@@ -55,9 +60,7 @@ def test_offline_factory_ordinary_trial_requires_approved_news_rules(monkeypatch
         bootstrap._wire_assessment(runtime)
 
 
-@pytest.mark.parametrize(
-    "missing", ["OIL_FEISHU_REDIRECT_URI", "OIL_FEISHU_ENCRYPT_KEY"]
-)
+@pytest.mark.parametrize("missing", ["OIL_FEISHU_REDIRECT_URI", "OIL_FEISHU_ENCRYPT_KEY"])
 def test_offline_factory_ordinary_trial_requires_web_configuration(monkeypatch, missing):
     """Construction only: synthetic bindings never authorize a real operation."""
     for field in (
@@ -70,9 +73,7 @@ def test_offline_factory_ordinary_trial_requires_web_configuration(monkeypatch, 
     if missing != "OIL_FEISHU_REDIRECT_URI":
         monkeypatch.setenv("OIL_FEISHU_REDIRECT_URI", "https://fixture.example.invalid/oauth")
         monkeypatch.setenv("OIL_FEISHU_APP_SECRET", "synthetic-construction-only")
-    permission = SimpleNamespace(
-        app_id="fixture_app", tenant_key="fixture_tenant", identities=()
-    )
+    permission = SimpleNamespace(app_id="fixture_app", tenant_key="fixture_tenant", identities=())
     runtime = SimpleNamespace(
         settings=SimpleNamespace(
             identity_enabled=True, identity_permission=permission, outbound_mode="trial"
@@ -89,6 +90,7 @@ def offline_c1_factory(monkeypatch):
     now = datetime(2026, 9, 12, 6, tzinfo=UTC)
     permission = C1Permission(
         approval_id="synthetic-i-c1-start",
+        app_request_approval_id="synthetic-i-c1-app-window",
         authorization_ref="synthetic:offline-i-start",
         budget_ref="synthetic:zero-product-cost",
         valid_from=now,
@@ -104,11 +106,20 @@ def offline_c1_factory(monkeypatch):
             "subject": "synthetic_i_tenant:synthetic_i_app:ou_synthetic_i",
         },
     )
+    app_permission = C1AppRequestPermission.model_validate(
+        {
+            name: getattr(permission, name)
+            for name in C1AppRequestPermission.model_fields
+            if hasattr(permission, name)
+        }
+        | {"approval_id": permission.app_request_approval_id}
+    )
     settings = Settings(
         environment="test",
         runtime_factory=None,
         c1_display_only=True,
         c1_permission=permission,
+        c1_app_request_permission=app_permission,
         c1_host_binding=permission.host_binding,
         data_provenance="fixture",
         fixture_dataset="feishu-c1",
@@ -211,6 +222,97 @@ def test_offline_factory_c1_does_not_bypass_production_gate(offline_c1_factory, 
     with pytest.raises((ValueError, RuntimeError), match="[Pp]roduction"):
         factory(changed)
     engine.dispose.assert_not_called()
+
+
+@pytest.fixture
+def offline_c1_lookup_factory(offline_c1_factory):
+    settings, engine = offline_c1_factory
+    values = settings.model_dump()
+    values.update(
+        c1_display_only=False,
+        c1_permission=None,
+        c1_tenant_lookup_only=True,
+        outbound_mode="dry_run",
+        c1_app_request_permission=settings.c1_app_request_permission.model_copy(
+            update={"tenant_read_ref": "synthetic:offline-tenant-read"}
+        ),
+    )
+    return Settings(**values), engine
+
+
+@pytest.mark.parametrize("factory", [bootstrap.build_runtime, load_runtime, build_c1_runtime])
+def test_offline_factory_lookup_constructs_only_guarded_app_transport(
+    offline_c1_lookup_factory, monkeypatch, factory
+):
+    settings, engine = offline_c1_lookup_factory
+    monkeypatch.setattr(
+        bootstrap, "_local_services", lambda _: pytest.fail("No ordinary fixture services")
+    )
+    reads = []
+
+    def private_field(name):
+        reads.append(name)
+        assert name == "OIL_C1_APP_SECRET"
+        return "synthetic-i-lookup-only"
+
+    monkeypatch.setattr(bootstrap, "_required_environment", private_field)
+    runtime = factory(settings)
+    services = runtime.services
+    lookup = services.c1_tenant_lookup
+    assert isinstance(lookup, FeishuTenantLookup)
+    assert lookup.authorize_request == runtime.authorize_c1_app_request
+    assert lookup.settings.app_id == settings.c1_app_request_permission.app_id
+    assert lookup.settings.tenant_key == lookup.settings.redirect_uri == ""
+    assert lookup.settings.encrypt_key is lookup.settings.verification_token is None
+    assert reads == ["OIL_C1_APP_SECRET"]
+    assert settings.c1_permission is None and not services.channels
+    assert services.identity is services.ack_verifier is None
+    assert services.assessment is services.reports is services.quote_parser is None
+    assert not services.sources and not services.external_sources
+    assert not services.source_poll_seconds
+    assert not services.assessment_uses_model and not services.reports_use_model
+    assert runtime.repository.c1_permission_provider() is None
+    assert runtime.repository.c1_lookup_permission_provider() == settings.c1_app_request_permission
+    assert not runtime.repository.local_provisioning_allowed()
+    engine.dispose.assert_not_called()
+
+
+@pytest.mark.parametrize("change", ["owner", "host", "read_ref", "production"])
+def test_offline_factory_lookup_rejects_invalid_scope_before_construction(
+    offline_c1_lookup_factory, monkeypatch, change
+):
+    settings, engine = offline_c1_lookup_factory
+    update = {
+        "owner": {"c1_app_request_permission": None},
+        "host": {"c1_host_binding": "synthetic-other-host"},
+        "read_ref": {
+            "c1_app_request_permission": settings.c1_app_request_permission.model_copy(
+                update={"tenant_read_ref": None}
+            )
+        },
+        "production": {"outbound_mode": "production"},
+    }[change]
+    monkeypatch.setattr(
+        bootstrap, "create_db_engine", lambda _: pytest.fail("No engine for invalid scope")
+    )
+    with pytest.raises((ValueError, RuntimeError, ServiceError)):
+        bootstrap.build_runtime(settings.model_copy(update=update))
+    engine.dispose.assert_not_called()
+
+
+def test_offline_factory_lookup_fixed_entry_ignores_override_and_disposes_on_missing_secret(
+    offline_c1_lookup_factory, monkeypatch
+):
+    settings, engine = offline_c1_lookup_factory
+    monkeypatch.setenv("OIL_RUNTIME_FACTORY", "unapproved_module:unapproved_factory")
+    monkeypatch.delenv("OIL_C1_APP_SECRET")
+    monkeypatch.setenv("OIL_FEISHU_APP_SECRET", "synthetic-other-app-secret")
+    changed = settings.model_copy(
+        update={"runtime_factory": "unapproved_module:unapproved_factory"}
+    )
+    with pytest.raises(ValueError, match="OIL_C1_APP_SECRET is required"):
+        build_c1_runtime(changed)
+    engine.dispose.assert_called_once_with()
 
 
 @pytest.fixture

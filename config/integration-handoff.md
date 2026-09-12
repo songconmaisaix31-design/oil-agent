@@ -1,6 +1,57 @@
 # I integration handoff
 
-## Active C1 execution-entry continuation
+## Current C1 tenant lookup assembly
+
+Transport candidate `d4414f9a3b24dc104e2f622ee0391f4ac811811a` was independently
+accepted by E. I ordinarily merged C core
+`1a699c7713ea4c62b5cd81b4e47e1c6909064042` and E evidence
+`5aa4219fd09473e7ab6f645289e00de0fde3ec85`, producing pushed intermediate
+`775308f7ded755da410044f8634b2e5f11a6ff23` for E's separate entry-fixture work.
+Only the authorized owner paths changed in those merges; no owner code was edited
+by I. All incremental commits use `[skip ci]` and preserve the existing branch.
+
+I's factory now recognizes explicit `c1_tenant_lookup_only` after the production
+rejection and before ordinary fixture dispatch. It revalidates C Settings, creates
+an empty RuntimeServices, and injects only D's exported FeishuTenantLookup with
+the mandatory `runtime.authorize_c1_app_request` callback. App ID comes from the
+immutable C1AppRequestPermission and the only credential field read is the fixed
+`OIL_C1_APP_SECRET` allowlist entry. Tenant/person, sender, identity, callback,
+source, assessment and reporting services are absent. Construction makes no
+database connection, provider request, provisioning or permission record; failure
+disposes the engine. C installs repository permission providers internally.
+
+The fixed private/product entry still calls bootstrap.build_runtime without an
+arbitrary factory override. C calls D with keyword-only `lookup(context=...)`.
+Full sending retains complete C1Permission and its required
+`app_request_approval_id` link to the same app owner, plus the existing per-delivery
+claim/grant checks. This glue adds no independent request budget or send path.
+
+I first reproduced a focused factory failure: explicit lookup fell into ordinary
+fixture services. After repair, `uv run --offline --locked --no-sync pytest
+tests/integration/test_bootstrap_factory.py -k offline_factory -q --tb=short`
+passed **20**, with **13 PostgreSQL cases deliberately unselected**. The eight
+new cases check guarded construction through the fixed/shared factories, missing
+owner/read approval, host mismatch, production rejection, secret isolation and
+cleanup. Existing assertions remain; synthetic send fixtures add C's required app
+owner. Scoped Ruff check/format and diff-check pass after one long-line/line-ending
+format correction. The existing Starlette/AnyIO deprecation warning remains.
+
+This is intermediate local assembly evidence. E's entry fixture update and C's
+separately owned result-to-private-binding delta need exact authorized commits
+before combined acceptance; the latter is missing implementation at this source.
+No final combined build has been performed yet. C's 115 focused passes and 21
+collected PostgreSQL cases are owner evidence, not new I execution or SQL success.
+The exact E PostgreSQL engine pipe is unavailable; no database was started.
+
+M's current redacted observation says app_id matches, with tenant_key,
+recipient_open_id and host_binding still missing. I read no private configuration.
+Tenant-read scope, test host/database and a new explicit active window remain
+unapproved. The prior phone window expired at 2026-09-12T09:13:15.149Z and was not
+renewed. Actual product calls, model tokens, sends and new paid cost remain zero;
+live API totals remain null/UNKNOWN. Historical sections below retain their
+original source/evidence boundaries and do not establish current live readiness.
+
+## Historical C1 execution-entry continuation
 
 Retained baseline: `41cfed431d8c8ac882d4cee88267cc20299b3c83`. I ordinarily
 merged M `0a38be78b606e62f6de36a17a98a81d1ecbd4ebd`, original E RED
