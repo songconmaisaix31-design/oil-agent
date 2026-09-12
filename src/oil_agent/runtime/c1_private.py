@@ -1,6 +1,6 @@
 """Prepare/check one approved Windows private JSON or inject one fixed local process.
 
-Usage: python -m oil_agent.runtime.c1_private prepare|check|inject-check|preview
+Usage: python -m oil_agent.runtime.c1_private prepare|check|inject-check|preview|send-once
 No dotenv, arbitrary path/command/factory, global environment, daemon or provider.
 ACL validation is performed by the fixed adjacent, source-controlled PS script;
 no private file content or exception detail is passed to its command line/logs.
@@ -110,6 +110,39 @@ def inject_check(config):
     return expected
 
 
+def inject_send_once(config, raw, execution):
+    """Explicit active start only; malformed/lost child results are UNKNOWN."""
+    from oil_agent.runtime.c1_execution import (
+        checked_outcome,
+        execution_settings,
+        outcome,
+        parse_execution,
+    )
+
+    if parse_execution(raw) != execution:
+        raise PreparationError("C1_INVALID_EXECUTION", ("execution",))
+    execution_settings(config, execution)  # Before starting any child or database work.
+    child_env = {
+        key: os.environ[key] for key in ("SystemRoot", "WINDIR", "TEMP", "TMP") if key in os.environ
+    }
+    child_env.update(injection_fields(config))
+    try:
+        result = subprocess.run(
+            [sys.executable, "-I", "-B", "-m", "oil_agent.runtime.c1_product", "send-once"],
+            input=raw,
+            env=child_env,
+            capture_output=True,
+            timeout=45,
+            check=False,
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+        )
+        return checked_outcome(json.loads(result.stdout), result.returncode)
+    except OSError:
+        return outcome("C1_EXECUTION_FAILED")
+    except Exception:
+        return outcome("C1_UNKNOWN")
+
+
 def prepare_preview():
     """Generate D's same-card local projection without reading application bindings."""
     from oil_agent.channels import create_c1_preview
@@ -133,8 +166,15 @@ def prepare_preview():
 def main(argv=None):
     args = sys.argv[1:] if argv is None else argv
     try:
-        if args not in (["prepare"], ["check"], ["inject-check"], ["preview"]):
+        if args not in (["prepare"], ["check"], ["inject-check"], ["preview"], ["send-once"]):
             raise PreparationError("INVALID_COMMAND", ("command",))
+        if args == ["send-once"]:
+            from oil_agent.runtime.c1_execution import EXECUTION_EXITS, read_execution
+
+            raw, execution = read_execution(sys.stdin)
+            result = inject_send_once(load_private_config(), raw, execution)
+            print(json.dumps(result))
+            return EXECUTION_EXITS[result["status"]]
         if args == ["preview"]:
             print(json.dumps(prepare_preview()))
             return 0  # Only offline artifact creation succeeded; nothing was sent.

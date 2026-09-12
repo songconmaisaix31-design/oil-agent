@@ -40,7 +40,8 @@ WAITING_FOR_APPLICATION_CREATION, NOT_CREATED, NOT_CONFIGURED and field names on
 Prepare never overwrites. Inject-check maps only fixed OIL_C1 fields into one
 foreground `python -I -m oil_agent.runtime.c1_product` process, discards ambient
 OIL/Python/proxy configuration and never selects a private-supplied factory or
-program. That product preparation entry has no database, sender, server or worker.
+program. That product entry's default preparation mode has no database, sender,
+server or worker; the explicit send-once mode below is a separately gated operation.
 There is no dotenv loading or global environment change. The ACL subprocess uses
 the fixed Windows system PowerShell and its built-in Security module; this avoids
 inheriting an incompatible PowerShell 7 parent's module search path.
@@ -118,3 +119,66 @@ host/recipient changes, fencing, UNKNOWN and callback rejection. These require t
 unchanged C PostgreSQL guard and were collected only in this no-Docker turn;
 transaction acceptance remains unverified pending E's focused authorized run.
 Runtime/control-flow and contract checks use synthetic in-memory doubles only.
+
+## Explicit foreground execution connection
+
+The integrated `41cfed431d8c8ac882d4cee88267cc20299b3c83` baseline had a working
+C1 factory and durable runtime methods but no command connecting private loading
+to them. A synthetic reproduction rejected both generic CLI `c1-send-once` and
+private `send-once`, while fully configured `c1_product` still returned preparation
+NOT_AUTHORIZED. Two initial entry regressions failed before the repair; the
+original preparation assertions are preserved.
+
+The only new command is:
+
+```powershell
+.\.venv\Scripts\python.exe -B -m oil_agent.runtime.c1_private send-once
+```
+
+It requires noninteractive structured stdin from the explicitly authorized local
+foreground caller: one JSON object containing `permission` (the complete existing
+C1Permission) and `database_url` (an explicitly approved PostgreSQL URL).
+The transport is bounded to 32768 bytes, rejects duplicate/unknown fields and
+creates no approval file or registry. Do not put credentials or this object in
+command-line arguments, chat, Git or logs. The command never prompts for, invents
+or renews a start. There is no currently authorized real invocation.
+
+The caller must supply the already approved start trigger, immutable approval ID,
+actual UTC valid_from/expires_at, existing budget/reference fields and exact
+app/tenant/personal recipient/host binding. `CREATED` alone grants nothing. The
+private configuration must match every supplied binding before any child or
+database construction. Missing/expired/future/mismatched inputs fail closed.
+The same approval ID and window must be reused on a permitted manual retry;
+creating another ID to evade a limit or UNKNOWN outcome is not authorized.
+
+The fixed child command is `python -I -B -m oil_agent.runtime.c1_product send-once`.
+It receives only the existing fixed C1 environment allowlist and the same bounded
+stdin data. It revalidates inputs and calls I's existing fixed
+`oil_agent.bootstrap.build_runtime`, then the existing
+`prepare_c1_exercise()` and `send_c1_once()` once, and disposes the engine.
+No arbitrary factory, worker, recovery scan, queue setup, migrations, polling,
+assessment, report, OAuth or callback work is started. Preparation commands and
+their exit/status meanings are unchanged. I owns independent factory acceptance;
+no I-owned file was edited by C.
+
+Output is restricted to `status` and known `fields`, with only C1_ACCEPTED adding
+`receipt`: actual `platform_message_id`, UTC `accepted_at`, actual Delivery
+`attempt`, and `api_requests: null` (explicitly UNKNOWN). No entire Delivery,
+permission, recipient or configuration is serialized. A missing/malformed child
+receipt or timeout is C1_UNKNOWN, with no automatic retry. Actual request counts
+are not measured by this entry: the existing durable request ledger must be
+examined during approved execution, and reservations must not be equated with
+received HTTP requests. Unknown usage is never reported as zero.
+
+Exit 0 means C1_ACCEPTED only; it is not phone display or acknowledgment. Exit 3
+means C1_UNKNOWN. Exit 2 covers denied/invalid/incomplete execution, safe failed
+attempts and C1_NO_DELIVERY_CLAIMED. The latter cannot distinguish an existing
+terminal delivery from an unavailable claim and does not assert a new send.
+UNKNOWN/ACCEPTED re-entry uses the same existing outbox and cannot reset it.
+
+Focused verification: 47 tests passed across `tests/unit/runtime/test_c1_execution.py`,
+`test_c1_preparation.py` and `test_c1_runtime.py`, including the original preparation
+tests and an actual isolated child with an expired synthetic permission.
+No real private values, database or provider were used. I assembly/E acceptance,
+the 11 previously collected PostgreSQL transaction regressions, real approved
+bindings/start and platform/phone receipt remain separate pending gates.
