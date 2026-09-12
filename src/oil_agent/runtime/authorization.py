@@ -38,6 +38,7 @@ class RuntimeAuthorization:
         return bool(
             self.settings.identity_enabled
             and permission.active(self.repository.clock())
+            and self.repository.permission_is_current(permission, owner=user)
             and session.authentication_scope == permission.approval_id
             and any(
                 (user.actor_id, user.recipient_id, user.provider, user.provider_subject, user.role)
@@ -91,8 +92,14 @@ class RuntimeAuthorization:
             and self.settings.identity_permission is None
         )
 
-    def approved_identity(self, identity):
+    def current_identity_permission(self):
         permission = self.identity_permission()
+        if not self.repository.permission_is_current(permission):
+            forbidden("Identity approval is unbound, changed or blocked")
+        return permission
+
+    def approved_identity(self, identity):
+        permission = self.current_identity_permission()
         if identity.provider != permission.provider:
             forbidden()
         approved = next(
@@ -110,7 +117,7 @@ class RuntimeAuthorization:
                 self.settings.data_provenance != Provenance.FIXTURE
                 or self.settings.identity_permission
             ):
-                permission = self.identity_permission()
+                permission = self.current_identity_permission()
             actor = self.repository.resolve_session(
                 token, authentication_scope=permission.approval_id if permission else None
             )
@@ -176,6 +183,8 @@ class RuntimeAuthorization:
             and identity
             and self.settings.identity_enabled
             and identity.active(self.repository.clock())
+            and self.repository.permission_is_current(identity)
+            and self.repository.permission_is_current(permission, allow_unbound=True)
             and config.outbound_mode == "trial"
             and config.notification_channel == "feishu"
             and config.first_report_policy == permission.first_report_policy
@@ -194,6 +203,7 @@ class RuntimeAuthorization:
                 user.is_test_recipient
                 and permission
                 and permission.active(self.repository.clock())
+                and self.repository.permission_is_current(permission, owner=user)
                 and any(
                     (
                         user.actor_id,

@@ -1,11 +1,37 @@
 """Atomic provider request reservations and immutable approval scopes in PostgreSQL."""
 
+from sqlalchemy.orm import object_session
+
 from oil_agent.contracts.services import ErrorCode
 from oil_agent.storage.base import fingerprint, lock_key, new_id, reject
 from oil_agent.storage.models import BudgetRow, PermissionRow, ProviderCallRow
 
 
 class PermissionRepository:
+    def permission_is_current(self, permission, *, allow_unbound=False, owner=None):
+        """Read-only validation never replaces or extends an existing approval.
+
+        Identity use requires a previously bound approval. A new send approval may
+        be checked before its first request reservation, but an existing row must
+        always match. Reuse the owning ORM transaction for live user checks.
+        """
+        if not permission.active(self.clock()):
+            return False
+
+        def matches(session):
+            row = session.get(PermissionRow, permission.approval_id, populate_existing=True)
+            if row is None:
+                return allow_unbound
+            return not row.blocked and row.scope_digest == fingerprint(
+                permission.model_dump(mode="json")
+            )
+
+        session = object_session(owner) if owner is not None else None
+        if session is not None:
+            return matches(session)
+        with self.sessions() as session:
+            return matches(session)
+
     def bind_permission(self, session, permission):
         lock_key(session, "permission:" + permission.approval_id)
         digest = fingerprint(permission.model_dump(mode="json"))
