@@ -52,6 +52,13 @@ class ModelUsage:
 
 
 class OpenAIResponsesClient:
+    # Fixed provider bindings; the constructor never accepts an arbitrary base URL.
+    _provider = "openai"
+    _provider_name = "OpenAI"
+    _endpoint = ENDPOINT
+    _host = "api.openai.com"
+    _exact_response_model = False
+
     def __init__(
         self,
         settings: OpenAISettings,
@@ -60,9 +67,10 @@ class OpenAIResponsesClient:
         authorize_model_request: Callable[..., Awaitable[str]],
         record_model_usage: Callable[[str, int | None, int | None], Awaitable[None]],
     ):
-        if http.bounds.endpoint != ENDPOINT or http.bounds.allowed_hosts != ("api.openai.com",):
+        if http.bounds.endpoint != self._endpoint or http.bounds.allowed_hosts != (self._host,):
             raise ValueError(
-                "OpenAI client requires its official Responses endpoint and exact host"
+                f"{self._provider_name} client requires its official Responses endpoint"
+                " and exact host"
             )
         self.settings, self.http = settings, http
         self.authorize, self.record_usage = authorize_model_request, record_model_usage
@@ -104,7 +112,7 @@ class OpenAIResponsesClient:
         # Byte-count upper bound plus framing allowance; no tokenizer/provider preflight call.
         reserved_tokens = len(body) + max_output_tokens + 1024
         context = CallContext(
-            request_id="openai-extraction",
+            request_id=f"{self._provider}-extraction",
             timeout_seconds=s.timeout_seconds,
             deadline_at=datetime.now(UTC) + timedelta(seconds=s.timeout_seconds),
         )
@@ -113,8 +121,10 @@ class OpenAIResponsesClient:
 
         async def reserve():
             nonlocal reservation_id
-            receipt = await self.authorize("openai", s.model, reserved_tokens, urgent=s.urgent)
-            if not isinstance(receipt, str) or not receipt:
+            receipt = await self.authorize(
+                self._provider, s.model, reserved_tokens, urgent=s.urgent
+            )
+            if not isinstance(receipt, str) or not receipt.strip():
                 raise ServiceError(ErrorCode.FORBIDDEN, "Model reservation was not granted")
             reservation_id = receipt
             return receipt
@@ -148,6 +158,7 @@ class OpenAIResponsesClient:
                 or output_tokens is None
                 or input_tokens + output_tokens > reserved_tokens
                 or output_tokens > max_output_tokens
+                or (self._exact_response_model and payload.get("model") != s.model)
             ):
                 raise ValueError
             output = payload.get("output")
