@@ -31,6 +31,33 @@ def context():
     )
 
 
+@pytest.mark.parametrize("reservation", [None, False, True, 0, "", " \t", {}])
+async def test_R1_invalid_reservation_cannot_reach_dns_or_http(reservation):
+    observed = []
+
+    async def authorize():
+        observed.append("authorize")
+        return reservation
+
+    async def resolve(host):
+        observed.append("dns")
+        raise AssertionError("Invalid authorization must be rejected before DNS")
+
+    async def transport(request):
+        observed.append("http")
+        raise AssertionError("Invalid authorization must be rejected before HTTP")
+
+    client = PinnedHttpClient(
+        HttpBounds(ENDPOINT, ("mcp.jin10.com",), 1),
+        resolver=resolve,
+        transport=httpx.MockTransport(transport),
+    )
+    with pytest.raises(ServiceError) as error:
+        await client.post(b"{}", headers={}, context=context(), authorize=authorize)
+    assert error.value.code == "forbidden"
+    assert observed == ["authorize"]
+
+
 @pytest.mark.parametrize("address", ["8.8.8.8", "2606:4700:4700::1111"])
 async def test_R1_real_http_stack_pins_address_and_keeps_host_sni_verification(
     monkeypatch, address
