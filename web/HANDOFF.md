@@ -25,11 +25,34 @@ Ruff check/format passed; `npm test` **18 passed**, `npm run typecheck`,
 `git diff --check` passed. All HTTP evidence is mocked, no browser/service restart.
 
 [Construction APIs, minimal injection inputs and executable trial procedure](../src/oil_agent/channels/TRIAL.md)
-separate implementation work (C permissions/I assembly/generated status DTO),
+separate pending integration acceptance (C permissions/I assembly/generated status DTO),
 missing authorization (exact app/recipients/URLs/budget/secrets injection), and
 implemented-awaiting-real-test (OAuth/send/callback/phone). Product source/model/
 Feishu calls and paid cost remain **0**. This is an incremental handoff, not
-production or phone acceptance; D stays available for C-schema and E/I fixes.
+production or phone acceptance; D stays available for E/I fixes.
+
+### C operational schema follow-up
+
+Normally adopted C `ce3a66673afc15eef20337ac7acf300bacab36d3` at merge checkpoint
+`2c1fc79d4766fcceb9c03e46a4ccb6869c8ffe47`. D code
+`7e575c293a2a7ad19f0c08f6c2575db90577fe4f` is pushed with matching remote SHA.
+Only six `web/src/` paths changed: `config.tsx`, `generated/api.d.ts`, `pages.tsx`,
+`test/app.test.tsx`, `test/fixtures.ts` and `ui.tsx`.
+
+Generated TypeScript directly from C's authoritative OpenAPI (trial outbound mode,
+runtime data provenance, permission flags and `production_accepted: false`). Home
+and health views show data classification independently of production acceptance;
+admin health displays read-only permission configuration, explicitly subject to
+budgets, expiry, recipient and revision checks. No send toggle or additional API
+route was added. Test fixtures now supply the authoritative new status fields.
+
+Verification after the merge: **98 channel/contract tests and 23 web tests passed**;
+locked Ruff check/format, TypeScript, generated-schema consistency, Vite build,
+Prettier and `git diff --check` passed. New UI cases distinguish all three data
+classifications from acceptance and keep permission details restricted to admins.
+No browser/service restart or real provider call. C's provisioning implementation
+is delivered and documented in the trial procedure; I assembly/E independent
+acceptance and missing external authorization are the remaining separate gates.
 
 ## Delivery
 
