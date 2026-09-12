@@ -198,6 +198,71 @@ not separately instrumented. No external request was permitted by these tests.
 No browser, image build or full Compose rerun occurred. Exact E PostgreSQL was
 stopped and retained afterward, exit 0/OOM=false; test slot released.
 
+### Candidate 3: actual Jin10 HTTP/MCP adapter with isolated transports
+
+Exact I candidate **`85fdcff643cfaee7b94df89bde09312874aae595`** includes AB source
+`d2f2d17fc0687dd75e56b21394830563df59e534` after candidate 2. E normally merged it
+on top of `46b7e919f0f84628c1e2db9b911fd66983676377`; merge HEAD was
+`555f6bc2407e46ffa1be5c17114fdea0a02cfc8c`. E added independent tests only in
+`tests/integration/test_jin10_acceptance.py` and updated this existing report.
+
+**LIMITED_LOCAL_PASS for source transport/adapter/storage boundary**. Concrete
+source transport and MCP adaptation move from MISSING_IMPLEMENTATION to
+**IMPLEMENTED_AWAITING_REAL_TEST** for this scope. Actual source/runtime assembly,
+durable per-request approvals and model/rules are not established by these tests;
+those implementation gaps await later C/AB/I candidates. Real source permission,
+token, request budget and configured argument authorization remain missing external
+inputs. Full candidate acceptance still fails on the three unresolved legacy
+fixture-production sender tests; no full green claim is made.
+
+```text
+uv run --locked pytest tests/unit/ingestion tests/integration/test_jin10_acceptance.py -m 'not postgres' -q --tb=short --junitxml=e2e/runtime-artifacts/v11-candidate3-network.xml
+uv run --locked pytest tests/integration/test_jin10_acceptance.py -m postgres -q --tb=short --junitxml=e2e/runtime-artifacts/v11-candidate3-postgres.xml
+```
+
+First command: **86 passed, 3 explicitly deselected, 1.05 seconds**, exit 0
+(79 AB ingestion + 7 E cases). Second command: **3 passed, 7 explicitly deselected,
+3.04 seconds**, exit 0. Together all **10 new E tests** execute with zero failures
+or skips; the separate commands partition the DB and non-DB work. Ruff check/format
+and diff-check PASS. Windows Python 3.13.13, locked HTTPX/HTTPCore and E PostgreSQL
+16.14, fresh migrated schemas. A narrowly documented `ASYNC109` suppression is
+limited to three synthetic methods implementing HTTPCore's required stream API.
+
+The two new transport cases use the actual HTTPX/HTTPCore request and HTTP/1.1
+framing stack, replacing only the network backend. They observe one validated
+public IPv4/IPv6 target connection, original Host and TLS SNI, certificate checking
+enabled, one explicit authorization and DNS resolution, and ignored ambient proxy /
+certificate-file sentinels. **No actual socket or TLS handshake occurs.** Five more
+cases revoke the synthetic grant before each initialization, initialized-notification,
+discovery or paged tool POST and assert no unauthorized request reaches the double.
+
+Actual Jin10Source with C committed-history lookup and PostgreSQL demonstrates:
+first revision commit, exact duplicate retained, changed content proposed as revision
+2, record/cursor transaction interruption, repeated fetch still proposing revision 2,
+and successful retry. Malformed page 2 and revoked approval before page 2 each leave
+the original committed record and cursor unchanged. Publisher availability,
+occurrence time and retention coverage remain unverified; the adapter retains the
+explicit coverage gap. The authorization callback in these tests is an isolated
+double; durable C permission/budget enforcement is a separate later acceptance.
+
+E synthetic operations: **2 network-backend connection attempts**, **10 MCP POSTs**
+across the five denial variants, **16 MCP POSTs** in revision recovery, and **9 / 8
+MCP POSTs** in malformed-page / revoked-page cases (including their initial four
+setup/fetch POSTs), for **45 total synthetic HTTP requests** across E cases.
+AB unit doubles are additional, not included in that total. Product source requests,
+model calls/tokens, Feishu requests/sends and paid product cost remain **0**.
+Only E PostgreSQL was briefly started, then stopped and retained, exit 0/OOM=false.
+No image, full Compose, browser or deployment was run.
+
+E read the public [Jin10 guide](https://mcp.jin10.com/app/doc.html),
+[MCP transport specification](https://modelcontextprotocol.io/specification/2025-11-25/basic/transports)
+and [HTTPCore SNI extension](https://www.encode.io/httpcore/extensions/#sni_hostname)
+on 2026-09-12 to cross-check the documented endpoint, tool envelope and IP/hostname
+separation. These documentation reads are not product API requests or a source
+license check. The public guide does not supply an approved input-argument or
+retention contract. HTTP backend observations verify local configuration wiring;
+actual certificate/server behavior remains NOT EXECUTED.
+
 ## Verified checkpoint, 2026-09-11 UTC
 
 - Dependencies: reviewed C `41a00ded1f949aee8099b549d5d419f0487dd0f9`,
