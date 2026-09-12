@@ -25,6 +25,12 @@ C's `main(argv=None)` selects preparation instead of E's supplied `sys.argv`, so
 the fixed factory is not reached. Product-denial passes through this preparation
 path do not independently prove active execution guards. I sent the mismatch to
 M for original C/E ownership; no independent assertion or domain code was edited.
+M subsequently confirmed that no-argument `main()` intentionally preserves the
+preparation interface; the actual module forwards explicit command arguments.
+E owns correction of its invocation/DTO test harness after reproducing the
+secondary mismatches. The second permission check and full Delivery validation
+must stay intact. This is a pending independent-test interface correction, not a
+credential blocker or permission to relax runtime guards.
 
 I extended only the existing offline factory tests to exercise C's actual fixed
 `build_c1_runtime` wrapper and verify that configured/ambient runtime factory
