@@ -2646,3 +2646,172 @@ equality therefore failed and was narrowed to the actual unchanged constructor
 blobs. The earlier local-child fixed-argv check is not presented as acceptance
 of these later lifetime settings. They remain part of the later exact-candidate
 lifecycle verification, with no additional live probe or broad audit here.
+
+## C1 two-task PostgreSQL and final local preparation acceptance
+
+E dispatch `ctx_00211d421bdc` independently checked executable I source
+`75a6fc4b7e0cd00fc82fdb49a4cc8cc615b67c9a`, normally merged into retained E at
+`9503e0569f66a396ae64f105d9d12ee09e48b9e9`; their committed trees were identical.
+Published I delivery `cc4c13b8f990c136ff222e2a3a0da1ec34537d38` differs from that
+executable checkpoint only in `V01-TODO.md` and `config/c1-preparation.md`.
+Independent `git ls-remote` matched that exact I SHA and its worktree was clean.
+Owner blob checks preserved C `2b3b8d54fd9abbeedd7babb9051a8f01d6d0ffbe` and
+the prior E `82cadafde1ff2c8191de557d8a4978854b8b5476` tests/evidence. Only the
+new E integration test below and this evidence append were authored here.
+
+I reported 62 focused checks, the scoped lint/format checks and eight entry
+outcome probes; E did not repeat those tests. E inspected the actual successful
+offline wheel/sdist build receipt from I dispatch `ctx_f3e355899a8e` and read
+its existing artifacts under
+`C:/Users/DW/AppData/Local/Temp/oil-agent-i-c1-ctx-f3e355899a8e/dist` without
+rebuilding or installing. Eight relevant helper/bootstrap/queue/storage members
+in both archives matched the final source after line-ending normalization;
+the wheel declared 14 dependencies. This is artifact/source evidence, not an
+installed-product execution.
+
+### Five focused cases on the existing E PostgreSQL database
+
+`tests/integration/test_c1_two_task_postgres.py` reuses `e_repository`, its real
+migrations and fresh `e_acceptance_<UUID>` schemas, plus the existing explicitly
+synthetic C1 configuration builder. The five cases cover:
+
+- Concurrent deduplication of each distinct task/outbox, refusal before the first
+  accepted receipt and before its exact 120-second due time, and shared durable
+  limits of three send reservations and twenty total requests across both tasks.
+- Per-reservation scope/order checks, concurrent idempotent observations,
+  transport uncertainty, repository reconstruction and durable stop refusal.
+- Durable UNKNOWN and stopped states returning before the queue can open or any
+  request can be reserved; these are two parameterized cases.
+- An actual Procrastinate worker automatically executing two durable jobs on
+  real wall time with a synthetic channel, then returning completed after
+  repository/runtime reconstruction without another job or send.
+
+E reverified only container
+`b3c3a345428590922eb8e628a996dd634cb3333e5f0c86f588eede8fb7101cab`, name
+`oil-agent-e-postgres-1`, project/service `oil-agent-e`/`postgres`, original E
+`deploy` workdir and `compose.yaml`/`compose.e-test.yaml` labels, volume
+`oil-agent-e_postgres-data`, database/user `oil_e_test`, and configured/active
+loopback-only `127.0.0.1:55434:5432`. Its image was
+`postgres:16-alpine@sha256:e013e867e712fec275706a6c51c966f0bb0c93cfa8f51000f85a15f9865a28cb`.
+It was already running healthy, started at `2026-09-12T12:25:48.707130701Z`,
+restart count zero. Only this exact container's project synthetic password was
+captured in process memory for the scoped test child; it was not printed,
+written to a file or placed in a global environment.
+
+Collection returned **5 cases in 0.20 seconds, exit 0**. The first actual run:
+
+```text
+uv run --offline --locked --no-sync python -B -m pytest tests/integration/test_c1_two_task_postgres.py -q --tb=short -s -x -p no:cacheprovider
+```
+
+returned **2 passed, 1 failed in 2.95 seconds, exit 1**, stopping at the new E
+harness's missing required `App(connector=...)` argument. E corrected only that
+constructor to use a real closed connector with an explicit forbidden-open
+assertion, preserving all business assertions. No product repair was needed.
+The process ran from `2026-09-12T16:24:52.928686Z` to
+`16:24:57.624751Z`, **4.696 seconds**. The remaining three cases were then run:
+
+```text
+uv run --offline --locked --no-sync python -B -m pytest tests/integration/test_c1_two_task_postgres.py -q --tb=short -s -x -p no:cacheprovider -k 'durable_unknown or real_queue'
+```
+
+Result: **3 passed, 2 deselected in 122.81 seconds, exit 0**; process
+`2026-09-12T16:25:59.824715Z` to `16:28:04.386535Z`, **124.562 seconds**.
+All five cases therefore passed across the two bounded executions after the
+E-only harness correction; this is not a claim of one clean five-case run.
+Scoped Ruff check and format check passed for the new test.
+
+The actual queue case recorded first synthetic acceptance at
+`2026-09-12T16:26:03.428431Z`, durable second due time
+`16:28:03.428431Z`, and second synthetic acceptance at `16:28:03.812655Z`:
+**120.384224 seconds apart**, with **120.822 seconds** measured flow-body time.
+There were exactly **two real successful queue jobs, two synthetic sends and
+three reserved/started/responded synthetic requests**; no uncertainty/failure
+remained in that case. No calendar acceleration or agent-issued second send
+was used. The test channel returns synthetic receipt DTOs and records synthetic
+request observations; it makes **zero platform requests**. These timings prove
+the local real-queue schedule, not Feishu acceptance latency or phone receipt.
+
+Both runs compared bounded logical inventories of only this E database before
+and after: **1 schema, 73 relations, 29 data objects and 818 table rows**.
+The complete bounded row multisets and sequence states matched; the fixtures'
+new schemas were removed and no preexisting schema/data changed. Selected
+container/volume/binding/running metadata matched before and after. E did not
+create, restart, stop, prune or alter an existing Docker resource.
+
+### Actual protected C1 readiness on the final I source
+
+After M relayed C's completed preparation and released the dedicated resource
+for E read-only checks in `msg_20a1d58748a6`, E used final I `cc4c13b` directly.
+Before access, checked-out protected helper bytes matched C `2b3b8d5`, and the
+existing protected loader verified the explicitly authorized project path,
+owner/ACL/reparse/link/schema constraints. No credential or identity value was
+printed. The only absent fields were `tenant_key` and `exercise_start`.
+
+Exact resource proof covered container
+`5ab6d8fb192e33242f51a6b80e3e768eb4421fbd81de80c5627d02a161583b76`, name
+`oil-agent-feishu-trial-postgres-1`, project/service
+`oil-agent-feishu-trial`/`postgres`, original I workdir/Compose path, the same
+pinned image above, volume `oil-agent-feishu-trial_c1-data`, and sole internal
+network `oil-agent-feishu-trial_backend` with ID
+`a2a3036e03807d1840b9b5c01135349eeeaf7168d10755b26cdfa6b625569ef5`.
+The existing configured loopback binding and empty native runtime port mapping
+were retained; connectivity used C's fixed-container process-owned stdio path.
+
+Each command below ran once through the final I isolated interpreter, with
+captured redacted output, no stderr and **exit 0**:
+
+```powershell
+& 'C:/Users/DW/orca/workspaces/oil-agent/oil-v01-i/.venv/Scripts/python.exe' -I -B -m oil_agent.runtime.c1_local db-status
+& 'C:/Users/DW/orca/workspaces/oil-agent/oil-v01-i/.venv/Scripts/python.exe' -I -B -m oil_agent.runtime.c1_local status
+```
+
+`db-status` returned **C1_DB_READY**, empty fields, from
+`2026-09-12T16:30:13.645668Z` to `16:30:30.772905Z` (**17.127 seconds**).
+`status` returned **C1_NOT_STARTED**, field `exercise_start`, from
+`16:30:30.773204Z` to `16:30:46.414534Z` (**15.641 seconds**).
+One subsequent explicit read-only SQL transaction through the same protected
+bridge verified database/user `oil_c1_trial`, migration head `0003_trial`, and
+a readable real Procrastinate queue. Aggregate counts were all zero: queue
+jobs, recorded provider calls, permissions, exercise subjects and request
+observations. These are observed database records, not independent evidence
+about unobserved external activity. C performed the prior migrations; E did
+not rerun them or independently prove C's earlier before/after preservation.
+
+During that authenticated read-only connection, selected process inspection
+observed **one `nc`, one `timeout`, hard/idle arguments 1800/1800 seconds and
+one loopback listener**. At completion `2026-09-12T16:31:08.183897Z`, these
+counts all returned to zero, matching the precheck; selected resource metadata
+and protected file bytes/file identity were unchanged, with protected path/ACL
+checks passing again. This verifies final-context arguments and ordinary
+cleanup; it does not test waiting thirty minutes for expiry or an OS crash.
+The earlier 240/180-second local-child evidence remains limited to its original
+source. The dedicated database remained running with no topology/resource or
+private-configuration mutation by E.
+
+### Verdict and remaining user action
+
+**PASS for the bounded PostgreSQL/queue implementation and actual source-worktree
+C1 local readiness.** No C/D/I domain defect was reproduced in this scope.
+There was no live start, tenant lookup, platform send or phone observation.
+The new tests never write the user's actual private `exercise_start`; all test
+identities, bindings, permissions, failures and receipts are synthetic and
+isolated in disposable E schemas.
+
+From an interactive local terminal the reviewed entry command is:
+
+```powershell
+& 'C:/Users/DW/orca/workspaces/oil-agent/oil-v01-i/.venv/Scripts/python.exe' -I -B -m oil_agent.runtime.c1_local start
+```
+
+Only the user's invocation opens the actual permission window. With the same
+interpreter/module, `status` is the read-only command observed above; `stop`
+records the exercise stop and `resume` retains its identity/budget. E reviewed
+those entry paths and tested durable stop/UNKNOWN/completed reconstruction on
+synthetic E state, but did not invoke actual private `start`, `stop` or `resume`.
+UNKNOWN is not permission to resend. Live execution still must establish the
+missing tenant binding under the approved shared request budget, send only the
+two approved cards to the sole authorized recipient, and provide separately
+platform IDs/timestamps, autonomous second timing, final accounting and the
+user's phone feedback. No real-source/model, SLA, continuous operation or
+production acceptance is claimed. I still integrates this E test/evidence commit.
