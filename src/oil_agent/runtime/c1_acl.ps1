@@ -67,16 +67,13 @@ try {
     }
     $children = @(Get-ChildItem -LiteralPath $targetPath -Force)
     foreach ($child in $children) {
-        if ($child.Name -ne 'config.json' -or $child.PSIsContainer) { throw 'unknown_file' }
+        if ($child.Name -notin @('config.json', 'c1-preview.json', 'c1-preview.html') -or $child.PSIsContainer) { throw 'unknown_file' }
         Assert-PrivateAcl $child.FullName
     }
     [Console]::Out.Write('PRIVATE_PATH_VERIFIED')
 } catch {
     # No path, ACL identity, exception, private value, or file content is emitted.
     $field = $script:field + '_unverified'
-    if ($_.Exception.Message -like '*GetOwner*') { $field = 'get_owner_api' }
-    if ($_.Exception.Message -like '*Get-Acl*') { $field = 'get_acl_api' }
-    if ($_.Exception.Message -like '*scope*') { $field = 'scope_api' }
     if ($_.Exception.Message -in @('path', 'owner', 'acl', 'missing', 'unknown_file')) {
         $field = $_.Exception.Message
     }

@@ -1,6 +1,6 @@
 """Prepare/check one approved Windows private JSON or inject one fixed local process.
 
-Usage: python -m oil_agent.runtime.c1_private prepare|check|inject-check
+Usage: python -m oil_agent.runtime.c1_private prepare|check|inject-check|preview
 No dotenv, arbitrary path/command/factory, global environment, daemon or provider.
 ACL validation is performed by the fixed adjacent, source-controlled PS script;
 no private file content or exception detail is passed to its command line/logs.
@@ -110,11 +110,34 @@ def inject_check(config):
     return expected
 
 
+def prepare_preview():
+    """Generate D's same-card local projection without reading application bindings."""
+    from oil_agent.channels import create_c1_preview
+
+    verify_private_path()
+    paths = [PRIVATE_DIRECTORY / "c1-preview.json", PRIVATE_DIRECTORY / "c1-preview.html"]
+    if any(path.exists() for path in paths):
+        # Never overwrite either member, including a partial prior preparation.
+        return {"status": "PREVIEW_EXISTS_NOT_SENT", "fields": ["preview_files"]}
+    preview = create_c1_preview()
+    metadata = {key: preview[key] for key in ("test_id", "created_at", "msg_type", "content")}
+    for path, data in zip(
+        paths, [json.dumps(metadata, ensure_ascii=False, indent=2), preview["html"]], strict=True
+    ):
+        with path.open("xb") as stream:
+            stream.write(data.encode("utf-8"))
+    verify_private_path()
+    return {"status": "PREVIEW_CREATED_NOT_SENT", "fields": ["preview_files"]}
+
+
 def main(argv=None):
     args = sys.argv[1:] if argv is None else argv
     try:
-        if args not in (["prepare"], ["check"], ["inject-check"]):
+        if args not in (["prepare"], ["check"], ["inject-check"], ["preview"]):
             raise PreparationError("INVALID_COMMAND", ("command",))
+        if args == ["preview"]:
+            print(json.dumps(prepare_preview()))
+            return 0  # Only offline artifact creation succeeded; nothing was sent.
         config = prepare_private_config() if args == ["prepare"] else load_private_config()
         result = inject_check(config) if args == ["inject-check"] else preparation_status(config)
         print(json.dumps(result))
