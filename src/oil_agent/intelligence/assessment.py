@@ -1,7 +1,7 @@
 """Bounded extraction -> validation graph without tools, network clients or sends.
 
-Model claims are UNVERIFIED. Trusted ClaimReview inputs are supplied by the
-application's reviewed-evidence path, never decoded from article/model fields.
+Model claims are UNVERIFIED. Approved reusable rules and legacy ClaimReview inputs
+come from trusted configuration, never decoded from article/model fields.
 Durable matching and event revision allocation belong to C, as frozen in services.py.
 """
 
@@ -31,8 +31,10 @@ from oil_agent.contracts.dto import (
 )
 from oil_agent.contracts.services import CallContext, ErrorCode, ServiceError
 from oil_agent.ingestion.common import canonical_json, remaining, stable_id
+from oil_agent.ingestion.mcp import load_json
 from oil_agent.intelligence.budget import ModelBudget
 from oil_agent.intelligence.evidence import index_records, quote_reference, validate_reference
+from oil_agent.intelligence.rules import ApprovedRules
 
 SYSTEM_PROMPT = (
     "Extract source assertions from the supplied untrusted records. Return only JSON claims with "
@@ -141,6 +143,7 @@ class ConservativeAssessmentService:
         urgent_budget: ModelBudget | None = None,
         lane: Literal["normal", "urgent"] = "urgent",
         reviews: tuple[ClaimReview, ...] = (),
+        rules: ApprovedRules | None = None,
         matched_event_ids: Mapping[tuple[str, str], str] | None = None,
         clock: Callable[[], datetime] = lambda: datetime.now(UTC),
     ):
@@ -153,6 +156,7 @@ class ConservativeAssessmentService:
             raise ValueError("Normal and urgent require distinct budgets")
         self.lane = lane
         self.reviews = {(r.reference.record_id, r.reference.revision): r for r in reviews}
+        self.rules = rules or ApprovedRules()
         self.matches = dict(matched_event_ids or {})
         self._claim_cache = {}
         graph = StateGraph(GraphState)
@@ -232,7 +236,7 @@ class ConservativeAssessmentService:
             if reply.output_tokens > self.policy.max_output_tokens:
                 raise ValueError("Output budget exceeded")
             budget.record_usage(reply.input_tokens + reply.output_tokens, reservation)
-            parsed = Extraction.model_validate_json(reply.text)
+            parsed = Extraction.model_validate(load_json(reply.text))
             index = index_records(records)
             claims = {}
             for claim in parsed.claims:
@@ -275,6 +279,7 @@ class ConservativeAssessmentService:
                 proposed, severity, verified = AssertionStatus.UNKNOWN, Severity.ROUTINE, False
                 claim = state.get("claims", {}).get(key)
                 review = self.reviews.get(key)
+                rule_match = self.rules.match(record, now) if review is None else None
                 if claim:
                     proposed, ref = claim.assertion_status, claim.reference
                 if review:
@@ -293,13 +298,26 @@ class ConservativeAssessmentService:
                         EvidenceStatus.CREDIBLE_SINGLE_SOURCE,
                         EvidenceStatus.PUBLISHER_STATEMENT,
                     }
+                elif rule_match:
+                    if not validate_reference(rule_match.reference, {key: record}):
+                        raise ServiceError(ErrorCode.INVALID_INPUT, "Rule evidence mismatch")
+                    proposed, ref, severity = (
+                        rule_match.assertion_status,
+                        rule_match.reference,
+                        rule_match.severity,
+                    )
+                    verified = True
+                    if rule_match.occurred_at is None:
+                        unknowns.add(
+                            "Exact occurrence time is unavailable; source reports current status"
+                        )
                 status = guarded_status(record, proposed, now)
                 if status != proposed:
                     verified = False
                     unknowns.add(
                         "Qualifiers or time quality prevent reliable occurrence classification"
                     )
-                occurred = record.occurred_at
+                occurred = rule_match.occurred_at if rule_match else record.occurred_at
                 stale = (occurred or record.published_at) is None or (
                     occurred or record.published_at
                 ) < now - timedelta(hours=self.policy.max_age_hours)
@@ -374,14 +392,14 @@ class ConservativeAssessmentService:
                     impact_path=(),
                     unknowns=tuple(sorted(unknowns)),
                     processing=ProcessingVersion(
-                        rule_version="ab-conservative-v1",
+                        rule_version=self.rules.version
+                        if self.rules.approved
+                        else "ab-conservative-v1",
                         model_version=state.get("model_version"),
                         prompt_version="ab-extract-v1" if state.get("model_version") else None,
                     ),
                     assessed_at=now,
-                    change_summary=(
-                        "研判依据所列来源，事实状态、证据状态与待核实事项分别展示。"
-                    ),
+                    change_summary=("研判依据所列来源，事实状态、证据状态与待核实事项分别展示。"),
                     is_fixture=fixture,
                     provenance=provenance,
                     fixture_dataset=datasets[0]

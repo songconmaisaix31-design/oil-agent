@@ -339,3 +339,96 @@ and authorized real testing; source license/token/argument scope/request budget 
 missing authorization; model client/rules are the next implementation increment.
 Product source/model/platform calls and product cost remain 0. Provider costs for
 future real requests are unknown until actual usage/billing evidence is supplied.
+
+## Real integration R1: model client and reusable rules
+
+Source increment published as `d2f2d17fc0687dd75e56b21394830563df59e534`.
+This successor adds the official OpenAI Responses client candidate and approved
+reusable assessment rules. Provider/model selection and business rules are still
+unapproved; these construction APIs do not grant authorization.
+
+```python
+from oil_agent.intelligence.openai import ENDPOINT, OpenAISettings, OpenAIResponsesClient
+from oil_agent.intelligence.rules import ApprovedRules, PublicationRule
+
+model = OpenAIResponsesClient(
+    OpenAISettings(
+        model=approved_model, authorization_ref=model_approval_ref,
+        api_key=project_model_secret, authorized=explicitly_authorized, urgent=urgent_lane,
+    ),
+    http=PinnedHttpClient(HttpBounds(ENDPOINT, ("api.openai.com",), approved_request_limit)),
+    authorize_model_request=runtime.authorize_model_request,
+    record_model_usage=runtime.record_model_usage,
+)
+assessment = ConservativeAssessmentService(
+    model=model, policy=assessment_policy, rules=ApprovedRules.model_validate(rule_config),
+    normal_budget=normal_budget, urgent_budget=urgent_budget, lane=processing_lane,
+)
+```
+
+`OpenAISettings` requires model, authorization_ref and injected SecretStr api_key;
+authorized defaults false, urgent true, timeout_seconds 20, max_output_tokens 2048.
+The explicit HttpBounds endpoint must be `https://api.openai.com/v1/responses`.
+No ambient account/app credentials, conversation history, tool calls, retries or
+provider-side storage are enabled. It sends strict JSON-schema extraction through
+Responses and independently validates returned structure. Refusals, incomplete
+responses, tool output, duplicate JSON keys, unsupported content and malformed
+usage fail closed. Assessment still validates every exact evidence reference and
+content hash; structured output is not proof that a claim occurred.
+
+Before each request, the client calls C's
+`authorize_model_request("openai", model, reserved_tokens, urgent=lane_flag)` and
+retains its opaque reservation ID. The conservative token bound includes serialized
+request bytes, output allowance and framing. After every reserved attempt it calls
+`record_model_usage(reservation_id, input_tokens, output_tokens)`, with both values
+None when unknown. Invalid semantic output still records valid provider token usage;
+failed/unknown attempts do not refund budget. A bounded local `usage` deque exposes
+ModelUsage entries with provider_cost=None because this response does not establish
+an invoiced amount. Normal and urgent client/ModelBudget instances must be distinct;
+C remains owner of shared durable budgets. Usage recording is bounded too.
+
+Reusable `ApprovedRules` fields: version, approved=False, authorization_ref,
+valid_from, expires_at, provenances and up to 32 PublicationRule entries. Each entry
+requires rule_id, source_id, origin_publisher, facility_names, event_terms,
+occurrence_terms, impact_terms, current_terms, max_age_minutes and timezone;
+exclusion_terms defaults empty, severity routine, and evidence_status must explicitly
+be credible_single_source or publisher_statement. Positive term groups are separate,
+literal bounded criteria, not executable patterns or a single keyword promotion.
+All criteria must match one complete verbatim evidence clause, with exactly one
+configured facility, exact approved source identity, fresh same-local-day publication
+and valid time/provenance/approval. Whole-record negative/uncertain/archive/future/
+instruction cues and configured exclusions suppress promotion. Ambiguous clauses or
+multiple rules remain conservative. Current-source wording does not invent an exact
+occurrence timestamp; an unknown exact time is recorded explicitly.
+
+There is no per-message ClaimReview requirement or complete-message template.
+One unchanged synthetic policy recognizes materially different unseen statements
+about a loading shutdown and a production halt following a power failure, while
+routine/denied/planned/unmatched reports remain silent. Default/no/expired rules and
+unapproved publisher confidence cannot produce urgency. Model labels cannot set
+severity or create approval. C still matches event history, allocates durable event
+revisions, creates authorized intents and enforces real nonurgent silence; this
+service only returns evidence-backed candidates. Same-origin mirrors never gain
+independence and different facilities are not merged merely by place.
+
+This is a conservative literal-text rubric whose coverage and false positives need
+evaluation against approved real source/rule examples. It is not general semantic
+understanding, independent confirmation, or actual business-rule acceptance. Words
+outside the configured criteria remain unverified. Operator rules can grant only
+the explicitly approved source confidence; upstream-origin uncertainty in Jin10
+is preserved and must be considered when approving single-source policy.
+
+Verification on the frozen C-aa7d638 dependency environment:
+- `uv run --frozen pytest tests/unit/intelligence -q`: 69 passed (18 concrete-client
+  exchange tests plus 37 reusable-rule cases and 14 existing tests).
+- `uv run --frozen pytest -m 'not postgres' -q`: 307 passed, 63 PostgreSQL tests
+  deselected; one existing Starlette/AnyIO deprecation warning.
+- Scoped intelligence Ruff and external-temporary wheel/source build: passed.
+
+The [official Structured Outputs guide](https://developers.openai.com/api/docs/guides/structured-outputs)
+was consulted on 2026-09-12 for Responses text.format/schema/refusal semantics;
+the client uses the official API candidate, not a claim of provider approval.
+R-01/R-02 implementation is delivered for I/E integration and real testing; approved
+source/model/rules/budgets/project credential injection remain missing authorization.
+No Docker, real source/model/platform requests or customer sends occurred; actual
+product calls/tokens/cost remain 0 and future provider cost remains unknown.
