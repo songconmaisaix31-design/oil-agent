@@ -142,7 +142,9 @@ def e_actors(e_repository):
         ("c", "viewer", True),
         ("live", "viewer", False),
     ):
-        identity = ExternalIdentity(provider="feishu", subject=f"e-tenant:ou_e_{name}")
+        identity = ExternalIdentity(
+            provider="feishu", subject=f"e-tenant:cli_synthetic_e:ou_e_{name}"
+        )
         e_repository.provision_user(
             f"e-{name}", f"fixture-user-{name}", identity, role, is_test_recipient=is_test
         )

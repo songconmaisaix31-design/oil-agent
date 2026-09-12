@@ -100,13 +100,27 @@ C `aa7d638dbbb9041bf3c9465803b6b61bb939e5bd`, governance `86aaadf`, and E prepar
 `4a55ffe95e1a13efb0ccbe4f365306a26b1e3333`. E's clean branch fast-forwarded to this
 exact I SHA before adding only the independent history tests/report below.
 
-**ACCEPTED for its construction scope only**: validated fixture/trial/production
+**LIMITED_LOCAL_PASS for construction checks; full candidate acceptance FAIL**.
+The locally passing subset covers validated fixture/trial/production
 settings and explicit bounded permission objects; scoped latest committed source
 revision lookup; preserved default factory and local OAuth behavior. The new
 request reservations, operational trial send/session grants, pending/outbox/API
 scope enforcement and actual configured source/model factory are still
 **MISSING_IMPLEMENTATION / not accepted in candidate 1**, as C's handoff explicitly
 states. Missing external inputs are a separate MISSING_AUTHORIZATION gate.
+
+Subsequent exact-candidate Linux CI
+[34663145891](https://github.com/songconmaisaix31-design/oil-agent/actions/runs/34663145891)
+failed: **3 failed, 79 passed**, 19.66 seconds in integration. All three are
+`test_postgres_channel.py` accepted/unknown/revoked variants, whose old synthetic
+settings request production sending while retaining a fixture dataset. New C
+validation correctly rejects this contradiction. This is **TEST_MIGRATION_REQUIRED**
+with C operational trial-grant implementation dependency, not missing external
+authorization. E must migrate to an explicit trial exercise without weakening
+production validation or relabeling fixture records; all three original behavior
+assertions remain required. The local construction result above does not erase
+this failure. Subsequent E CI keeps assertions and shortens traceback formatting
+to reduce unnecessary synthetic session/input representations in logs.
 
 ```text
 uv sync --locked
@@ -142,6 +156,47 @@ The preceding E preparation commit separately passed Linux CI
 on exact `4a55ffe95e1a13efb0ccbe4f365306a26b1e3333`: 195 core tests, 82 integration
 tests, 13 frontend tests, frontend build and both Linux image builds. That earlier
 run is not exact-candidate-1 CI evidence.
+
+### Candidate 2: D app-bound identity and trial presentation
+
+Exact integrated candidate **`0be5ab779da9cb7b79ed467ed009d171656b0d40`** contains
+D `cfda44473a0c260b51f9762624166a6b419a6ce0` and successor `8db81c7`.
+E normally merged it with its candidate-1 history test increment `2964a47`;
+merge HEAD was `c0eceafa65972c95f98afbec5526494d316071ba`. Only E-owned synthetic
+identity mappings and rejection tests changed during acceptance; production
+validation and every fixture record's original provenance remain unchanged.
+
+**LIMITED_LOCAL_PASS for D identity/callback/UI scope; full acceptance remains
+FAIL** because the same three fixture-production sender tests still require C's
+operational trial/exercise path. Those known failures were not rerun in the focused
+D command below, removed, skipped, relabeled or converted to expected failures.
+
+```text
+uv run --locked pytest tests/unit/channels tests/integration/test_postgres_oauth.py tests/integration/test_postgres_security.py -q --tb=short --junitxml=e2e/runtime-artifacts/v11-candidate2.xml
+cd web
+npm test
+```
+
+Results: **94 passed, 0 failed, 0 skipped, 20.39 seconds**, exit 0: 70 D channel
+cases + 12 E OAuth + 12 E authorization/callback cases, the last 24 on actual
+PostgreSQL. Frontend **18 passed**, 19.19 seconds. Ruff check/format for the three
+changed Python files and `git diff --check`: PASS. Same Windows Python 3.13.13 /
+E PostgreSQL 16.14 environment; one existing Starlette/AnyIO warning.
+
+E identities now bind `tenant:app:open_id`. New negative cases prove an otherwise
+matching tenant/user mapped to a different app cannot log in, a legacy tenant-only
+mapping cannot log in, and a correctly signed callback claiming another app cannot
+acknowledge. All earlier wrong-browser, replay, wrong-recipient/revision/message,
+revocation and safe error assertions remain. Sender mapping/exercise runtime tests
+will move together with C operational permissions, retaining accepted, UNKNOWN and
+revoked-before-send behavior. This does not establish real OAuth or phone receipt.
+
+Product source/model/Feishu calls and paid product cost: **0**. The E OAuth subset
+made **14 synthetic HTTP requests** (8 token attempts + 6 user-info requests); D
+unit transports are also isolated doubles, and their combined request total is
+not separately instrumented. No external request was permitted by these tests.
+No browser, image build or full Compose rerun occurred. Exact E PostgreSQL was
+stopped and retained afterward, exit 0/OOM=false; test slot released.
 
 ## Verified checkpoint, 2026-09-11 UTC
 

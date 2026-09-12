@@ -35,7 +35,9 @@ def oauth_app(e_repository):
     e_repository.provision_user(
         "e-oauth-user",
         "fixture-oauth-recipient",
-        ExternalIdentity(provider="feishu", subject="e-oauth-tenant:ou_e_oauth"),
+        ExternalIdentity(
+            provider="feishu", subject="e-oauth-tenant:cli_synthetic_e_oauth:ou_e_oauth"
+        ),
         "viewer",
         is_test_recipient=True,
     )
@@ -152,6 +154,8 @@ def test_R3_oauth_to_session_does_not_grant_event_access_or_trust_provider_role(
     [
         ("wrong_tenant", 2, 403),
         ("unprovisioned", 2, 401),
+        ("wrong_app_binding", 2, 401),
+        ("legacy_binding", 2, 401),
         ("revoked", 2, 401),
         ("invalid_token", 1, 502),
         ("response_lost", 1, 503),
@@ -164,6 +168,14 @@ def test_R3_failed_exchange_consumes_state_without_session_or_implicit_retry(
     mode["value"] = failure
     if failure == "revoked":
         e_repository.revoke_user("e-oauth-user")
+    if failure in {"wrong_app_binding", "legacy_binding"}:
+        with e_repository.sessions.begin() as session:
+            user = session.get(UserRow, "e-oauth-user")
+            user.provider_subject = (
+                "e-oauth-tenant:cli_unapproved:ou_e_oauth"
+                if failure == "wrong_app_binding"
+                else "e-oauth-tenant:ou_e_oauth"
+            )
     with TestClient(api, base_url="https://testserver") as client:
         body = challenge(client)
         response = client.post("/api/v1/session", json=body)
