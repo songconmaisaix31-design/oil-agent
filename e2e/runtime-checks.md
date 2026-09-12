@@ -3111,3 +3111,27 @@ stdout/stderr at launch under an explicit non-private runtime path.
 
 This process evidence concerns the dedicated C1 status resource only; it does
 not assert the prior E synthetic PostgreSQL metadata as product-status state.
+
+## Controlled helper restart with startup capture (2026-09-13)
+
+Under explicit maintenance authorization, E revalidated PID **61216** (exact I
+interpreter/helper path, expected source SHA, owner `DW`, and original creation
+time), then stopped only that process and bounded-waited until it exited. No task
+registration, scheduled run, container or other process was touched. A new
+project-scoped runtime directory was created at
+`C:/Users/DW/AppData/Local/oil-agent/runtime/status-morning-20260913` outside
+Git and the private Feishu directory, with unique nonsecret stdout/stderr paths:
+`awake-20260912T175556165Z.out.log` and `.err.log`.
+
+The same fixed I interpreter launched one helper chain with
+`-I -B .../deploy/status_morning_awake.py
+ffa93a7047599fabd6b6465fb6f80f348af5a372`; wrapper PID **63088** spawned the
+actual Python PID **62064**. At UTC `2026-09-12T17:55:56.1798459Z`, both were
+alive/responsive with the expected command and user. Captured stdout contains
+`{"status": "STATUS_AWAKE_ACTIVE", "pid": 62064, "until":
+"2026-09-13T00:15:00+00:00"}` and stderr is empty (zero bytes), proving the
+helper reached its native `SetThreadExecutionState` call before entering the
+bounded hold. The process chain remains running until the fixed 08:15+08:00
+deadline and must not be stopped as a test; `powercfg /requests` was not used
+because it requires elevation. This is process-level keep-awake evidence only:
+no E Feishu request was made, and no phone or production acceptance is claimed.
