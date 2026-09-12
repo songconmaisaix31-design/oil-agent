@@ -9,7 +9,18 @@ scoped filename check. The user explicitly accepts
 baseline, never production acceptance. Reuse that implementation and the five
 original worker sessions/worktrees/branches. Do not rebuild or expand features.
 
-Read-only audit: M HEAD `7839b316dad94296857c4b901fe11333a8d24644`; AB
+Current code acceptance: `63627eee09bc9fb10e32b68f979f7715db199791` on
+`songconmaisaix31-design/oil-v01-i` passed complete
+[CI 34665612094](https://github.com/songconmaisaix31-design/oil-agent/actions/runs/34665612094).
+E independently inspected JUnit: 343 core and 150 integration checks passed,
+zero failures/errors/skips, including both preserved domain regressions and all
+13 factory PostgreSQL cases. Frontend 23 tests, generated schema, TypeScript,
+Vite, shell checks and both Linux image builds passed. M separately verified the
+public run/job conclusion and approved producer ancestry. This accepts the trial
+code with synthetic provider responses; real source/model/login/phone acceptance
+is NOT EXECUTED. Final report/governance adoption changes no application code.
+
+Initial read-only audit: M HEAD `7839b316dad94296857c4b901fe11333a8d24644`; AB
 `f3c835793da03a0b0f1b8fb130c6312db2094d80`; C
 `41a00ded1f949aee8099b549d5d419f0487dd0f9`; D
 `0bbdc217b43aec94e66ead9863a734f7902d20f2`; E
@@ -29,11 +40,11 @@ No duplicate worker, terminal, worktree or Run was created.
 
 | Track | Current task / dispatch | Current state |
 | --- | --- | --- |
-| AB | task_2eacda0db6eb / ctx_a5f1b25a8789 | Same retained worker resumed for denial/correction regression after source/model delivery |
-| C | task_5614734edbd3 / ctx_96bb71f83ff1 | Implementing scoped trial permissions/runtime |
+| AB | task_2eacda0db6eb / ctx_a5f1b25a8789 | Delivered 6c517f5; settled and explicitly retained; E unchanged T05 passed |
+| C | task_5614734edbd3 / ctx_96bb71f83ff1 | Delivered 1723886; E unchanged immutable-session regression passed; closing handoff |
 | D | task_c2c9686439df / ctx_87f9412b8dde | Code delivered at ea2c3abb; settled and explicitly retained |
-| E | task_826e16b53577 / ctx_2437b4eb6866 | Independent preparation; exact I candidates pending |
-| I | task_642b869e5aaa / ctx_faf7e2afa63d | Baseline/governance merged; incremental integration active |
+| E | task_826e16b53577 / ctx_2437b4eb6866 | Exact 63627ee code accepted independently; final evidence handoff |
+| I | task_642b869e5aaa / ctx_faf7e2afa63d | Code 63627ee passed; final evidence/governance adoption and delivery receipt |
 
 Construction decisions: AB calls C authorization before every provider request,
 including MCP setup/discovery/pagination; no hidden retries. C returns durable
@@ -87,20 +98,24 @@ implementation. No additional workers/worktrees/branches are needed.
 
 | ID | Classification | Gap / owner | Evidence and next gate |
 | --- | --- | --- | --- |
-| R-01 | 已有实现待实测 | Concrete news network transport and adapter / AB | Implemented in d2f2d17fc0687dd75e56b21394830563df59e534: pinned HTTPS transport, Jin10 MCP negotiation/schema/flash adaptation; 79 ingestion checks including 37 synthetic MCP/HTTP cases passed; I/E integration and approved real call pending |
-| R-02 | 已有实现待实测 | Concrete model client and approved-rule assessment / AB | OpenAI Responses candidate and reusable approved rubric implemented at 85c9fb3e69b657308366e4d50248b0a4816d8bc5; 69 intelligence tests passed; I candidate 05231c5 awaits independent E review and approved real model/rules |
-| R-03 | 已有实现待实测 | Trial assembly / I | Implemented at 8de731b259b676a3187b2b04a63010f59d9371d4; all 13 factory PostgreSQL cases passed in CI 34664381567; complete acceptance remains FAIL until the owner repairs below pass E review |
-| R-04 | 已有实现待实测 | Feishu send/OAuth/signed callback / D + E | Existing code repaired at cfda44473a0c260b51f9762624166a6b419a6ce0: app-bound identity, trial test-recipient checks and labels; 98 Python/18 web checks passed; I/E candidate and actual tenant login/phone receipt/ack remain unverified |
+| R-01 | 已有实现待实测 | Concrete news network transport and adapter / AB | Jin10 HTTPS/MCP transport, discovered-schema validation, adaptation, checkpoints and reservation guard integrated and E accepted at 63627ee; approved real provider request/license/retention validation pending |
+| R-02 | 已有实现待实测 | Concrete model client and approved-rule assessment / AB | OpenAI Responses implementation candidate and reusable approved rubric, including conditional/training and denial corrections, integrated and E accepted at 63627ee; actual provider/model/business-rule approval and live accuracy/cost evidence pending |
+| R-03 | 已有实现待实测 | Trial assembly / I | Implemented at 8de731b, repaired candidate 63627ee passed complete CI and independent E review; process-env/permissions/real adapters/PostgreSQL/synthetic-provider chain verified, approved real chain pending |
+| R-04 | 已有实现待实测 | Feishu send/OAuth/signed callback / D + E | Existing code reused with tenant:app:open_id binding, exact test-recipient scope and fixture/trial labels; independent adapter/session/outbox/signed-ack tests passed, actual tenant login/phone receipt/ack NOT EXECUTED |
 | R-05 | 缺外部授权 | Source/model/provider/rules/budget and project credential injection / user | One minimal external-input request is pending; no unrelated credential search or paid calls |
 | R-06 | 缺外部授权 | Feishu app/tenant, exact test-recipient allowlist, redirect/callback/public URL and test phone / user | No customer-scope expansion; credentials must not enter chat, public Git or logs |
 | R-07 | 已有实现待实测 | Real non-urgent source-to-model-to-storage chain and zero-alert result / AB + C + I + E | Requires R-01/R-02/R-03 and approved inputs; a marked urgent exercise is separate evidence |
 | R-08 | 已有实现待实测 | Authorized real quote sample, external deployment probes and 7/14-day operation | Outside this increment's first chain; preserve prior gates and do not claim production acceptance |
-| R-09 | 已有实现待实测 | Complete integrated regression acceptance / E | The four original fixture/identity cases were repaired in d4d772a and 6be21de while preserving labels and assertions; E now runs the assembled factory and full CI, with R-10/R-11 failures preserved |
-| R-10 | 代码尚未实现 | Immutable identity approval on session use / C | E f783bac reproduces an expired session becoming valid after extending expiry under the SAME approval ID; fix must preserve the persisted approval scope and pass unchanged E regression |
-| R-11 | 代码尚未实现 | Explicit denial/correction regression / AB | CI 34664381567 and 34664692956 fail unchanged T05: AB 651c114 broad text guard returns UNKNOWN instead of DENIED; original AB worker owns repair without reverting conditional/training safeguards |
-| R-12 | 代码尚未实现 | Compose safety assertion migration / E | Authorized shared application environment uses explicit safe default interpolation; E must verify actual defaults and propagation instead of stale literal-only assertions |
 | R-13 | 代码尚未实现 | Production assembly / I | Deliberately rejected by build_runtime; outside the current trial-first increment. It is missing implementation, not merely missing credentials |
 | R-14 | 已有实现待实测 | Local container final-state verification / C + E + I | Docker Linux named pipe disappeared during I final image refresh; C/I had stopped their own containers, E was interrupted. Preserve resources; remote isolated PostgreSQL CI supplies testing while host recovery remains pending |
+
+Resolved during this phase: R-09 fixture/identity test migrations (E d4d772a and
+6be21de), R-10 immutable approval on session/API/callback use (C 1723886), R-11
+explicit denial correction (AB 6c517f5), and R-12 Compose safe-default assertions
+(E 49c75d32). All passed in the final integrated CI without weakening the original
+failed assertions. E 87a737b adds independent configuration boundaries; D ea2c3abb
+is the final channel/mobile handoff. The earlier failed candidate records below
+remain historical evidence and are superseded by the acceptance at this section's top.
 
 Current construction decisions: rule identity is exactly authorization_ref@version,
 with @ excluded from either component, and the loaded rule must match both model
@@ -139,6 +154,8 @@ I's own 18-check PostgreSQL smoke passed, including ordinary-message silence and
 synthetic-provider OAuth/outbox/signed acknowledgement. These are actual local
 runtime/database paths with synthetic provider responses, not real source, model,
 tenant login or phone evidence. Frontend 23 tests/schema/TypeScript/Vite passed.
+Final corrected code 63627ee supersedes the preceding intermediate FAIL status;
+the original failures remain visible in E's report.
 
 Minimal external inputs were requested once: (1) approved source/interface/license,
 (2) approved model provider/model and this run's budget, (3) alert rules and
@@ -151,6 +168,9 @@ Usage at phase audit: product source requests 0; product model requests/tokens 0
 Feishu sends 0; paid product cost 0. Documentation/Git/Orca reads are excluded from
 product-call counts. Record actual provider usage and cost evidence when available;
 unknown cost must be reported as unknown, never invented as zero.
+Development-agent billing was not collected and is not included in the zero
+product-call cost. Synthetic HTTP exchanges are identified per test/smoke in I/E
+reports; they are not billed provider traffic or real emergency evidence.
 
 The sections below preserve the previous local phase's historical decisions and
 evidence. Their old BLOCKED_EXTERNAL labels and integration timing are superseded

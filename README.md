@@ -1,9 +1,10 @@
 # Oil Agent
 
-Local development candidate for refined-oil news monitoring, evidence review and
-mobile alerts. Current acceptance covers original synthetic replay and dry-run
-delivery. Licensed live monitoring, real Feishu identity/delivery and phone receipt
-are not enabled or accepted.
+Refined-oil news monitoring, evidence review and mobile alerts. The real-integration
+v1.1 candidate adds explicit trial assembly to the accepted local fixture/dry-run
+baseline. Licensed live calls, real Feishu login and phone receipt still require
+the specified external authorization and real test evidence. Production assembly
+is not implemented and rejects startup.
 
 The implementation uses FastAPI/Pydantic, PostgreSQL/SQLAlchemy/Alembic,
 Procrastinate, bounded LangGraph processing and React/Vite. It includes:
@@ -16,6 +17,38 @@ Procrastinate, bounded LangGraph processing and React/Vite. It includes:
   Decimal comparison on matching quote bases, and evidence-linked daily reports.
 - Chinese mobile views for events, evidence, reports, quotes, settings and feedback.
 - Linux Compose, scoped backup/restore tools, fixed synthetic cases and Linux CI.
+- Bounded Jin10 MCP HTTPS transport, schema discovery and revision adaptation;
+  an explicitly configured OpenAI Responses client with durable request/token limits.
+- Reusable approved-rule assessment without per-message manual annotations,
+  separate fixture/trial/production provenance, and scoped Feishu OAuth/send/ack.
+
+## Trial connection
+
+The common `oil_agent.bootstrap:build_runtime` factory selects trial components
+from validated settings. Set `OIL_DATA_PROVENANCE=trial` and
+`OIL_FIXTURE_DATASET=null` for authorized nonfixture data; keep fixture exercises
+labeled with their dataset and a separately approved exercise/send permission.
+The default remains an empty fixture/dry-run runtime.
+
+Each source, model, identity and send capability requires its matching typed
+permission, validity window and explicit project-scoped configuration. The factory
+reads only fixed credential variables for enabled capabilities. It performs no
+provider requests, migrations, identity provisioning or sample seeding at startup.
+See [.env.example](.env.example), the [trial startup runbook](docs/runbook.md#explicit-trial-assembly),
+and [C's permission contract](config/real-integration-contract.md) for exact fields
+and the separate approved-identity provisioning command.
+
+Loaded rules must match each model/send `rules_ref` as
+`authorization_ref@version`. The reusable rubric is conservative and literal;
+its source/facility/event/occurrence/impact/currentness criteria require business
+approval and real false-positive/false-negative evaluation. Model output cannot
+grant severity, provenance or send permission. Ordinary messages remain silent;
+an urgent delivery exercise requires its own label and exact approved recipients.
+
+The implemented chain is Jin10 transport -> model extraction -> approved rules ->
+PostgreSQL/checkpoint/outbox -> authorized Feishu -> authenticated acknowledgement.
+Current synthetic-provider tests exercise the real adapters and PostgreSQL runtime;
+they do not prove live provider access, platform acceptance or phone receipt.
 
 ## Local startup
 
@@ -35,16 +68,17 @@ uv run --locked uvicorn oil_agent.bootstrap:create_app --factory --host 127.0.0.
 Run each worker in a separate terminal using
 `uv run --locked python -m oil_agent.runtime.cli worker --queue ingest`,
 `--queue urgent`, or `--queue normal`. API and workers share
-`oil_agent.bootstrap:build_runtime`. It wires existing local services but creates
-no users, recipients, source subscriptions or sample records. Login remains
-unavailable until an authorized identity adapter is configured and verified.
+`oil_agent.bootstrap:build_runtime`. The default fixture branch creates no users,
+recipients, source subscriptions or sample records. Trial capabilities use only
+the explicitly configured permissions above.
 
 See the [runbook](docs/runbook.md) for the Linux web gateway, full service startup,
 explicit E-only synthetic browser rehearsal, database isolation and recovery.
 The E rehearsal is a separate opt-in; its test sessions are not real authentication.
-All task-created C/E/I test containers were stopped and retained at handoff.
+The current container disposition is recorded in V01-TODO.md; historical stopped
+container evidence does not replace a current host-state check.
 
-## Verified candidate
+## Historical fixture candidate
 
 Factory code `a4617e9528177c536c1768297f1ff5783ee1f9ec` passed
 [Linux CI 34639549516](https://github.com/songconmaisaix31-design/oil-agent/actions/runs/34639549516):
@@ -68,12 +102,28 @@ records eight actual Chrome/API/PostgreSQL flows, queue isolation, graceful Linu
 restart and isolated restore on its stated candidate. Those historical screenshots
 are not relabeled as a newer browser run. [V01-TODO.md](V01-TODO.md) is the delivery board.
 
-## Remaining gates
+## Current delivery and remaining gates
+
+Accepted trial code is `63627eee09bc9fb10e32b68f979f7715db199791` on
+`songconmaisaix31-design/oil-v01-i`. Independent E review and
+[CI 34665612094](https://github.com/songconmaisaix31-design/oil-agent/actions/runs/34665612094)
+confirm 343 core and 150 integration tests passed, with zero failures/errors/skips.
+All 13 factory PostgreSQL cases and the preserved denial/session regressions pass;
+23 frontend tests, generated schema, TypeScript/Vite, shell and both Linux image
+builds also pass. I's focused full Ruff check and Python packaging passed.
+
+Earlier failures and exact producer commits remain in the integration/E reports.
+Final report/governance adoption does not change this application code. The unique
+[V01-TODO.md](V01-TODO.md) separates missing implementation, missing external
+authorization and implemented paths awaiting real tests. Actual source/model/Feishu
+calls, product tokens and product-call cost are zero; development-agent billing
+was not collected.
 
 The referenced original PRD and source-report documents were unavailable; the
 provided development plan defines the current scope. Real source/model access,
 business policies and recipients, authorized customer quote samples, Feishu
 tenant/SSO/phone checks, deployment/TLS/off-host probes, production recovery,
 load/SLA validation, seven-day source comparison and fourteen-day operation remain
-uncompleted. The built-in source list is empty and quote/report paths remain
-fixture-labeled. This candidate does not execute trades.
+uncompleted. Default startup has no source subscription; trial data requires
+explicit scope and configuration. No production acceptance is claimed. This
+candidate does not execute trades.
