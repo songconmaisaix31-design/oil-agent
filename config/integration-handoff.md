@@ -12,6 +12,29 @@ acceptance and complete CI on the assembly commit remain pending at this receipt
 
 ### Assembled code increment
 
+Assembly code `8de731b259b676a3187b2b04a63010f59d9371d4` was pushed with exact
+origin match and clean status. Its first complete
+[Actions run 34664381567](https://github.com/songconmaisaix31-design/oil-agent/actions/runs/34664381567)
+failed: 340 core tests passed; integration had 128 passed and two failed; both
+suites had zero errors/skips. All 13 factory PostgreSQL cases passed. E's static
+Compose test still expected literal default values after I added explicit safe
+environment interpolation; AB's conditional-text guard caused the unchanged T05
+denial/correction case to return UNKNOWN instead of DENIED. Both failures were
+reported to M for original-owner repair. This is not full acceptance.
+
+Independent E evidence `f783bac621b8e8e5a246cd953bdbed4fec295dd0` and
+`a6ee4e49555be839a7d40a5aff0048cf8f7cf722` was ordinary-merged subsequently.
+It preserves another C failure: extending the expiry while reusing an identity
+approval ID can reactivate an old scoped session. M routed this to C for an
+immutable-approval check on session use; the E regression remains unchanged.
+This is missing correctness repair, not missing external authorization.
+
+The final local application-image refresh after C's small reminder guard fix
+failed with Docker RPC EOF; Docker Desktop's Linux named pipe then disappeared.
+I did not restart the shared daemon. Earlier app/web image builds succeeded;
+the exact final application image requires a successful refresh or remote CI.
+I's 18-check PostgreSQL smoke and explicit container stop finished beforehand.
+
 All integrations used ordinary merges on the original branch. Intermediate
 candidates were pushed and sent to M/E as each producer increment arrived:
 `26e3391` (C construction), `0be5ab7` (D identity), `85fdcff` (AB source),
