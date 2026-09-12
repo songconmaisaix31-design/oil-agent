@@ -2629,3 +2629,20 @@ build, private read, real database operation, migration, provider request,
 send or exercise start occurred. I integration and later actual C1 queue/runtime
 verification remain required; phone receipt, autonomous 120-second timing and
 production acceptance are not claimed.
+
+Before settlement, M supplied final C source
+`2b3b8d54fd9abbeedd7babb9051a8f01d6d0ffbe` in `msg_a27cf78a83c4` for
+read-only call-site verification. AST inspection confirmed all three C1
+`create_queue_app` calls now explicitly pass `connect_timeout=15`:
+`c1_local.py` lines 188 and 383, and `c1_runner.py` line 158. Its storage and
+queue-constructor blobs equal the already checked `2a3e7fa` blobs. This closes
+the call-site omission in source only; no runner execution or final I integration
+was independently verified in this task.
+
+The same comparison caught a changed stdio lifetime configuration: hard/idle
+arguments are now **1800/1800 seconds**, previously **240/180 seconds**;
+the byte-flow implementation is unchanged. An initial assumption of whole-file
+equality therefore failed and was narrowed to the actual unchanged constructor
+blobs. The earlier local-child fixed-argv check is not presented as acceptance
+of these later lifetime settings. They remain part of the later exact-candidate
+lifecycle verification, with no additional live probe or broad audit here.
