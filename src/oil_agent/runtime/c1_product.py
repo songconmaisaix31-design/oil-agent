@@ -67,11 +67,11 @@ async def execute_once(config, execution):
                 pass  # This foreground process exits; never leak cleanup diagnostics.
 
 
-async def execute_tenant_lookup(config, execution):
+async def execute_tenant_lookup(config, execution, *, selected_result=False):
     """One fixed read flow; tenant remains in memory, never stdout or a local binding."""
     import re
 
-    from oil_agent.runtime.c1_execution import outcome, tenant_lookup_settings
+    from oil_agent.runtime.c1_execution import C1TenantLookupResult, outcome, tenant_lookup_settings
 
     settings = tenant_lookup_settings(config, execution)
     runtime, requesting = None, False
@@ -82,7 +82,12 @@ async def execute_tenant_lookup(config, execution):
         tenant = await runtime.lookup_c1_tenant()
         if not isinstance(tenant, str) or not re.fullmatch(r"[A-Za-z0-9_-]{1,128}", tenant):
             return outcome("C1_UNKNOWN")
-        return outcome("C1_TENANT_LOOKUP_COMPLETED")
+        result = outcome("C1_TENANT_LOOKUP_COMPLETED")
+        if selected_result:
+            result["selected_result"] = C1TenantLookupResult(
+                app_request_permission=settings.c1_app_request_permission, tenant_key=tenant
+            ).model_dump(mode="json")
+        return result
     except Exception:
         return outcome("C1_UNKNOWN" if requesting else "C1_EXECUTION_FAILED")
     finally:
@@ -96,21 +101,33 @@ async def execute_tenant_lookup(config, execution):
 def main(argv=None):
     args = [] if argv is None else argv
     try:
-        if args not in ([], ["send-once"], ["tenant-lookup"]):
+        if args not in (
+            [],
+            ["send-once"],
+            ["tenant-lookup"],
+            ["tenant-lookup", "--selected-result"],
+        ):
+            raise PreparationError("INVALID_COMMAND", ("command",))
+        selected = args == ["tenant-lookup", "--selected-result"]
+        if selected and sys.stdout.isatty():
             raise PreparationError("INVALID_COMMAND", ("command",))
         data = {
             "application_state": os.environ.get("OIL_C1_APPLICATION_STATE", "NOT_CREATED"),
             **{field: os.environ.get(name) for field, name in ENV_FIELDS.items()},
         }
         config = parse_preparation(json.dumps(data).encode())
-        if args in (["send-once"], ["tenant-lookup"]):
+        if args:
             from oil_agent.runtime.c1_execution import EXECUTION_EXITS, read_execution
 
             _, execution = read_execution(sys.stdin, mode=args[0])
-            operation = execute_once if args[0] == "send-once" else execute_tenant_lookup
+            operation = (
+                execute_once(config, execution)
+                if args[0] == "send-once"
+                else execute_tenant_lookup(config, execution, selected_result=selected)
+            )
             loop_factory = asyncio.SelectorEventLoop if sys.platform == "win32" else None
             with asyncio.Runner(loop_factory=loop_factory) as runner:
-                result = runner.run(operation(config, execution))
+                result = runner.run(operation)
             print(json.dumps(result))
             return EXECUTION_EXITS[result["status"]]
         print(json.dumps(preparation_status(config)))
