@@ -36,6 +36,64 @@ owner repairs. Independent acceptance of any repair requires a later I candidate
 Product source/model/Feishu requests, sends, tokens and paid product cost are 0;
 the existing isolated model tests use synthetic HTTP responses only.
 
+### R17 controlled trial deployment preparation
+
+The first R16 reproduction was committed and pushed at
+`b9a241acfe0353ce425a7eef258111d72fcc253d` before deployment work and before
+AB fixes. E independently inspected I BEFORE candidate
+`0fa7d85c8e235403cb893f566828f4213131c34f`: `src` is unchanged from accepted
+`cd6e8d9`, and the E contextual regression file is identical to `b9a241a`.
+The recorded eight failures remain BEFORE evidence, not an accepted repair.
+
+New deployment files are `deploy/compose.e-trial.yaml`,
+`deploy/nginx.e-trial.conf`, `deploy/controlled-trial.md`,
+`scripts/controlled_trial.py`, `scripts/trial-start.sh`,
+`tests/integration/test_controlled_trial_deploy.py` and the focused
+`.github/workflows/controlled-trial.yml`. E did not change the shared base Compose,
+factory, integrated runbook, domain code, existing assertion or original CI gate.
+
+`uv run --locked pytest tests/integration/test_controlled_trial_deploy.py
+tests/integration/test_deploy_safety.py -q --tb=short
+--junitxml=e2e/runtime-artifacts/controlled-trial-preparation.xml`:
+**54 passed, 0 failures/errors/skips, 0.76 seconds**, Windows Python 3.13.13.
+Ruff check/format, `bash -n scripts/trial-start.sh` and `git diff --check` pass.
+The real installed Compose 5.1.4 parses base + trial + authored pin overlay with
+an isolated Docker config directory and synthetic environment. An initial harness
+error hid the Windows Compose plugin when isolating its config; the harness now
+uses the installed standalone Compose binary on Windows, preserving isolation.
+No test was skipped or weakened. Linux uses Docker's installed Compose plugin.
+
+Checks cover exact project/database/volume isolation, TLS pairing/validity/DNS SAN,
+loopback-only HTTPS, raw callback and SPA configuration, closed capabilities,
+shared factories/entrypoint/queue/capability bounds, public IPv4-only pins, exact
+effective network selection, absent or bypassed firewall rules, inactive Docker
+user hook, unexpected attached networks, recursive DNS and IPv6 denial. The
+startup wrapper is exercised against explicit command doubles: failed preflight
+never invokes Compose; success invokes only the fixed profile/project with no
+build/pull. Preparation neither executes commands nor overwrites a directory.
+No actual firewall or packet-filter behavior is inferred from these doubles.
+
+Default action is read-only. Optional preparation creates nonsecret pin/rule
+files; a separate future operator action applies reviewed host rules and creates
+the dedicated network. The start wrapper does neither. This supports the existing
+direct pinned transports without a proxy or adapter changes. Public TLS chain,
+actual login/message callback reachability, on-host egress/DNS/IPv6 denial and
+phone trust remain NOT EXECUTED. Retained-resource automatic resume is explicitly
+unimplemented; the prepared stop/recover procedure preserves data and delegates
+UNKNOWN handling to C rather than replaying uncertain sends.
+
+Actual Docker observations at this increment: both `docker version --format
+'{{.Server.Version}}'` and a bounded `docker inspect --format ...` on exact old E
+container `b3c3a345428590922eb8e628a996dd634cb3333e5f0c86f588eede8fb7101cab`
+failed because `dockerDesktopLinuxEngine` named pipe does not exist. Its state,
+volume and interrupted schema cleanup remain unverified. No daemon restart,
+container/volume mutation, firewall application, network creation or new local
+image build was performed. The focused remote job will verify actual Nginx `-t`
+under `--network none`; its result must be reported separately when complete.
+All real product source/model/Feishu requests, sends, tokens and paid product cost
+remain 0. Development/CI billing was not collected. Independent final acceptance
+belongs to a later task on I's exact integrated candidate.
+
 ### Final independent code acceptance: PASS for synthetic integration
 
 Accepted code: **`63627eee09bc9fb10e32b68f979f7715db199791`**, including I's
