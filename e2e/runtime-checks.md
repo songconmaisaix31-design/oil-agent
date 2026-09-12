@@ -4,6 +4,90 @@ Provider replies and market content in this report are synthetic. Actual local
 file/ACL observations are labeled separately. No source license, production
 account, model, Feishu recipient, phone receipt or deployed server is accepted.
 
+## D tenant transport accepted: isolated transport scope only
+
+On 2026-09-12, E independently accepts the D transport increment in exact I
+candidate **`d4414f9a3b24dc104e2f622ee0391f4ac811811a`**, containing D source
+**`da65fb1f2f80a455c058e3107a3df3964c22fbd5`**. This is source/isolated transport
+test evidence only. C is still implementing the shared app-window budget and
+runtime entry; neither that implementation nor a combined C/I candidate is
+accepted by these results. No real tenant identity, API permission, platform
+receipt, phone display or production behavior is established.
+
+E verified its clean retained branch at
+`a9264158e5ec64983f700d8c0a68373fff7f5be8` and ordinarily fast-forwarded to the
+exact I candidate. `git merge-base --is-ancestor` passed for accepted baseline
+`fe4b76c2f8b1f17130bd442812cbc046eed1f325`, D `da65fb1`, M
+`b6dd9c43cce97a6c621ef1cf7f8f6ad14aa33924` and E `a926415`. The independent
+`gh api repos/songconmaisaix31-design/oil-agent/git/ref/heads/songconmaisaix31-design/oil-v01-i --jq '.object.sha'`
+query returned the exact full candidate SHA.
+
+### Ownership and bounded source review
+
+The baseline diff contains only M's `V01-TODO.md`, E's existing evidence and D's
+six paths: `channels/C1.md`, `channels/__init__.py`, `channels/feishu.py`, new
+`channels/tenant.py`, new `channels/tenant_token.py` (under `src/oil_agent/`), and
+new `tests/unit/channels/test_tenant_lookup.py`. An exclusion-based
+`git diff --exit-code` proved every other tracked path unchanged. Separate
+zero-diff checks matched integrated channel code/new tests to D `da65fb1`, the
+board to M `b6dd9c43`, and prior E evidence to `a926415`. The complete original
+`test_channels.py` and `test_c1.py` files and common channel guards are byte-equal
+to accepted `fe4b76c`: no original assertion was edited or removed.
+
+Inspection of the bounded diff and the unchanged `ProviderHTTP` confirmed:
+
+- `FeishuTenantLookup` requires a callable request-authorization hook. Before
+  each token POST and tenant GET, it awaits a nonempty string reservation or
+  fails before that request. This is a transport contract; the tests use a
+  synthetic hook and do not prove C's durable ledger implementation.
+- Both routes use fixed `https://open.feishu.cn/open-apis`: token acquisition at
+  `/auth/v3/tenant_access_token/internal`, lookup at `/tenant/v2/tenant/query`.
+  There is no endpoint parameter or send method. Existing HTTP behavior disables
+  redirects and environment proxies, bounds connect time/connections/body size,
+  and has no retry loop. The outer deadline also bounds authorization waits.
+- Only validated `data.tenant.tenant_key` is returned: 1-160 ASCII identifier
+  characters, strict integer success code, and the expected nested objects.
+  Display IDs, configured fallbacks and raw responses do not become identity.
+  No private configuration or recipient authorization is written or inferred.
+- Token acquisition/cache/expiry handling moved from `FeishuChannel` into
+  `FeishuTenantToken`, reused by sending and lookup. A warm lookup reserves only
+  its actual GET; token invalidation permits refresh on a later explicit call,
+  without an automatic retry. Ordinary `require_app`, send authorization,
+  recipient/revocation, fixture isolation and UNKNOWN handling remain guarded.
+- Lookup errors retain classified service codes with fixed redacted messages.
+  Reservation failure, response loss, invalid data and redirects cannot expose
+  provider messages or synthetic secret canaries through the reported error.
+
+### Actual independent commands and results
+
+The documented selections ran with `--offline --no-sync --locked` against the
+existing environment. No dependency resolution/download or environment sync was
+requested; HTTP transports and credentials in these tests are explicit doubles.
+
+```powershell
+uv run --offline --no-sync --locked pytest tests/unit/channels/test_tenant_lookup.py -q --junitxml=e2e/runtime-artifacts/tenant-transport-new.xml
+uv run --offline --no-sync --locked pytest tests/unit/channels/test_channels.py tests/unit/channels/test_c1.py -q -k 'default_off or acceptance_has or transport_loss or classified_provider or revocation or fixture_requires or expired_token or trial_recipient or malformed_recipient or c1_http or c1_exhausted or c1_authorization_revoked or c1_request_gate or c1_token_expiry' --junitxml=e2e/runtime-artifacts/tenant-transport-original.xml
+```
+
+Results respectively: **34 passed**, 0.27 seconds, exit 0; **36 passed,
+56 deliberately deselected**, 0.32 seconds, exit 0. Both had zero failures,
+skips and warnings. These are two bounded selections, not a full-suite result.
+`git diff --check` also passed. E authored no test or domain changes.
+
+No reproduced transport defect remains within this scope. C's immutable common
+budget, reservation persistence and runtime/private entry integration require
+their own exact integrated candidate and independent acceptance. No claim is
+made that this lookup transport alone supplies a complete executable permission.
+
+The existing missing-Docker-pipe observation below stands without another probe;
+the eleven C1 PostgreSQL cases remain **NOT EXECUTED**. This task ran no build,
+full suite, PostgreSQL, Docker, private helper, host operation or real HTTP call.
+The expired phone window is not renewed; the board's later App ID comparison is
+C/M-reported configuration evidence, not a fresh E private-file observation.
+Actual product source/model/Feishu calls, sends, model tokens and added product
+cost are **0**. The live API usage metric remains **unknown/null**; synthetic
+per-test call counts are not live usage or platform/phone evidence.
+
 ## E PostgreSQL resource preflight: unavailable engine, no startup
 
 On 2026-09-12, E verified the retained repository
