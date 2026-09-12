@@ -6,7 +6,8 @@ from zoneinfo import ZoneInfo
 
 from oil_agent.channels.c1 import C1_CONTENT, C1_DATASET, build_c1_card
 from oil_agent.channels.common import https_url
-from oil_agent.contracts.dto import NotificationIntent
+from oil_agent.channels.trial_status import build_trial_status_card
+from oil_agent.contracts.dto import STATUS_MESSAGE_PAIRS, NotificationIntent
 from oil_agent.contracts.services import ErrorCode, ServiceError
 
 LABELS = {
@@ -46,10 +47,20 @@ def notification_text(intent: NotificationIntent) -> str:
 
 
 def build_message(
-    intent: NotificationIntent, *, public_base_url: str = "", c1_display_only: bool = False
+    intent: NotificationIntent,
+    *,
+    public_base_url: str = "",
+    c1_display_only: bool = False,
+    trial_status_only: bool = False,
 ) -> tuple[str, str]:
+    if c1_display_only and trial_status_only:
+        raise ServiceError(ErrorCode.INVALID_INPUT, "Notification modes are mutually exclusive")
     if c1_display_only:
         return c1_message(intent)
+    if trial_status_only:
+        return trial_status_message(intent)
+    if intent.subject_type == "status" or intent.kind in ("onboarding", "morning_status"):
+        raise ServiceError(ErrorCode.INVALID_INPUT, "Status requires trial status-only mode")
     if intent.subject_type == "exercise" or intent.kind == "exercise":
         raise ServiceError(ErrorCode.INVALID_INPUT, "Exercise requires C1 display-only mode")
     base = https_url(public_base_url).rstrip("/")
@@ -127,4 +138,21 @@ def c1_message(intent: NotificationIntent) -> tuple[str, str]:
     ):
         raise ServiceError(ErrorCode.INVALID_INPUT, "Intent is outside the fixed C1 exercise")
     card = build_c1_card(test_id=intent.subject_id, created_at=intent.created_at, purpose=purpose)
+    return "interactive", json.dumps(card, ensure_ascii=False, separators=(",", ":"))
+
+
+def trial_status_message(intent: NotificationIntent) -> tuple[str, str]:
+    """Only C's closed nonmarket status intent can use the no-action trial renderer."""
+    if not (
+        intent.subject_type == "status"
+        and intent.revision == 1
+        and intent.provenance == "trial"
+        and not intent.is_fixture
+        and intent.fixture_dataset is None
+        and intent.recipient_scope.is_test_recipient
+        and not intent.evidence
+        and (intent.title, intent.body) == STATUS_MESSAGE_PAIRS.get(intent.kind)
+    ):
+        raise ServiceError(ErrorCode.INVALID_INPUT, "Intent is outside the fixed trial status")
+    card = build_trial_status_card(purpose=intent.kind, created_at=intent.created_at)
     return "interactive", json.dumps(card, ensure_ascii=False, separators=(",", ":"))
