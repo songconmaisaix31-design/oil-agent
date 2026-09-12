@@ -32,7 +32,7 @@ and no links, actions, login prompts, market events or model-connectivity claim.
   retry internally. Platform message ID and acceptance time exist only for a
   complete successful platform response containing the message ID.
 
-## Actual remaining prerequisites
+## Preparation findings before live execution
 
 At dispatch, the app and sole self binding were confirmed and tenant mapping was
 unresolved; C owns its current private status. D did not read private configuration
@@ -62,3 +62,41 @@ distinct task idempotency, observed token/send ordering, live grant rechecks,
 budget denial, UNKNOWN without retry and original C1/ordinary channel assertions.
 These checks do not establish actual Feishu counts, platform acceptance, phone
 receipt, source/model connectivity or an overnight scheduled execution.
+
+## Actual onboarding acceptance, 2026-09-12 UTC
+
+D operated the clean, published I worktree at exact source
+`c99d327b3bf76a06878401dc17c6e87c4ffeb614`, using its fixed interpreter and source
+guard. The approved application alias was `oil-agent-feishu-trial` (display
+`油品预警助手（测试）`), on the confirmed host and sole self recipient injected by
+the protected product configuration. D did not read or hand-edit private fields.
+
+Executed once each, sequentially, from the I worktree:
+
+```text
+.\.venv\Scripts\python.exe -I -B -m oil_agent.runtime.status_local prepare
+.\.venv\Scripts\python.exe -I -B -m oil_agent.runtime.status_local onboarding
+.\.venv\Scripts\python.exe -I -B -m oil_agent.runtime.status_local status
+```
+
+- `prepare` began at `2026-09-12T17:35:37Z` and exited 0 with `STATUS_PREPARED`.
+  The product recorded its user-direct onboarding window beginning
+  `2026-09-12T17:35:51.275750Z`, expiring at `17:50:51.275750Z`.
+- `onboarding` began at `2026-09-12T17:36:01Z` and exited 0 with
+  `STATUS_ACCEPTED`, attempt 1 and an actual platform message ID; acceptance time
+  was `2026-09-12T17:36:33.625046Z`. The exact task and platform message IDs are
+  retained in coordinator handoff `msg_922f68d4b200`, not duplicated in Git.
+- Shared request counts were reserved 4, started 4, responded 4, uncertain 0,
+  transport failures 0 and blocked false. These are the actual aggregate ledger
+  phases returned by the fixed product, not a request estimate from source code.
+  They remain below the scope caps of 20 HTTP requests and 3 send attempts.
+- The single `status` readback exited 0 and retained the same accepted task,
+  message ID, timestamp, attempt and request counts. Its top-level
+  `STATUS_WAITING` referred to the pending morning window, due
+  `2026-09-13T00:00:00Z` (08:00 Shanghai), expiring at `00:15:00Z`.
+
+All three product invocations exited before D handed the database bridge back to
+E in `msg_59dde441c18d`. D did not retry, manually invoke morning, create another
+scope, use an alternate sender or call sources/models/login/callbacks. No additional
+platform setup blocked this first acceptance. Phone display still requires user
+feedback; the morning scheduler and punctual execution remain E's separate work.
