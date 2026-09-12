@@ -5,7 +5,7 @@
 Starting point `cd6e8d9d87acbde9b844b4568ab2df72e00bab8d` remains accepted only
 for simulated integration. I reused its retained worktree/branch/session under
 task `task_c01affff8c19`, dispatch `ctx_6d12690fe3ab`, and ordinarily merged M
-governance through `4fcf3e2e783d671fd33fe7e9418088d00a40c6ad`. The inspected
+governance through `e2aabc85b8f121381f667691b05fe5805f36e5ee`. The inspected
 nonsecret input-to-setting mapping was handed to M and incorporated in the
 unique V01-TODO.md intake; no provider, rule, budget or recipient is approved.
 
@@ -15,7 +15,7 @@ I ran `uv run --locked pytest tests/integration/test_contextual_guards.py -q
 --tb=short`: 8 failed, 13 passed, zero skipped. Downloaded JUnit from
 [BEFORE CI 34668619029](https://github.com/songconmaisaix31-design/oil-agent/actions/runs/34668619029)
 confirms 343 core passed; integration had 163 passed and the same 8 failures,
-zero errors/skips. These failures remain preserved pending AB's owner repair.
+zero errors/skips. This preserves the original failures before AB's repair below.
 
 E's deployment preparation `c557665440ce537017741d84b46396fac77da404` is now
 ordinarily integrated. I added only TLS-variable comments in `.env.example` and
@@ -24,8 +24,30 @@ needed no changes. `uv run --locked pytest tests/integration/test_controlled_tri
 tests/integration/test_deploy_safety.py -q --tb=short` passed 54 checks, zero skips
 (1.05 seconds); scoped Ruff and `git diff --check` passed. This is configuration
 preparation, not live firewall/TLS/provider or stopped-resource recovery acceptance.
-Retained-resource revalidation remains E's next increment; R16 repair remains AB's.
-Each next authorized SHA will be integrated and independently accepted by E.
+The first Linux deployment run failed its TLS mount check: full candidate
+`9c5cba6baac9d2ed33a653515334046bae3a8bac` in Actions 34669144694 had 343 core
+passed and 212 integration passed / 9 failed, zero errors/skips. The ninth failure
+was separate from the eight semantic regressions and was returned to E.
+
+AB repair `dea13fa81825f1160ef44187885a98c569375edb` was ordinarily merged into
+`f8c549b6acdd5a53e6552b969d353c965c6d3d97`. The original E contextual/rule test
+files are unchanged from b9a241a. `uv run --locked pytest tests/unit/intelligence
+tests/integration/test_contextual_guards.py tests/integration/test_rules_acceptance.py
+-q --tb=short` passed 147 cases, zero skips (1.63 seconds); full src/tests Ruff,
+`uv build` and diff checks passed. Downloaded JUnit from Actions 34669364995 then
+confirmed 375 core passed and 220 integration passed / 1 failed, zero errors/skips:
+all eight R16 cases passed, with only E's known TLS mount failure remaining.
+
+E follow-up `3afa038214309188d26db2448eb5be076d42e7ed` is now ordinarily
+integrated. It handles the inspected Compose v2 omitted-false representation
+without allowing true host-path creation, and adds read-only `check-retained`
+for the exact seven stopped trial resources. The original 54-check command above
+now passes 70 cases, zero skips (1.00 seconds); full src/tests/script Ruff, shell
+syntax and unchanged E semantic assertions pass. I updated only the owned
+runbook recovery notes. Exact complete Linux CI and E's independent acceptance
+belong to the resulting candidate receipt; these scoped local results do not
+substitute for them. Firewall enforcement, live TLS trust and actual stop/resume
+remain unexecuted, and production assembly remains unsupported.
 Docker checks used configuration parsing with synthetic inputs; no containers,
 networks or host firewall were started or changed. No live calls or credential
 discovery occurred; product source/model/Feishu calls, tokens and paid cost remain zero.

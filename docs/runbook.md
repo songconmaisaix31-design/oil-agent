@@ -158,8 +158,15 @@ retain their own authorization and acceptance gates.
 See [E's controlled trial contract](../deploy/controlled-trial.md) for the exact
 Compose selection, future gated start wrapper and scoped stop procedure. The
 initial `check` requires an unattached egress network and refuses retained
-attachments. Do not detach resources to bypass this check; retained-resource
-revalidation is a separate deployment requirement, not implied by preparation.
+attachments. For retained resources, use `check-retained` with the same explicit
+arguments plus seven `--container-id` values: the full recorded IDs of postgres,
+init, api, ingest, urgent, normal and gateway. It verifies their stopped state,
+exact ownership, configuration, image and network identities without starting
+anything. Missing, changed or unknown resources refuse; never detach resources
+to bypass the cold-start check. After this check and separate action approval,
+the operator starts only PostgreSQL, runs C's existing recovery with workers
+stopped, then starts the verified services as documented by E. UNKNOWN deliveries
+remain held for reconciliation. These steps have not been exercised on a live host.
 
 ### E-only rehearsal commands
 
