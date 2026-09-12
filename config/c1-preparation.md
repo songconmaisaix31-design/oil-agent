@@ -332,3 +332,103 @@ credential/tenant acceptance. Scoped Ruff passes. Real private values were never
 read or changed and real product requests remain zero. I assembly, E independent
 acceptance, actual PostgreSQL tests and a new explicitly authorized real window
 remain required before any real use of this implemented path.
+
+## Dedicated Windows C1 database entry
+
+`python -I -B -m oil_agent.runtime.c1_database ACTION` is a project-local
+foreground helper. Run from the reviewed source worktree's existing editable
+locked environment, for example with `uv run --offline --locked --no-sync`.
+It uses only that source tree's `deploy/compose.c1-db.yaml`, supplied by E;
+the general controlled-trial Compose files and validator remain unchanged.
+This implementation does not authorize deployment or a phone-test start.
+
+All actions require one noninteractive JSON object on stdin (maximum 8192 UTF-8
+bytes); duplicate/unknown keys, malformed values and control characters in the
+password are rejected. An authorized caller supplies values transiently, never
+through command-line secrets, an executed dotenv file, a new private file or
+the global environment. Do not paste credential-bearing JSON into a terminal
+command or public handoff. Field names and fixed scope are:
+
+| Field | Required value / meaning |
+| --- | --- |
+| `host_binding` | Already confirmed `LAPTOP-BS46UHBR`, matching the actual Windows host |
+| `worktree` | Exact reviewed source worktree containing this helper and Compose file |
+| `project`, `service` | `oil-agent-feishu-trial`, `postgres` |
+| `database`, `username` | Both `oil_c1_trial` |
+| `volume`, `network` | Compose keys `c1-data`, `backend` |
+| `port` | Integer `55436`; the only binding is `127.0.0.1:55436:5432` |
+| `password` | Explicitly supplied database password, 1–512 characters, no control characters |
+| `container_id` | Null/omitted for `check` or `start`; exact full inspected ID for retained actions |
+
+The proposed resource names are not evidence that these resources exist or are
+approved for activation. This database is distinct from E's synthetic test
+database and its disposable schemas. The same persistent C1 database must later
+serve tenant lookup and sending, preserving their shared budget ledger.
+
+| Action | Behavior |
+| --- | --- |
+| `check` | Bounded safe YAML read and captured fixed Compose config rendering; no resource mutations or database connection |
+| `start` | Requires candidate project/container/volume/network scope absent; runs only `postgres` with no dependencies, build, pull or recreation, then verifies the result |
+| `status` | Checks the supplied full container ID, project/service/worktree/image/volume/network/port and current state; read-only |
+| `migrate` | Requires the exact running healthy container; invokes only the existing isolated `runtime.cli migrate` child |
+| `stop` | Stops only the verified full container ID, retaining its volume, network and container; an already exited container is a no-op |
+| `resume` | Starts only that verified retained ID without Compose recreation; an already running container is a no-op |
+
+Resource operations target the fixed local Docker Desktop Linux named pipe,
+not an ambient remote Docker context. The Compose child receives only necessary
+Windows process fields, `COMPOSE_DISABLE_ENV_FILE=1` and `OIL_C1_DB_PASSWORD`.
+Docker also receives only `ProgramFiles` for its installed Windows Compose
+plugin discovery; no user-profile, PATH, Docker context or credential environment
+is inherited. The migration child does not need that additional field.
+The source must use the literal placeholder
+`${OIL_C1_DB_PASSWORD:?Explicit C1 database password required}`. The bounded YAML
+reader uses PyYAML already present in the locked dependency graph and rejects
+includes, env files, builds, hooks and additional services before Compose runs.
+Rendered configuration must retain the pinned PostgreSQL 16 image and resource
+bounds, sole named volume and internal backend network.
+
+Inspect/start/stop children do not inherit provider credentials, proxy settings,
+Python injection or other product flags. The separate migration child receives
+the fixed loopback DSN through `OIL_DATABASE_URL`, with `environment=test`,
+`data_provenance=fixture`, `fixture_dataset=feishu-c1`, and `outbound_mode=dry_run`;
+other capabilities retain safe defaults. The password is URL-encoded when
+constructing the DSN. Migration applies only application Alembic head: no queue
+schema, recovery, worker, API, OAuth session or sender is started. Later C1
+execution takes the same DSN through its existing bounded structured stdin,
+not through changes to the app/host/recipient private configuration.
+
+Existing resources require both the supplied full container ID and fresh exact
+scope checks, repeated before effects. Foreign/partial scopes, password
+conflicts, extra consumers or altered bindings fail closed. No resource is
+adopted, removed, recreated or repaired; no volume data or password is reset.
+Normal Docker inspection by the authorized owner supplies the retained ID;
+the helper's ordinary output never dumps IDs, environment, passwords or DSNs.
+
+Output contains only `status` and `fields`. Exit 0 covers config verification,
+observed running/exited states, start or migration completion; it does not prove
+application/phone acceptance. A running result with `fields=["health"]` is not
+yet ready for migration. Exit 2 means invalid input or failed pre-effect checks;
+exit 3 / `C1_DB_EFFECT_UNKNOWN` means a failed command or post-effect verification
+may have left changed persistent state. Do not retry blindly or infer rollback.
+Compose is not an atomic compare-and-create API: out-of-band Docker changes and
+partial starts require exact independent inspection, not automatic cleanup.
+
+Preparation evidence is bounded unit testing with synthetic subprocess/inspect
+doubles, including allowed commands, isolated child environments, redaction,
+foreign/changed scopes, missing retained IDs, no-effect checks and preserved
+resources after failure. No real C1 Docker resource, password, database or phone
+window was used. E's Compose integration and actual Windows loopback reachability
+remain separate acceptance gates; internal-only networking must not be silently
+expanded to obtain a passing check.
+
+The exact E candidate `1ab32ce5fe774a434d3a63254124723fc77f02bc` was compared
+with its Git blob and passed actual captured Compose rendering plus this helper's
+`check` at 2026-09-12T12:55:29Z using a synthetic password only. No resource
+inspection/mutation command was run. The actual renderer revealed the required
+Windows `ProgramFiles` discovery field and generated null `entrypoint` / empty
+`ipam` metadata; these default representations are accepted without permitting
+an entrypoint override or custom IPAM. Fixed fixture labels, IPv6-disabled
+internal networking, restart `no` and bounded local logs match that E candidate.
+This is configuration-only evidence, not running Docker/Windows DB reachability.
+I must declare the already locked `PyYAML>=6.0.3,<7` as a direct runtime
+dependency; the current resolved version is 6.0.3 and no package upgrade is needed.
