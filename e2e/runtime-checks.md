@@ -4,6 +4,81 @@ Provider replies and market content in this report are synthetic. Actual local
 file/ACL observations are labeled separately. No source license, production
 account, model, Feishu recipient, phone receipt or deployed server is accepted.
 
+## C shared app owner: intermediate review and E fixture adaptation
+
+E ordinarily adopted exact I intermediate
+`775308f7ded755da410044f8634b2e5f11a6ff23` from its clean retained
+`5aa4219fd09473e7ab6f645289e00de0fde3ec85` branch on 2026-09-12. The exact I
+remote matched, and ancestor checks confirmed E `5aa4219` and C source
+`1a699c7713ea4c62b5cd81b4e47e1c6909064042`. This checkpoint precedes I factory
+glue and is **not final factory or combined-candidate acceptance**.
+
+Before editing any fixture, the unchanged 26 entry cases produced **26 setup
+errors**, 5.44 seconds, pytest exit 1: constructing `C1Permission` failed because
+the new required `app_request_approval_id` was absent. No entry, runtime, database
+or transport effect occurred. This reproduces an intentional required contract
+change, not a domain failure or missing real credentials.
+
+E changed only the existing synthetic `entry_scope` fixture to supply a distinct,
+stable application-window approval, its explicit reference from the full send
+permission, and `app_request_permission` in the stdin envelope. Application,
+host, credential reference, exact start/expiry, budget reference, twenty-request
+limit and zero-fee bound match the same full permission. A lookup read scope is
+added only by the explicit synthetic query fixture; a send permission alone does
+not implicitly grant tenant read. The original 26 tests then passed unchanged.
+
+Nineteen bounded E cases were added in the same existing entry test file:
+
+- Ten parent/product boundary cases reject an absent app permission, absent
+  owner link, replaced owner, differing active window or differing budget before
+  child/factory effects. Invalid input and binding-mismatch results remain redacted.
+- Eight parent/product query cases require explicit tenant-read permission and
+  an active window, and reject a supplied full send permission in query mode.
+- One public product query case connects the actual C Runtime and D transport
+  through a patched fixed bootstrap target and mocked HTTP/repository reservation.
+  Both token/query operations reserve under the same app owner before their two
+  synthetic wires; no sender, recipient provisioning, OAuth, source or model
+  service is available. The response has no tenant/receipt/usage disclosure and
+  disposal runs once. This tests call flow, not durable SQL accounting or I glue.
+
+Bounded source inspection confirmed full permissions require exact app/window/
+budget matching, runtime checks compare constructed scopes, lookup/send
+reservations reuse the app approval in the existing ledger, and first-exercise
+identity is keyed by app approval rather than a replaceable full-send approval.
+The transactional budget and first-subject claims still require PostgreSQL.
+
+### Actual intermediate commands and results
+
+All commands used the existing environment with offline/no-sync flags:
+
+```powershell
+uv run --offline --no-sync --locked pytest tests/integration/test_c1_entry.py -q --tb=short --junitxml=e2e/runtime-artifacts/c1-shared-owner-entry-red.xml
+uv run --offline --no-sync --locked pytest tests/integration/test_c1_entry.py -q --tb=short --junitxml=e2e/runtime-artifacts/c1-shared-owner-fixture-green.xml
+uv run --offline --no-sync --locked pytest tests/integration/test_c1_entry.py tests/unit/runtime/test_c1_app_scope.py -q --tb=short --junitxml=e2e/runtime-artifacts/c1-shared-owner-intermediate.xml
+```
+
+Results: **26 setup errors / 5.44 seconds / exit 1** before changes; **26 passed /
+0.73 seconds / exit 0** after the fixture-only update; **77 passed / 0.81 seconds /
+exit 0** after the focused additions (45 E entry cases plus 32 C app-scope cases).
+The final selection had zero failures, skips, deselections or warnings. One
+initial Ruff import-order finding was corrected; final `uv run --offline
+--no-sync --locked ruff check tests/integration/test_c1_entry.py`, `ruff format
+--check` with the same prefix, and `git diff --check` passed. A read-only Python
+AST comparison against `5aa4219` confirmed all seven original non-fixture
+functions, including every original test and parameterization, remain unchanged.
+
+C's reported 115 owner checks were not rerun; 21 PostgreSQL cases remain
+**collected only / NOT EXECUTED**, with no new collection or Docker probe by E.
+No private data, real child, database, provider, phone or host operation ran.
+Product calls, sends, model tokens and added product cost remain **0**; live
+usage stays unknown/null and the expired phone window is not renewed. C's
+separate bind-if-unset delta is excluded and requires an authorized candidate.
+
+M subsequently authorized exact I factory glue
+`d842b7b43c2f6ed91198a3e3695650db3b2a8cfe` for ordinary adoption after E commits
+this fixture increment. Its bounded acceptance, if executed, is recorded in a
+separate continuation below; this intermediate result alone accepts no factory.
+
 ## D tenant transport accepted: isolated transport scope only
 
 On 2026-09-12, E independently accepts the D transport increment in exact I
