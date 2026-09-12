@@ -16,6 +16,7 @@ from oil_agent.channels import (
     FeishuIdentityAdapter,
     FeishuRecipient,
     FeishuSettings,
+    FeishuTenantLookup,
     feishu_identity,
 )
 from oil_agent.channels.common import https_url
@@ -268,6 +269,27 @@ def _build_c1_runtime(settings: Settings) -> Runtime:
         raise
 
 
+def _build_c1_tenant_lookup_runtime(settings: Settings) -> Runtime:
+    """Assemble only the approved app read adapter, without tenant/person bindings."""
+    settings = Settings.model_validate(settings.model_dump())
+    repository = Repository(create_db_engine(settings))
+    try:
+        runtime = Runtime(repository, RuntimeServices(), settings=settings)
+        permission = runtime.current_c1_app_request_permission()
+        runtime.services.c1_tenant_lookup = FeishuTenantLookup(
+            FeishuSettings(
+                enabled=True,
+                app_id=permission.app_id,
+                app_secret=SecretStr(_required_environment("OIL_C1_APP_SECRET")),
+            ),
+            authorize_request=runtime.authorize_c1_app_request,
+        )
+        return runtime
+    except Exception:
+        repository.engine.dispose()
+        raise
+
+
 def build_trial_runtime(settings: Settings) -> Runtime:
     """Assemble approved adapters; C owns each live operation's authorization."""
     if settings.data_provenance == "production" or settings.outbound_mode == "production":
@@ -291,6 +313,8 @@ def build_runtime(settings: Settings) -> Runtime:
     """Keep fixture default; select trial explicitly through C classification."""
     if settings.data_provenance == "production" or settings.outbound_mode == "production":
         raise RuntimeError("Production assembly has not been implemented")
+    if settings.c1_tenant_lookup_only:
+        return _build_c1_tenant_lookup_runtime(settings)
     if settings.data_provenance == "trial" or settings.outbound_mode == "trial":
         return build_trial_runtime(settings)
     return build_fixture_runtime(settings)
