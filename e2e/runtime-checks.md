@@ -1866,3 +1866,53 @@ Test names identify cases and variants; the corpus itself remains frozen.
 | T26 | Actual queue heartbeat/restart; API failure canary not exported | Off-host detection, maintenance notification and full operational-log audit NOT EXECUTED |
 | T27 | Stored fixture lineage, test-only grants, dry-run states and UI labels; D mock sender verifies fixture label | No real recipient or production fixture sending |
 | T28 | Evidence-linked deterministic reports, durable budgets/reserve/UTC reset and distinct runtime delivery counters | >=7-day comparison, >=14-day operation, real cost/coverage/receipt BLOCKED_EXTERNAL |
+
+## Actual local recipient binding: independent post-state verified
+
+On 2026-09-12, E observed the real post-state from **11:34:07.928930 UTC**
+through **11:34:49.156070 UTC**, using clean E source
+`d35a7fc192db05fb134a1459ce13d6748732f3c6`. `git diff --exit-code` confirmed
+`src/`, `pyproject.toml` and `uv.lock` identical to accepted I delivery
+`3c7ee50383235587063fe938fc7d27fe50d90783`; loaded helper paths resolved to E.
+Only the approved configuration was read, with its protected-path metadata:
+`C:/Users/DW/AppData/Local/oil-agent/private/feishu-c1/config.json`.
+
+The accepted path/ACL verifier passed without repair. The actual file is a
+bounded (at most 16384 bytes), single-link, regular, non-reparse file with valid
+UTF-8, duplicate-key rejection and strict schema validation. Directory and file
+are owned by the current user; their two allowed FullControl principals are
+exactly that user and SYSTEM. Directory ACL inheritance is disabled; the file
+inherits its restricted ACL. The configured host matched both the actual Windows
+machine name and the approved host; application fields were nonempty. The exact
+recipient comparison against M's supplied expected identity passed in memory.
+No private value or comparison digest was printed or recorded in this artifact.
+
+An inline `.venv/Scripts/python.exe -I -B -` verification invoked each existing
+helper mode once, with the same environment's absolute interpreter:
+
+```text
+python -B -m oil_agent.runtime.c1_private check
+python -B -m oil_agent.runtime.c1_private inject-check
+```
+
+`check` started at **11:34:23.507771 UTC** and `inject-check` at
+**11:34:34.182944 UTC**. Both returned **exit 2**, empty stderr, `CREATED`,
+`NOT_CONFIGURED`, missing exactly `tenant_key`, `start_trigger=NOT_AUTHORIZED`
+and `product_requests=0`. The real fixed isolated `python -I -m
+oil_agent.runtime.c1_product` child returned the expected redacted response;
+no child, configuration or ACL mock was used. Bounded in-memory comparisons
+after each mode and at completion verified unchanged configuration bytes and
+file identity. The surrounding verification exited **0**.
+
+C's null-only recipient update at **11:29:39.786335 UTC**, including preservation
+of all other bytes, formatting and owner/group/DACL, remains **C-reported** via M's
+handoff for `ctx_9c7a6e43d0e0`; E did not observe C's pre-update state. This new
+observation supersedes the earlier locally missing-recipient result only.
+Verdict: **ACTUAL LOCAL RECIPIENT CONFIGURATION / LOADING / ISOLATED INJECTION
+VERIFIED**. Tenant binding is still missing and no executable permission or new
+phone window was created. E performed no private write, clipboard/UI operation,
+token/tenant lookup, source/model/platform call, send, login, callback, database,
+Docker, test suite, build or dependency installation. Product calls/sends and
+added product cost are zero for these local checks; earlier browser background
+request counts remain UNKNOWN. Source/model/platform/phone/login/callback and
+production acceptance remain unexecuted.
