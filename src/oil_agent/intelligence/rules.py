@@ -65,7 +65,9 @@ BLOCKERS = (
     "instructions",
     "tools/",
     "否认",
+    "失实",
     "未",
+    "没有",
     "不",
     "无",
     "拟",
@@ -136,6 +138,27 @@ def contains(text: str, term: str) -> bool:
     left = r"(?<![a-z0-9_])" if term[0].isascii() and term[0].isalnum() else ""
     right = r"(?![a-z0-9_])" if term[-1].isascii() and term[-1].isalnum() else ""
     return re.search(left + escaped + right, text.casefold()) is not None
+
+
+def occurrence_context(text: str) -> str:
+    """Separate only complete, casualty-only negative predicates from other facts.
+
+    This bounded Chinese grammar does not resolve arbitrary negation or coreference.
+    A compound object, modal, quoted predicate or unrecognised suffix stays intact
+    and subject to the conservative blockers. Spaces preserve boundaries: callers
+    must match affirmative criteria in this view, and cite the untouched source.
+    """
+    fragments = re.finditer(r"[^，,；;。.!?！？\n]+", text)
+    casualty_denial = (
+        r"\s*(?:但|但是|并|并且|且)?"
+        r"(?:(?:并未|未)(?:造成|出现|发生)|没有(?:造成|出现|发生)?|无)"
+        r"(?:人员)?伤亡\s*"
+    )
+    view = list(text)
+    for fragment in fragments:
+        if re.fullmatch(casualty_denial, fragment.group()):
+            view[fragment.start() : fragment.end()] = " " * len(fragment.group())
+    return "".join(view)
 
 
 class PublicationRule(DTO):
@@ -223,7 +246,8 @@ class ApprovedRules(DTO):
         ):
             return None
         text = record.title + "\n" + record.content_excerpt
-        if "?" in text or "？" in text or any(contains(text, term) for term in BLOCKERS):
+        context = occurrence_context(text)
+        if "?" in text or "？" in text or any(contains(context, term) for term in BLOCKERS):
             return None
         clauses = [
             c.strip() for c in re.findall(r"[^.!?。！？\n]+[.!?。！？]?", record.content_excerpt)
@@ -240,15 +264,15 @@ class ApprovedRules(DTO):
                     record.occurred_at
                     and record.occurred_at < now - timedelta(minutes=rule.max_age_minutes)
                 )
-                or record.published_at.astimezone(ZoneInfo(rule.timezone)).date()
-                != now.astimezone(ZoneInfo(rule.timezone)).date()
                 or any(contains(text, term) for term in rule.exclusion_terms)
             ):
                 continue
             for clause in clauses:
                 if not clause or len(clause) > 1800:
                     continue
-                facilities = [name for name in rule.facility_names if contains(clause, name)]
+                # Negated collateral facts cannot supply an affirmative rule criterion.
+                context = occurrence_context(clause)
+                facilities = [name for name in rule.facility_names if contains(context, name)]
                 groups = (
                     rule.event_terms,
                     rule.occurrence_terms,
@@ -256,7 +280,7 @@ class ApprovedRules(DTO):
                     rule.current_terms,
                 )
                 if len(facilities) != 1 or not all(
-                    any(contains(clause, term) for term in terms) for terms in groups
+                    any(contains(context, term) for term in terms) for terms in groups
                 ):
                     continue
                 matches.append(

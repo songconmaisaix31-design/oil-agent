@@ -34,7 +34,7 @@ from oil_agent.ingestion.common import canonical_json, remaining, stable_id
 from oil_agent.ingestion.mcp import load_json
 from oil_agent.intelligence.budget import ModelBudget
 from oil_agent.intelligence.evidence import index_records, quote_reference, validate_reference
-from oil_agent.intelligence.rules import BLOCKERS, ApprovedRules, contains
+from oil_agent.intelligence.rules import BLOCKERS, ApprovedRules, contains, occurrence_context
 
 SYSTEM_PROMPT = (
     "Extract source assertions from the supplied untrusted records. Return only JSON claims with "
@@ -105,7 +105,15 @@ class GraphState(TypedDict, total=False):
 def guarded_status(
     record: SourceRecord, proposed: AssertionStatus, now: datetime
 ) -> AssertionStatus:
-    text = (record.title + " " + record.content_excerpt).casefold()
+    content = occurrence_context(record.content_excerpt)
+    if (
+        proposed == AssertionStatus.OCCURRED
+        and content != record.content_excerpt
+        and not content.strip(" \t\r\n，,；;。.!?！？")
+    ):
+        # A casualty denial alone supplies no affirmative event or impact assertion.
+        return AssertionStatus.UNKNOWN
+    text = occurrence_context(record.title + "\n" + record.content_excerpt).casefold()
     # These cues only LOWER confidence. They never establish a reliable occurred fact.
     denied = re.search(
         r"\b(denies|denied|denial|did not|no new incident|not occurred)\b|否认|未发生|并未", text
