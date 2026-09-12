@@ -50,6 +50,18 @@ isolated migrated E PostgreSQL, zero skips. Provider responses were synthetic
 httpx transports, not a real Feishu login. E stopped and retained its exact test
 container afterward. These preparation checks do not accept the future I candidate.
 
+Incremental integration: I candidate 1 `26e3391c24afaa5e098f545831610961204a7802`
+contains C `aa7d638` and E `4a55ffe`; candidate 2
+`0be5ab779da9cb7b79ed467ed009d171656b0d40` adds D `cfda444`/`8db81c7`.
+Both are pushed and remain REVIEW. Candidate 1 CI 34663145891 FAILED: three E
+channel cases construct production outbound with a fixture dataset, now correctly
+rejected by C's classification validation (79 integration cases passed, 3 failed).
+C must finish trial operation and E must migrate these explicit scenarios while
+preserving accepted/UNKNOWN/revoked assertions. Do not relabel all fixtures as
+production or weaken gates. This is an implementation/test integration gap, not
+missing external authorization. I routes the fix to C/E and continues source
+integration; no full-suite or production acceptance is claimed.
+
 ### One-page incremental execution and ownership
 
 | Increment / owner | Bounded work | Integration and acceptance |
@@ -75,10 +87,10 @@ implementation. No additional workers/worktrees/branches are needed.
 
 | ID | Classification | Gap / owner | Evidence and next gate |
 | --- | --- | --- | --- |
-| R-01 | 代码尚未实现 | Concrete news network transport and adapter / AB | Existing bounded reader has injected transport only; implement documented Jin10 endpoint and parser with deterministic network doubles |
+| R-01 | 已有实现待实测 | Concrete news network transport and adapter / AB | Implemented in d2f2d17fc0687dd75e56b21394830563df59e534: pinned HTTPS transport, Jin10 MCP negotiation/schema/flash adaptation; 79 ingestion checks including 37 synthetic MCP/HTTP cases passed; I/E integration and approved real call pending |
 | R-02 | 代码尚未实现 | Concrete model client and approved-rule assessment / AB | ModelClient protocol exists; trusted ClaimReview currently required per record; implement bounded client and configured rules while preserving evidence validation |
-| R-03 | 代码尚未实现 | Trial assembly and classification / C + I | Settings reject external source/model flags unconditionally; bootstrap wires dry-run only; several request paths force fixture |
-| R-04 | 已有实现待实测 | Feishu send/OAuth/signed callback / D + E | Existing implementations and local tests exist; actual tenant login, test-phone receipt and acknowledgement unverified |
+| R-03 | 代码尚未实现 | Trial assembly and classification / C + I | First construction/history increment aa7d638 is integrated in I26e3391; runtime reservations, send/session/data-scope activation and trial factory are still being implemented |
+| R-04 | 已有实现待实测 | Feishu send/OAuth/signed callback / D + E | Existing code repaired at cfda44473a0c260b51f9762624166a6b419a6ce0: app-bound identity, trial test-recipient checks and labels; 98 Python/18 web checks passed; I/E candidate and actual tenant login/phone receipt/ack remain unverified |
 | R-05 | 缺外部授权 | Source/model/provider/rules/budget and project credential injection / user | One minimal external-input request is pending; no unrelated credential search or paid calls |
 | R-06 | 缺外部授权 | Feishu app/tenant, exact test-recipient allowlist, redirect/callback/public URL and test phone / user | No customer-scope expansion; credentials must not enter chat, public Git or logs |
 | R-07 | 已有实现待实测 | Real non-urgent source-to-model-to-storage chain and zero-alert result / AB + C + I + E | Requires R-01/R-02/R-03 and approved inputs; a marked urgent exercise is separate evidence |
