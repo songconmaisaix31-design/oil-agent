@@ -2,6 +2,33 @@
 
 ## Current phase: controlled real integration
 
+### Active bounded development: C1 PostgreSQL test adapter
+
+The user's new multi-agent development instruction resumes the existing C/E/I
+sessions on the accepted delivery `f04f64f55cc12e7fea4cfa5d56ee768816bad561`.
+It does not start a phone window or authorize provider calls. The concrete
+implementation gap is the already recorded mismatch between C's database-only
+fixture and E's isolated migrated PostgreSQL fixture; 21 current C1 SQL cases
+remain unexecuted through the E harness.
+
+| Owner | Bounded work and exclusive edits | Acceptance / next owner |
+| --- | --- | --- |
+| E | Reproduce the fixture-selection blocker and add the smallest adapter under `tests/integration/`, reusing the original C1 assertions and E's existing migrated fixture. Record evidence only in existing `e2e/runtime-checks.md`. | Exact collection and fixture routing, applicable lint and targeted tests. Actual SQL only on independently confirmed E-owned resources; missing engine remains a separate execution gap. |
+| C | Read-only review of the 21 existing storage assertions, clock/config initialization and database ownership requirements; return a precise contract handoff to E through M. Domain fixes require a reproduced failure and a separate owner assignment. | Preserve original assertions and C database guards; no repository or private-configuration edits in this task. |
+| I | After the E commit, integrate only this adapter/evidence and M governance on the existing integration branch. | Check exact source changes and applicable targeted checks; hand the final candidate to E for independent delivery review. |
+| M | Maintain this board and dispatch/acceptance records only. | Retain all sessions; AB/D have no task in this increment. |
+
+Do not rerun full synthetic acceptance, change product code or production flags,
+read private credentials, start Docker, restart shared services or clean old
+resources. E may make one bounded read-only check of its previously identified
+container to determine whether the targeted SQL tests can run; a mismatch or
+unavailable engine ends that environment action without retry or substitution.
+Any SQL execution must retain fixture provenance and use only newly created
+E-owned disposable schemas, never the future live C1 database. Commit/push only
+verified changes to the existing origin; use `[skip ci]` to avoid an unrelated
+full-suite replay. Report harness checks separately from actual PostgreSQL and
+Feishu evidence. Production factory work remains outside this increment.
+
 ### Active C1: local code accepted; phone test not executed
 
 The user reopened the official API Explorer and supplied one exact `open_id`
