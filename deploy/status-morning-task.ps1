@@ -69,12 +69,34 @@ function Get-ExactTask($folder) {
 
 function Assert-RegisteredDefinition($actual, $expected) {
     if (-not $actual -or -not $actual.Enabled) { throw 'STATUS_TASK_NOT_REGISTERED' }
-    [xml]$actualXml = $actual.Xml
-    [xml]$expectedXml = $expected.XmlText
-    foreach ($section in @('Principals', 'Triggers', 'Actions', 'Settings')) {
-        if ($actualXml.Task.$section.OuterXml -cne $expectedXml.Task.$section.OuterXml) {
-            throw 'STATUS_TASK_MISMATCH'
-        }
+    # Task Scheduler COM rewrites XML and omits fields whose effective value is
+    # the documented default (for example RunLevel and trigger Enabled). Compare
+    # the effective COM properties instead of serialized XML, while rejecting
+    # extra actions/triggers and every non-approved value.
+    $ad = $actual.Definition
+    if ($ad.Actions.Count -ne 1 -or $ad.Triggers.Count -ne 1) { throw 'STATUS_TASK_MISMATCH' }
+    $aa = $ad.Actions.Item(1)
+    if ($aa.Type -ne 0 -or $aa.Path -cne (Join-Path $worktree '.venv\Scripts\python.exe') -or
+        $aa.Arguments -cne '-I -B -m oil_agent.runtime.status_local morning' -or
+        $aa.WorkingDirectory -cne $worktree) { throw 'STATUS_TASK_MISMATCH' }
+    $at = $ad.Triggers.Item(1)
+    if ($at.Type -ne 1 -or $at.StartBoundary -cne $launchAt.ToString('yyyy-MM-ddTHH:mm:ssK') -or
+        $at.EndBoundary -cne $stopAt.AddMinutes(-15).ToString('yyyy-MM-ddTHH:mm:ssK') -or [bool]$at.Enabled -ne $true -or
+        $at.Repetition.Interval -or $at.Repetition.Duration) { throw 'STATUS_TASK_MISMATCH' }
+    $ap = $ad.Principal
+    $actualSid = try {
+        ([System.Security.Principal.NTAccount]$ap.UserId).Translate(
+            [System.Security.Principal.SecurityIdentifier]).Value
+    } catch { $ap.UserId }
+    $expectedSid = [System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+    if ($actualSid -cne $expectedSid -or $ap.LogonType -ne 3 -or $ap.RunLevel -ne 0) { throw 'STATUS_TASK_MISMATCH' }
+    $as = $ad.Settings
+    if ($as.MultipleInstances -ne 2 -or $as.StartWhenAvailable -ne $false -or
+        $as.AllowDemandStart -ne $false -or $as.WakeToRun -ne $true -or
+        $as.ExecutionTimeLimit -cne 'PT17M' -or $as.RestartCount -ne 0 -or
+        $as.DisallowStartIfOnBatteries -ne $false -or $as.StopIfGoingOnBatteries -ne $false -or
+        $as.IdleSettings.StopOnIdleEnd -ne $false) {
+        throw 'STATUS_TASK_MISMATCH'
     }
 }
 

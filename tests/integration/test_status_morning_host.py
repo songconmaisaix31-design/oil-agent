@@ -80,6 +80,29 @@ def test_definition_disables_retries_catchup_manual_launch_and_overlap(rendered)
     assert settings.find("t:RestartOnFailure", NS) is None
 
 
+def test_existing_task_definition_uses_effective_com_properties():
+    """Registered COM definitions may omit fields serialized by NewTask."""
+    if os.name != "nt":
+        pytest.skip("Actual Windows Task Scheduler definition requires Windows")
+    count = powershell(
+        "-Command",
+        f"@(Get-ScheduledTask -TaskPath '\\' -TaskName '{TASK}' "
+        "-ErrorAction SilentlyContinue).Count",
+    )
+    if count.returncode != 0 or count.stdout.strip() != "1":
+        pytest.skip("The bounded task is not registered in this host")
+    result = powershell(
+        "-File",
+        str(SCRIPT),
+        "-Mode",
+        "VerifyRegistered",
+        "-ExpectedCommit",
+        "b2c85b8fc1affdbcf50592f0b01cd6f15142e515",
+    )
+    assert result.returncode == 0 and not result.stderr
+    assert json.loads(result.stdout)["status"] == "STATUS_TASK_DEFINITION_VERIFIED"
+
+
 @pytest.mark.parametrize("mode", ["Check", "Register"])
 def test_wrong_candidate_is_rejected_without_registration(rendered, mode):
     result = powershell("-File", str(SCRIPT), "-Mode", mode, "-ExpectedCommit", "0" * 40)
