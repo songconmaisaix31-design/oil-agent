@@ -31,6 +31,13 @@ E owns correction of its invocation/DTO test harness after reproducing the
 secondary mismatches. The second permission check and full Delivery validation
 must stay intact. This is a pending independent-test interface correction, not a
 credential blocker or permission to relax runtime guards.
+E correction `cdf3f8a57f2a678110133410735d05eb7d53baf5` was subsequently
+ordinary-merged on retained I `46be15c5ac59d10c71292f20024c1ec545d29d82`.
+It passes the explicit command to the documented product entry, asserts both
+permission checks and uses the existing Delivery DTO. Original RED history and
+the positive child assertion remain; C application source is unchanged.
+The final E entry command now passes **26**, including all nine product denials
+through explicit execution mode. The earlier 25/1 result is historical.
 
 I extended only the existing offline factory tests to exercise C's actual fixed
 `build_c1_runtime` wrapper and verify that configured/ambient runtime factory
@@ -38,8 +45,18 @@ overrides are ignored. `uv run --locked pytest tests/integration/test_bootstrap_
 -k offline_factory -q --tb=short` passed 12, with 13 existing PostgreSQL cases
 intentionally unselected and zero skips; all three original ordinary rules/OAuth/
 callback-key guards remain. C preparation/execution/runtime tests passed 47.
-Scoped Ruff and diff-check passed. The candidate is not yet independently
-accepted; the one package build awaits resolution of the entry regression.
+After E's correction, the same offline factory command passes **12** again,
+13 existing PostgreSQL cases intentionally unselected, zero skips. Scoped Ruff
+and diff-check pass. C's unchanged 47-case scope was not rerun. The entry regression
+is resolved; the final receipt records this dispatch's one new local wheel/sdist
+build, exact source/delivery SHA and artifact paths. Old packages are not reused
+as current evidence. E's independent candidate acceptance remains a separate step.
+
+M reports an explicit user start observed at `2026-09-12T08:43:15.149Z`, with
+conservative expiry `2026-09-12T09:13:15.149Z`. No complete real bindings, valid
+permission input or approved database connection were supplied to I. This task
+remains code/build only; it does not run the private/product entry, issue a
+permission, renew the window or establish any provider/phone result.
 
 Only a separately supplied bounded, strict execution input can carry the existing
 `C1Permission` and explicit PostgreSQL URL to the fixed isolated product entry.
