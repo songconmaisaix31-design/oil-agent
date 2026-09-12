@@ -3090,3 +3090,24 @@ was unavailable without elevation, so native power-request state could not be
 independently read; process liveness and source/task checks are the available
 evidence. No Feishu request was made by E (request count remains four), and no
 morning send, phone receipt, or production acceptance is inferred.
+
+## Follow-up helper ownership check (2026-09-13)
+
+The previously started PID **61216** was rechecked by exact process identity:
+its executable is the I worktree interpreter
+`C:/Users/DW/orca/workspaces/oil-agent/oil-v01-i/.venv/Scripts/python.exe`,
+arguments are `-I -B .../oil-v01-i/deploy/status_morning_awake.py
+ffa93a7047599fabd6b6465fb6f80f348af5a372`, and its recorded start was
+`2026-09-12T17:51:38.8817605+08:00` (parent PID 60940 had already exited).
+The process remained alive and responsive; no child process was present. No
+stdout/stderr redirection was established for that original launch, so a
+`STATUS_AWAKE_ACTIVE` startup line or resolved log path cannot be recovered
+without terminating the approved finite helper. E therefore did not restart it
+or create a second helper; native `SetThreadExecutionState` success is not
+independently observable from this process-only check, and `powercfg /requests`
+still requires elevation. The helper remains bounded by its fixed `08:15+08:00`
+deadline and must not be stopped before then; future activation should capture
+stdout/stderr at launch under an explicit non-private runtime path.
+
+This process evidence concerns the dedicated C1 status resource only; it does
+not assert the prior E synthetic PostgreSQL metadata as product-status state.
