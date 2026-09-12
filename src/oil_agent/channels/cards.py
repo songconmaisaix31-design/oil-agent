@@ -16,10 +16,17 @@ LABELS = {
     "reminder": ("待确认提醒", "orange"),
 }
 
+PROVENANCE_LABELS = {
+    "fixture": "合成演练 · 非真实事件",
+    "trial": "试运行 · 真实来源",
+    "production": "生产数据",
+}
+
 
 def notification_text(intent: NotificationIntent) -> str:
     label = LABELS[intent.kind][0]
     fixture = f"【演练数据 / {intent.fixture_dataset}】\n" if intent.is_fixture else ""
+    provenance = PROVENANCE_LABELS[intent.provenance]
     evidence = (
         "\n".join(
             f"来源记录 {e.record_id} · v{e.revision} · {e.field}：{e.excerpt}"
@@ -29,7 +36,8 @@ def notification_text(intent: NotificationIntent) -> str:
     )
     local_time = intent.created_at.astimezone(ZoneInfo("Asia/Shanghai"))
     return (
-        f"{fixture}{label} · v{intent.revision}\n{intent.title}\n{intent.body}\n\n"
+        f"【{provenance}】\n{fixture}{label} · v{intent.revision}\n"
+        f"{intent.title}\n{intent.body}\n\n"
         f"通知生成：{local_time:%Y-%m-%d %H:%M:%S}（上海时间，非事件发生时间）\n"
         f"{evidence}\n平台受理不代表手机收到；确认仅针对本版本。"
     )
@@ -70,7 +78,13 @@ def build_message(intent: NotificationIntent, *, public_base_url: str) -> tuple[
         )
     card = {
         "config": {"wide_screen_mode": True, "update_multi": True, "enable_forward": False},
-        "header": {"template": color, "title": {"tag": "plain_text", "content": label}},
+        "header": {
+            "template": color,
+            "title": {
+                "tag": "plain_text",
+                "content": f"{PROVENANCE_LABELS[intent.provenance]} / {label}",
+            },
+        },
         "elements": [
             {"tag": "div", "text": {"tag": "plain_text", "content": text}},
             {"tag": "action", "actions": actions},

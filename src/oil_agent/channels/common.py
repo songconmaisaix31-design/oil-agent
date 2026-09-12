@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import re
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from urllib.parse import urlsplit
@@ -9,7 +10,7 @@ from urllib.parse import urlsplit
 import httpx
 from pydantic import SecretStr, ValidationError
 
-from oil_agent.contracts.dto import Delivery, DeliveryState, NotificationIntent
+from oil_agent.contracts.dto import Delivery, DeliveryState, ExternalIdentity, NotificationIntent
 from oil_agent.contracts.services import CallContext, ErrorCode, ServiceError
 
 
@@ -28,6 +29,21 @@ class FeishuSettings:
     def require_app(self) -> None:
         if not self.enabled or not self.app_id or not self.tenant_key or not self.app_secret:
             raise ServiceError(ErrorCode.NOT_IMPLEMENTED, "Feishu application is not configured")
+
+
+def feishu_identity(settings: FeishuSettings, open_id: str) -> ExternalIdentity:
+    """Canonical preprovisioning key; never fall back to legacy tenant-only bindings."""
+    try:
+        if not all(
+            re.fullmatch(r"[A-Za-z0-9_-]+", value)
+            for value in (settings.tenant_key, settings.app_id)
+        ) or not re.fullmatch(r"ou_[A-Za-z0-9_-]+", open_id):
+            raise ValueError("Invalid identity components")
+        return ExternalIdentity(
+            provider="feishu", subject=f"{settings.tenant_key}:{settings.app_id}:{open_id}"
+        )
+    except (ValueError, TypeError):
+        raise ServiceError(ErrorCode.INVALID_OUTPUT, "Invalid Feishu identity binding") from None
 
 
 def https_url(value: str) -> str:

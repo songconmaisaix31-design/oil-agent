@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import re
 import time
 from collections.abc import Awaitable, Callable, Mapping
 from dataclasses import dataclass
@@ -101,13 +102,20 @@ class FeishuChannel:
         preflight(intent, "feishu")
         self.settings.require_app()
         recipient = self.recipients.get(intent.recipient_scope.recipient_id)
-        if not recipient or not recipient.open_id.startswith("ou_"):
+        if (
+            not recipient
+            or not isinstance(recipient.open_id, str)
+            or not re.fullmatch(r"ou_[A-Za-z0-9_-]{1,128}", recipient.open_id)
+        ):
             return receipt(intent, context, DeliveryState.FAILED_FINAL, "recipient_unconfigured")
-        if intent.is_fixture and not (
+        if intent.provenance in ("fixture", "trial") and not (
             recipient.is_test_recipient and intent.recipient_scope.is_test_recipient
         ):
             return receipt(
-                intent, context, DeliveryState.FAILED_FINAL, "fixture_recipient_forbidden"
+                intent,
+                context,
+                DeliveryState.FAILED_FINAL,
+                "fixture_recipient_forbidden" if intent.is_fixture else "trial_recipient_forbidden",
             )
         sending = False
         try:
