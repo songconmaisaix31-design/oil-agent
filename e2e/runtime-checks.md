@@ -2553,3 +2553,96 @@ transport/migration, actual runtime lifecycle, first accepted-at plus 120-second
 timing, platform acceptance and phone receipt remain unexecuted and require the
 later concrete C/I delivery and explicitly authorized exercise. Only this
 evidence append was authored by E; owner source and assertions remain intact.
+
+## C1 stdio short-response check and scoped connection-budget regression
+
+Under E dispatch `ctx_cb7006602d1c`, on 2026-09-13 local time, E normally
+merged accepted I `f688b78e997deda0bfd60fdfd8965adc2c500a06` at
+`d0666a3ab4ad5692a8900b636ff47307fd79823a`. The bounded target was C's
+existing `c1_stdio.py` byte flow and fixed child lifecycle, without accessing
+Docker, the dedicated database, credentials or protected configuration.
+
+E ran one in-memory Python probe using the actual bridge implementation with
+only its Docker child replaced by an explicitly synthetic local Python child.
+The test listener used an ephemeral loopback port instead of the approved live
+port. The double read the eight-byte SSLRequest, flushed one byte `N`, waited
+for another input byte, returned `Z`, and remained alive awaiting further input.
+The original fixed Docker argv, unbuffered pipes, upload partial-write loop and
+`os.read` download path were preserved and checked; Docker was never invoked.
+
+Result from `uv run --offline --locked --no-sync python -B -`:
+**exit 0**; first short response in **0.458076 seconds**, second bidirectional
+exchange in **0.000081 seconds**, both before child EOF; complete probe body
+**0.520282 seconds**. Exactly one owned child and the temporary listener closed
+on exit. **No EOF-buffering defect was reproduced** on this source, so E did
+not add an alternative bridge or a speculative streaming regression. This
+local child bypasses Docker startup and cannot prove Docker protocol latency,
+authentication or PostgreSQL readiness.
+
+M relayed C's actual observations in `msg_3dba726c9c89`: bridge SSLRequest
+completed in **5.175 seconds**, direct persistent Docker stdio in **4.79
+seconds**, exceeding the existing three-second connection budget. This is
+C-reported live evidence, not an E resource probe. E independently froze
+`tests/integration/test_c1_connect_budget.py`: the real SQLAlchemy engine's
+`do_connect` event captures the final driver arguments and raises before any
+DBAPI network/authentication operation. The regression requires 15 seconds for
+the exact `feishu-c1` fixture and preserves three seconds for ordinary and
+similarly named fixtures, plus the existing UTC/statement timeout settings.
+
+Baseline command:
+`uv run --offline --locked --no-sync python -B -m pytest tests/integration/test_c1_connect_budget.py -q --tb=short -p no:cacheprovider`
+returned **1 failed, 2 passed in 4.67 seconds, exit 1**; the exact C1 case
+failed with `assert 3 == 15`. No database connection was opened.
+
+E then normally merged exact C repair
+`2a3e7faade6b167d42f78eec29e1e0e0b1515a8d` at
+`ca0d11fab08bc1c9d66f624a05b0587220558ca7`, without editing C source or tests.
+The unchanged three-case E regression plus C's existing constructor regression:
+`uv run --offline --locked --no-sync python -B -m pytest tests/integration/test_c1_connect_budget.py tests/unit/runtime/test_c1_connection.py -q --tb=short -p no:cacheprovider`
+returned **4 passed in 2.25 seconds, exit 0**.
+
+Two additional E cases exercise Procrastinate's locked `_create_pool` path with
+the real psycopg pool constructed using `open=False`; neither `open_async` nor
+connection workers run. They confirm the effective default driver/acquisition
+budgets remain **3/5 seconds**, while the explicit C1 option gives **15/17
+seconds**, preserving pool bounds **1..4** and UTC settings. Psycopg's
+`getconn` uses this pool timeout when no per-call timeout is supplied.
+`uv run --offline --locked --no-sync python -B -m pytest tests/integration/test_c1_connect_budget.py -k queue_acquisition -q --tb=short -p no:cacheprovider`
+returned **2 passed, 3 deselected in 1.43 seconds, exit 0**. These inspect a
+closed real pool's configuration, not actual slow connections or SQL recovery.
+Scoped Ruff check and format check passed for the new E test file.
+
+E's owner handoff `msg_35be2a93c26a` also identifies a remaining assembly limit:
+at this exact checkpoint, `c1_local.database_ready` still calls
+`create_queue_app` without the new timeout option. The later C/I C1 queue
+assembly must explicitly pass 15; the constructor's optional support alone is
+not end-to-end queue readiness. M relayed C's subsequent authenticated database
+identity success in `msg_6185ef347f10`, with migration still unexecuted at that
+receipt; E did not independently run authentication or inspect database state.
+
+**Verdict: no short-response/EOF fault found in the bounded local child check;
+C1 driver-budget regression reproduced and the exact owner repair passes the
+independent driver/pool configuration checks.** Only the focused E integration
+test and this existing evidence file were authored by E. Original assertions,
+stdio argv/lifecycle and all existing project resources remain untouched by E; no full suite,
+build, private read, real database operation, migration, provider request,
+send or exercise start occurred. I integration and later actual C1 queue/runtime
+verification remain required; phone receipt, autonomous 120-second timing and
+production acceptance are not claimed.
+
+Before settlement, M supplied final C source
+`2b3b8d54fd9abbeedd7babb9051a8f01d6d0ffbe` in `msg_a27cf78a83c4` for
+read-only call-site verification. AST inspection confirmed all three C1
+`create_queue_app` calls now explicitly pass `connect_timeout=15`:
+`c1_local.py` lines 188 and 383, and `c1_runner.py` line 158. Its storage and
+queue-constructor blobs equal the already checked `2a3e7fa` blobs. This closes
+the call-site omission in source only; no runner execution or final I integration
+was independently verified in this task.
+
+The same comparison caught a changed stdio lifetime configuration: hard/idle
+arguments are now **1800/1800 seconds**, previously **240/180 seconds**;
+the byte-flow implementation is unchanged. An initial assumption of whole-file
+equality therefore failed and was narrowed to the actual unchanged constructor
+blobs. The earlier local-child fixed-argv check is not presented as acceptance
+of these later lifetime settings. They remain part of the later exact-candidate
+lifecycle verification, with no additional live probe or broad audit here.
