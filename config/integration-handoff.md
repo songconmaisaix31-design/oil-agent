@@ -1,5 +1,34 @@
 # I integration handoff
 
+## Active bounded increment: contextual guards and controlled trial preparation
+
+Starting point `cd6e8d9d87acbde9b844b4568ab2df72e00bab8d` remains accepted only
+for simulated integration. I reused its retained worktree/branch/session under
+task `task_c01affff8c19`, dispatch `ctx_6d12690fe3ab`, and ordinarily merged M
+governance through `4fcf3e2e783d671fd33fe7e9418088d00a40c6ad`. The inspected
+nonsecret input-to-setting mapping was handed to M and incorporated in the
+unique V01-TODO.md intake; no provider, rule, budget or recipient is approved.
+
+E's original regression `b9a241acfe0353ce425a7eef258111d72fcc253d` was merged
+and pushed in BEFORE candidate `0fa7d85c8e235403cb893f566828f4213131c34f`.
+I ran `uv run --locked pytest tests/integration/test_contextual_guards.py -q
+--tb=short`: 8 failed, 13 passed, zero skipped. Downloaded JUnit from
+[BEFORE CI 34668619029](https://github.com/songconmaisaix31-design/oil-agent/actions/runs/34668619029)
+confirms 343 core passed; integration had 163 passed and the same 8 failures,
+zero errors/skips. These failures remain preserved pending AB's owner repair.
+
+E's deployment preparation `c557665440ce537017741d84b46396fac77da404` is now
+ordinarily integrated. I added only TLS-variable comments in `.env.example` and
+integrated startup notes in `docs/runbook.md`; the shared factory/base Compose
+needed no changes. `uv run --locked pytest tests/integration/test_controlled_trial_deploy.py
+tests/integration/test_deploy_safety.py -q --tb=short` passed 54 checks, zero skips
+(1.05 seconds); scoped Ruff and `git diff --check` passed. This is configuration
+preparation, not live firewall/TLS/provider or stopped-resource recovery acceptance.
+Retained-resource revalidation remains E's next increment; R16 repair remains AB's.
+Each next authorized SHA will be integrated and independently accepted by E.
+No live calls, host activation, credential discovery or Docker operation occurred;
+product source/model/Feishu calls, tokens and paid product cost remain zero.
+
 ## Current phase: real integration v1.1
 
 Accepted starting point: `ed1de2e24634e8471e0979cfc168eebec4c12e4c`, local

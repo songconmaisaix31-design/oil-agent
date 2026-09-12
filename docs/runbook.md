@@ -111,6 +111,56 @@ Do not print rendered configuration containing injected values. Actual provider
 requests, rules acceptance, login and exact-recipient sends still require scoped
 user approval and independent real test evidence.
 
+### Controlled trial deployment preparation
+
+The optional `deploy/compose.e-trial.yaml` retains the shared factory and the
+existing base environment wiring. It uses project `oil-agent-e-trial`, profile
+`controlled-trial`, a separate `oil_e_trial` database/user and project data volume,
+and no database port publication. Supply a newly scoped internal PostgreSQL URL
+and matching password explicitly. The gateway publishes HTTPS only at
+`127.0.0.1:18443`; this loopback listener does not provide a public Feishu callback.
+The single external-input sheet remains in [V01-TODO.md](../V01-TODO.md).
+
+Set `OIL_TRIAL_TLS_CERT_FILE` and `OIL_TRIAL_TLS_KEY_FILE` only to approved absolute
+project file paths. The overlay mounts them read-only and does not issue a
+certificate. `OIL_PUBLIC_ORIGIN` must match the certificate's exact DNS name;
+`OIL_FEISHU_REDIRECT_URI` remains the registered HTTPS web return URL, while the
+signed card callback remains `/api/v1/callbacks/ack`. Raw callback bytes and
+signature headers pass through the TLS gateway. Public routing, certificate-chain
+and phone trust require separate authorized validation.
+
+The existing provider clients ignore environment proxies. E's preparation uses
+explicit public IPv4 pins, disabled recursive external DNS/IPv6, and a separately
+reviewed Linux host firewall and dedicated egress network. Each enabled adapter
+must have exactly its required hostname pins; pins are not license or request
+approval. IP/port restrictions do not inspect TLS or prove a provider connection.
+Do not resolve real providers or expand pins as part of offline preparation.
+
+After the operator supplies the explicit nonsecret pins file and a new output
+directory, the preparation command writes a pins overlay and a firewall plan:
+
+```sh
+uv run --locked python scripts/controlled_trial.py prepare \
+  --pins /approved/oil-agent-trial/pins.json \
+  --output-dir /approved/oil-agent-trial/prepared
+```
+
+This command does not apply firewall rules, create networks, start services or
+call providers. The separate `check` action requires `--pins`, `--pins-overlay`,
+`--origin`, `--tls-cert`, `--tls-key` and an explicit absolute `--env-file`; use the
+repository's empty `deploy/compose.env` with approved process injection, or an
+explicitly approved private project file. It keeps rendered Compose values in
+memory and refuses an unverifiable boundary. Never print secret-bearing Compose
+configuration. A successful pre-start check is configuration evidence only;
+deployment, source/model operation, OAuth, sends and phone acknowledgement each
+retain their own authorization and acceptance gates.
+
+See [E's controlled trial contract](../deploy/controlled-trial.md) for the exact
+Compose selection, future gated start wrapper and scoped stop procedure. The
+initial `check` requires an unattached egress network and refuses retained
+attachments. Do not detach resources to bypass this check; retained-resource
+revalidation is a separate deployment requirement, not implied by preparation.
+
 ### E-only rehearsal commands
 
 Inspect exact `oil-agent-e` labels, port 55434 and port 18084 before starting. All
