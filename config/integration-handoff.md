@@ -26,8 +26,9 @@ tests/integration/test_deploy_safety.py -q --tb=short` passed 54 checks, zero sk
 preparation, not live firewall/TLS/provider or stopped-resource recovery acceptance.
 Retained-resource revalidation remains E's next increment; R16 repair remains AB's.
 Each next authorized SHA will be integrated and independently accepted by E.
-No live calls, host activation, credential discovery or Docker operation occurred;
-product source/model/Feishu calls, tokens and paid product cost remain zero.
+Docker checks used configuration parsing with synthetic inputs; no containers,
+networks or host firewall were started or changed. No live calls or credential
+discovery occurred; product source/model/Feishu calls, tokens and paid cost remain zero.
 
 ## Current phase: real integration v1.1
 
