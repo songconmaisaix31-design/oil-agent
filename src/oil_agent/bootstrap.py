@@ -304,12 +304,57 @@ def _build_c1_tenant_lookup_runtime(settings: Settings) -> Runtime:
         raise
 
 
+def build_status_runtime(settings: Settings) -> Runtime:
+    """Assemble C's explicit user-directed status scope without web or market services."""
+    settings = Settings.model_validate(settings.model_dump())
+    if not settings.trial_status_only:
+        raise ValueError("Status assembly requires its explicit bounded status scope")
+    repository = Repository(create_db_engine(settings))
+    try:
+        runtime = Runtime(repository, RuntimeServices(), settings=settings)
+        app = settings.status_app_permission
+        permission = settings.status_permission
+        feishu = FeishuSettings(
+            enabled=True,
+            app_id=app.app_id,
+            tenant_key=permission.tenant_key if permission else "",
+            app_secret=SecretStr(_required_environment("OIL_C1_APP_SECRET")),
+        )
+        if permission is None:
+            runtime.services.c1_tenant_lookup = FeishuTenantLookup(
+                feishu,
+                authorize_request=runtime.authorize_status_app_request,
+                observe_request=runtime.observe_status_request,
+            )
+        else:
+            identity = permission.identity
+            open_id = permission.recipient_open_id
+            if feishu_identity(feishu, open_id).subject != identity.subject:
+                raise ValueError("Approved status identity does not match this application")
+            runtime.services.channels["feishu"] = FeishuChannel(
+                feishu,
+                recipients={
+                    identity.recipient_id: FeishuRecipient(open_id, is_test_recipient=True)
+                },
+                authorize=runtime.authorize_recipient,
+                trial_status_only=True,
+                authorize_request=runtime.authorize_status_request,
+                observe_request=runtime.observe_status_request,
+            )
+        return runtime
+    except Exception:
+        repository.engine.dispose()
+        raise
+
+
 def build_trial_runtime(settings: Settings) -> Runtime:
     """Assemble approved adapters; C owns each live operation's authorization."""
     if settings.data_provenance == "production" or settings.outbound_mode == "production":
         raise ValueError("Trial factory cannot construct a production runtime")
     if settings.data_provenance == "fixture" and settings.outbound_mode != "trial":
         raise ValueError("Fixture use of trial factory requires an explicit exercise permission")
+    if settings.trial_status_only:
+        return build_status_runtime(settings)
     if settings.c1_display_only:
         return _build_c1_runtime(settings)
     runtime = _local_services(settings)
@@ -327,6 +372,8 @@ def build_runtime(settings: Settings) -> Runtime:
     """Keep fixture default; select trial explicitly through C classification."""
     if settings.data_provenance == "production" or settings.outbound_mode == "production":
         raise RuntimeError("Production assembly has not been implemented")
+    if settings.trial_status_only:
+        return build_status_runtime(settings)
     if settings.c1_tenant_lookup_only:
         return _build_c1_tenant_lookup_runtime(settings)
     if settings.data_provenance == "trial" or settings.outbound_mode == "trial":
@@ -340,4 +387,10 @@ def create_app():
     return api_factory(settings, runtime=runtime)
 
 
-__all__ = ["build_fixture_runtime", "build_runtime", "build_trial_runtime", "create_app"]
+__all__ = [
+    "build_fixture_runtime",
+    "build_runtime",
+    "build_status_runtime",
+    "build_trial_runtime",
+    "create_app",
+]

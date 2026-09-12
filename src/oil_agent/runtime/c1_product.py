@@ -3,6 +3,7 @@
 Only C1 allowlisted process fields are consumed. Send-once and tenant-lookup
 require separately supplied existing permissions; preparation creates none.
 Exercise delegates to C's runner under the retained explicit local user start.
+Personal status delegates to C's separate dated user-directed scope.
 It calls the integrated product factory once, never a private-selected factory.
 """
 
@@ -108,6 +109,8 @@ def main(argv=None):
             ["tenant-lookup"],
             ["tenant-lookup", "--selected-result"],
             ["exercise"],
+            ["status-onboarding"],
+            ["status-morning"],
         ):
             raise PreparationError("INVALID_COMMAND", ("command",))
         selected = args == ["tenant-lookup", "--selected-result"]
@@ -119,22 +122,32 @@ def main(argv=None):
         }
         config = parse_preparation(json.dumps(data).encode())
         if args:
-            from oil_agent.runtime.c1_execution import EXECUTION_EXITS, read_execution
+            status_mode = args[0] in ("status-onboarding", "status-morning")
+            if status_mode:
+                from oil_agent.bootstrap import build_status_runtime
+                from oil_agent.runtime.status_local import execute_status, status_exit_code
 
-            mode = "tenant-lookup" if args[0] == "exercise" else args[0]
-            _, execution = read_execution(sys.stdin, mode=mode)
-            if args[0] == "exercise":
-                from oil_agent.runtime.c1_runner import execute_exercise
-
-                operation = execute_exercise(config, execution, build_runtime=build_c1_runtime)
-            elif args[0] == "send-once":
-                operation = execute_once(config, execution)
+                purpose = "onboarding" if args[0] == "status-onboarding" else "morning_status"
+                operation = execute_status(config, purpose, build_runtime=build_status_runtime)
             else:
-                operation = execute_tenant_lookup(config, execution, selected_result=selected)
+                from oil_agent.runtime.c1_execution import EXECUTION_EXITS, read_execution
+
+                mode = "tenant-lookup" if args[0] == "exercise" else args[0]
+                _, execution = read_execution(sys.stdin, mode=mode)
+                if args[0] == "exercise":
+                    from oil_agent.runtime.c1_runner import execute_exercise
+
+                    operation = execute_exercise(config, execution, build_runtime=build_c1_runtime)
+                elif args[0] == "send-once":
+                    operation = execute_once(config, execution)
+                else:
+                    operation = execute_tenant_lookup(config, execution, selected_result=selected)
             loop_factory = asyncio.SelectorEventLoop if sys.platform == "win32" else None
             with asyncio.Runner(loop_factory=loop_factory) as runner:
                 result = runner.run(operation)
             print(json.dumps(result))
+            if status_mode:
+                return status_exit_code(result)
             if args[0] == "exercise":
                 return 0 if result["status"] == "C1_COMPLETED" else 2
             return EXECUTION_EXITS[result["status"]]
