@@ -6,6 +6,7 @@ from oil_agent.channels.common import FeishuSettings, feishu_identity
 from oil_agent.channels.dry_run import DryRunChannel
 from oil_agent.channels.feishu import FeishuChannel, FeishuRecipient
 from oil_agent.channels.identity import FeishuIdentityAdapter
+from oil_agent.channels.tenant import FeishuTenantLookup
 
 __all__ = [
     "C1_BODY",
@@ -17,6 +18,7 @@ __all__ = [
     "FeishuIdentityAdapter",
     "FeishuRecipient",
     "FeishuSettings",
+    "FeishuTenantLookup",
     "build_c1_card",
     "create_c1_preview",
     "feishu_identity",

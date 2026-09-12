@@ -3,7 +3,6 @@
 import asyncio
 import json
 import re
-import time
 from collections.abc import Awaitable, Callable, Mapping
 from dataclasses import dataclass
 from typing import Literal
@@ -20,8 +19,8 @@ from oil_agent.channels.common import (
     preflight,
     provider_error,
     receipt,
-    safe_service_failure,
 )
+from oil_agent.channels.tenant_token import API, FeishuTenantToken
 from oil_agent.contracts.dto import (
     Delivery,
     DeliveryState,
@@ -29,8 +28,6 @@ from oil_agent.contracts.dto import (
     RecipientAuthorization,
 )
 from oil_agent.contracts.services import CallContext, ErrorCode, ServiceError
-
-API = "https://open.feishu.cn/open-apis"
 
 
 @dataclass(frozen=True)
@@ -77,37 +74,12 @@ class FeishuChannel:
         self.c1_display_only = c1_display_only
         self.authorize_request = authorize_request
         self.http = ProviderHTTP(transport)
-        self._token: str | None = None
-        self._expires = 0.0
-        self._token_lock = asyncio.Lock()
+        self._tokens = FeishuTenantToken(
+            settings, self.http, lambda: self._reserve_request("tenant_token")
+        )
 
     async def _access_token(self, context: CallContext) -> str:
-        async with self._token_lock:
-            if self._token and time.monotonic() < self._expires:
-                return self._token
-            await self._reserve_request("tenant_token")
-            status, data, _ = await self.http.request(
-                "POST",
-                f"{API}/auth/v3/tenant_access_token/internal",
-                seconds=budget(context),
-                json={
-                    "app_id": self.settings.app_id,
-                    "app_secret": self.settings.app_secret.get_secret_value(),
-                },
-            )
-            if (
-                status != 200
-                or not isinstance(data, dict)
-                or type(data.get("code")) is not int
-                or data.get("code") != 0
-            ):
-                raise safe_service_failure(status, data)
-            token, expire = data.get("tenant_access_token"), data.get("expire")
-            if not isinstance(token, str) or not token or type(expire) is not int or expire <= 0:
-                raise ServiceError(ErrorCode.INVALID_OUTPUT, "Invalid Feishu token response")
-            self._token = token
-            self._expires = time.monotonic() + max(0, expire - 60)
-            return token
+        return await self._tokens.get(context)
 
     async def _reserve_request(self, operation: Literal["tenant_token", "message_send"]) -> None:
         if self.authorize_request is None:
@@ -212,8 +184,7 @@ class FeishuChannel:
             return receipt(intent, context, DeliveryState.UNKNOWN, "response_unknown")
         error, retryable = provider_error(status, data)
         if error == "token_expired_or_invalid":
-            self._token = None
-            self._expires = 0
+            self._tokens.invalidate()
         return receipt(
             intent,
             context,
