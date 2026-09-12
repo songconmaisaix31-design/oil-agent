@@ -2243,3 +2243,107 @@ and regression expectations frozen; final business acceptance remains pending
 owner repair and exact I integration.** Three accelerated dates and subsecond
 cycle-body execution do not establish fourteen-day operation, daemon uptime,
 SLA, real market accuracy, platform/phone delivery or production acceptance.
+
+## Final business acceptance on integrated candidate 69a43a8
+
+E independently accepted candidate
+`69a43a8cc9842ed5acbe9f5def7b93034f4049d9` on 2026-09-12. A fresh
+`git -c http.proxy=http://127.0.0.1:7890 -c http.version=HTTP/1.1 ls-remote origin refs/heads/songconmaisaix31-design/oil-v01-i`
+matched that full SHA; both original I and E worktrees were clean. E used a
+normal fast-forward merge from `8fbf808cb8e015f5688c646caa2e2e6acdaf21d6`
+to the exact candidate before testing, without changing source or expectations.
+
+Git ancestry and per-path blob comparisons verified all **12 changed paths**
+against the original owners: M `c4e41982fd1128c513d3b89750e7586eb23abb30`,
+AB `19c9194164eb42f6e16a29c628039118a20aeef4`,
+C `0593954a18837b9c9d4ec732b8f7cc27e9d4fe57`, and
+E `8fbf808cb8e015f5688c646caa2e2e6acdaf21d6`. No unassigned changed path was
+present relative to accepted I `78e5363d7c7da5d6bb76c3be6296b1f6e4010d87`;
+all other tracked files, dependency inputs, original fixtures and tests were
+unchanged. The existing assessment test gained a separate test function only.
+`git diff --check` passed. The corrected frozen positive preconditions and
+original exercise negative remained intact.
+
+E read the exact retained I dispatch `ctx_6d240a3b2a66` using bounded
+`orca orchestration worker-show` / `worker-read --source transcript --limit 14`.
+The actual tool result showed **217 passed, 1 existing AnyIO deprecation warning,
+6.19 seconds, exit 0**, and the subsequent exact-candidate offline wheel/sdist
+build result exited **0**. This was I's run, not another E execution; the bounded
+transcript was clipped outside the inspected result blocks. E also read the
+existing `oil_agent-0.1.0-py3-none-any.whl` and `oil_agent-0.1.0.tar.gz` in
+`C:/Users/DW/AppData/Local/Temp/oil-agent-i-business-ctx-6d240a3b2a66/dist`:
+both contained the exact I worktree bytes for the two changed service modules
+and declared 14 dependencies. Windows CRLF bytes differ from Git LF blobs but
+match after line-ending normalization. Initial E artifact-reader assumptions
+about directory file count and raw Git/archive byte equality failed; narrowing
+to the two existing archives and checking both checkout bytes and normalized
+Git content resolved those inspection-helper errors without modifying artifacts
+or product code. E did not repeat I's test union, Ruff or build, install a
+package, or execute an installed distribution.
+
+E then ran **once** the same frozen seven-target pytest command printed in the
+business baseline above, now containing **34 cases**, on the exact candidate:
+
+```text
+uv run --offline --locked --no-sync pytest tests/integration/test_business_reports.py tests/integration/test_business_cycles.py tests/integration/test_corpus_replay.py::test_T03_two_domains_do_not_create_two_independent_publishers tests/integration/test_postgres_pipeline.py::test_T04_independent_late_evidence_upgrades_same_persisted_event tests/integration/test_postgres_pipeline.py::test_T05_lower_severity_denial_corrects_original_authorized_recipients tests/integration/test_contextual_guards.py tests/integration/test_postgres_operations.py::test_T14_real_normal_queue_block_does_not_delay_urgent_delivery -q --tb=short -s -p no:cacheprovider
+```
+
+Actual result: **34 passed, 0 failed, 0 skipped, 6.31 seconds, exit 0**.
+The child process ran from **14:49:57.177368 UTC to 14:50:05.391588 UTC**,
+measured wall time **8.214 seconds**. The finite cycle body measured
+**0.947 seconds**, with **3 accelerated business dates (2026-09-14/15/16)**,
+**3 Runtime/Repository reconstructions** and **6 real Procrastinate report-job
+triggers**, using the actual migrated E PostgreSQL repository and outbox.
+
+| Accelerated date / injected fault | Safe failure state | Recovery / cumulative durable rows |
+| --- | --- | --- |
+| Sep 14 / timeout | degraded, `timeout` | ok, 1 report / 2 unique intents |
+| Sep 15 / actual SQL quota refusal | degraded, `quota_exhausted` | ok, 2 reports / 4 unique intents |
+| Sep 16 / unexpected builder exception | degraded, `invalid_output` | ok, 3 reports / 6 unique intents |
+
+The frozen tests now pass for Chinese conditional impact and watch citations,
+latest-source correction without stale facts, exercise/denial/invalid-reference
+guards, cutoff exclusion and missing-price uncertainty. Ordinary events remain
+silent; same-origin reposts are not independent evidence; independent follow-up
+and correction to the original authorized recipients pass. Each report cycle
+preserves the existing 90-second lease, suppresses an immediate rebuild,
+recovers the current business date after expiry, rejects a stale token, stays
+unique under a repeated queue trigger, restores healthy state on commit and
+becomes stale after six accelerated minutes. Urgent budget reserve and the
+original actual normal/urgent queue isolation case also pass. No assertion was
+weakened and no new test or product change was needed for this acceptance.
+
+Before connecting, E freshly verified container
+`b3c3a345428590922eb8e628a996dd634cb3333e5f0c86f588eede8fb7101cab` /
+`oil-agent-e-postgres-1`, project/service `oil-agent-e` / `postgres`, the exact
+original E Compose directory and two config labels, pinned image and image ID
+`sha256:e013e867e712fec275706a6c51c966f0bb0c93cfa8f51000f85a15f9865a28cb`,
+sole local volume `oil-agent-e_postgres-data`, only loopback
+`127.0.0.1:55434:5432`, and database/user `oil_e_test` / `oil_e_test`.
+The endpoint and complete resource paths are recorded in the baseline section.
+The existing synthetic password was captured only from that container into
+memory for the child process; no raw password/DSN was emitted, saved or placed
+in global environment. Only fixture-created `e_acceptance_<UUID>` schemas were
+created and dropped; no preexisting resource was started, stopped or altered.
+
+Bounded repeatable-read/read-only logical snapshots were **identical** before
+and after: **1 original schema, 73 relation identities, 29 data objects and
+818 table rows**, including full bounded row multisets and sequence states.
+No new schema remained. All selected container and volume metadata matched
+before/after, including running state, mount, labels, configured/active port,
+image, start time **2026-09-12T12:25:48.707130701Z** and restart count **0**.
+This is logical preservation evidence, not physical-volume byte identity.
+
+**Verdict: PASS for this bounded integrated event/report business behavior and
+real E PostgreSQL recovery increment.** It closes the qualified baseline's
+empty analysis, superseded fact and invisible report-failure defects. Only this
+existing evidence file is appended after acceptance. I must integrate the
+evidence commit; no further code repair was identified in the frozen selection.
+Synthetic timeout/unexpected exceptions are fault stimuli, and notification
+delivery uses dry-run channels. Runtime objects were reconstructed, not OS
+processes killed. Accelerated dates and bounded queue jobs do not establish
+fourteen-day operation, sixty-second deadline timing, daemon uptime, SLA,
+installed-product behavior, actual market accuracy, provider/source/model
+transport, real sending, platform/phone/login/callback or production acceptance.
+No full-suite/C1 replay, new Docker resource, shared restart, private C1 read,
+external product call, continuous polling or purchase occurred.
