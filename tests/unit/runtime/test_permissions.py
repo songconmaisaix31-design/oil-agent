@@ -1,10 +1,13 @@
 """Explicit trial authorization accepts only bounded, distinct and correctly scoped inputs."""
 
 from datetime import UTC, datetime, timedelta
+from types import SimpleNamespace
 
 import pytest
 from pydantic import ValidationError
 
+from oil_agent.contracts.dto import Report
+from oil_agent.runtime.authorization import RuntimeAuthorization
 from oil_agent.runtime.permissions import IdentityPermission, ModelPermission, SourcePermission
 from oil_agent.runtime.settings import Settings
 
@@ -168,3 +171,56 @@ def test_trial_process_environment_parses_explicit_null_and_typed_permissions(mo
     assert settings.data_provenance == "trial" and settings.fixture_dataset is None
     assert settings.source_permissions[0].provider == "jin10"
     assert settings.outbound_mode == "dry_run" and not settings.production_ready
+
+
+def test_trial_report_reminder_is_denied_without_event_severity_access():
+    authorization = RuntimeAuthorization()
+    authorization.repository = SimpleNamespace(clock=lambda: NOW)
+    identity = identity_permission()
+    authorization.settings = Settings(
+        data_provenance="trial",
+        fixture_dataset=None,
+        identity_enabled=True,
+        identity_permission=identity,
+        outbound_mode="trial",
+        first_report_policy="independent_only",
+        trial_send_permission=dict(
+            **grant("synthetic-send"),
+            recipient_ids=("trial-recipient",),
+            rules_ref="synthetic:rules",
+            first_report_policy="independent_only",
+            allow_reports=True,
+        ),
+    )
+    approved = identity.identities[0]
+    user = SimpleNamespace(
+        actor_id=approved.actor_id,
+        recipient_id=approved.recipient_id,
+        provider=identity.provider,
+        provider_subject=approved.subject,
+        role=approved.role,
+        is_test_recipient=True,
+    )
+    report = Report(
+        report_id="synthetic-report",
+        report_date=NOW.date(),
+        timezone="Asia/Shanghai",
+        cutoff_at=NOW,
+        revision=1,
+        evidence_ids=(),
+        evidence=(),
+        computed_metrics=(),
+        facts=(),
+        impact_analysis=(),
+        watch_items=(),
+        gaps=("synthetic empty snapshot",),
+        processing=dict(rule_version="synthetic-rules", model_version=None, prompt_version=None),
+        created_at=NOW,
+        is_fixture=False,
+        provenance="trial",
+        fixture_dataset=None,
+    )
+    assert not hasattr(report, "severity")
+    assert authorization.trial_item_allowed(report, user, "daily_report") is True
+    assert authorization.trial_item_allowed(report, user, "reminder") is False
+    assert authorization.settings.reminders_enabled is False
