@@ -114,6 +114,8 @@ uses a fixture runtime/dataset plus an explicit trial send grant; bodies say 合
 Trial data bodies say 试运行. Non-urgent trial events create no notification intent;
 daily trial reports stay silent unless allow_reports is explicitly approved. Correction
 and withdrawal routing still uses original, currently authorized recipients.
+Trial report reminders remain unsupported and are denied/skipped, including when
+daily reports are separately approved; no event-only severity lookup is performed.
 
 OpenAPI is regenerated from C's Python API. BusinessConfig/RuntimeStatus outbound_mode
 adds `trial`; RuntimeStatus adds data_provenance, nonsecret permission booleans and

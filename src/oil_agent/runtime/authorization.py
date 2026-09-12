@@ -1,6 +1,6 @@
 """C authorization hooks for injected AB/D clients; no network calls in this module."""
 
-from oil_agent.contracts.dto import Provenance
+from oil_agent.contracts.dto import Provenance, Report
 from oil_agent.contracts.services import ErrorCode, ServiceError
 
 
@@ -224,8 +224,9 @@ class RuntimeAuthorization:
             permission.exercise_dataset != item.fixture_dataset or not permission.exercise_ref
         ):
             return False
-        if kind == "daily_report":
-            return permission.allow_reports
+        if isinstance(item, Report):
+            # Report reminders are unsupported; never inspect event-only severity.
+            return kind == "daily_report" and permission.allow_reports
         if kind not in {"correction", "withdrawal"} and item.severity != "urgent":
             return False
         return True
