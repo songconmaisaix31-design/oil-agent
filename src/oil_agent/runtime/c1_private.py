@@ -1,0 +1,131 @@
+"""Prepare/check one approved Windows private JSON or inject one fixed local process.
+
+Usage: python -m oil_agent.runtime.c1_private prepare|check|inject-check
+No dotenv, arbitrary path/command/factory, global environment, daemon or provider.
+ACL validation is performed by the fixed adjacent, source-controlled PS script;
+no private file content or exception detail is passed to its command line/logs.
+"""
+
+import ctypes
+import json
+import os
+import stat
+import subprocess
+import sys
+from pathlib import Path
+
+from oil_agent.runtime.c1_config import (
+    C1Preparation,
+    PreparationError,
+    injection_fields,
+    parse_preparation,
+    preparation_status,
+)
+
+PRIVATE_DIRECTORY = Path("C:/Users/DW/AppData/Local/oil-agent/private/feishu-c1")
+CONFIG_PATH = PRIVATE_DIRECTORY / "config.json"
+_MAX_BYTES = 16384
+
+
+def _powershell_path():
+    if os.name != "nt":
+        raise PreparationError("PRIVATE_PATH_UNVERIFIED", ("private_path", "windows_acl"))
+    buffer = ctypes.create_unicode_buffer(32768)
+    if not ctypes.windll.kernel32.GetSystemDirectoryW(buffer, len(buffer)):
+        raise PreparationError("PRIVATE_PATH_UNVERIFIED", ("windows_acl",))
+    return str(Path(buffer.value) / "WindowsPowerShell/v1.0/powershell.exe")
+
+
+def verify_private_path(*, prepare=False):
+    result = subprocess.run(
+        [
+            _powershell_path(),
+            "-NoProfile",
+            "-NonInteractive",
+            "-File",
+            str(Path(__file__).with_name("c1_acl.ps1")),
+            "-Mode",
+            "prepare" if prepare else "verify",
+        ],
+        capture_output=True,
+        timeout=15,
+        check=False,
+        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+    )
+    if result.returncode or result.stdout != b"PRIVATE_PATH_VERIFIED":
+        raise PreparationError("PRIVATE_PATH_UNVERIFIED", ("private_path", "windows_acl"))
+
+
+def _read_config():
+    # Read through a checked file handle; hardlinks/reparse files are never accepted.
+    with CONFIG_PATH.open("rb") as stream:
+        info = os.fstat(stream.fileno())
+        if (
+            not stat.S_ISREG(info.st_mode)
+            or info.st_nlink != 1
+            or getattr(info, "st_file_attributes", 0) & stat.FILE_ATTRIBUTE_REPARSE_POINT
+            or info.st_size > _MAX_BYTES
+        ):
+            raise PreparationError("PRIVATE_PATH_UNVERIFIED", ("configuration_file",))
+        raw = stream.read(_MAX_BYTES + 1)
+    verify_private_path()
+    return parse_preparation(raw)
+
+
+def load_private_config():
+    verify_private_path()
+    return _read_config()
+
+
+def prepare_private_config():
+    verify_private_path(prepare=True)
+    try:
+        # Protected parent ACL precedes exclusive creation; never truncate or rewrite.
+        with CONFIG_PATH.open("xb") as stream:
+            stream.write(C1Preparation().model_dump_json(indent=2).encode("utf-8") + b"\n")
+    except FileExistsError:
+        pass
+    return load_private_config()
+
+
+def inject_check(config):
+    # Discard inherited OIL_*, Python injection, proxy and secret variables. The
+    # absolute interpreter, isolated mode and fixed module select only this process.
+    child_env = {
+        key: os.environ[key] for key in ("SystemRoot", "WINDIR", "TEMP", "TMP") if key in os.environ
+    }
+    child_env.update(injection_fields(config))
+    result = subprocess.run(
+        [sys.executable, "-I", "-m", "oil_agent.runtime.c1_product"],
+        env=child_env,
+        capture_output=True,
+        timeout=15,
+        check=False,
+        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+    )
+    # Compare the expected redacted response before printing anything from a child.
+    expected = preparation_status(config)
+    if result.returncode != 2 or json.loads(result.stdout) != expected:
+        raise PreparationError("PREPARATION_ENTRY_FAILED", ("product_entry",))
+    return expected
+
+
+def main(argv=None):
+    args = sys.argv[1:] if argv is None else argv
+    try:
+        if args not in (["prepare"], ["check"], ["inject-check"]):
+            raise PreparationError("INVALID_COMMAND", ("command",))
+        config = prepare_private_config() if args == ["prepare"] else load_private_config()
+        result = inject_check(config) if args == ["inject-check"] else preparation_status(config)
+        print(json.dumps(result))
+        return 2
+    except PreparationError as error:
+        print(json.dumps({"status": error.status, "fields": list(error.fields)}))
+        return 2
+    except Exception:
+        print(json.dumps({"status": "NOT_CONFIGURED", "fields": ["private_configuration"]}))
+        return 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
