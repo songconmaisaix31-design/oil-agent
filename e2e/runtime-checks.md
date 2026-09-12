@@ -5,6 +5,107 @@ Feishu recipient, actual phone receipt or deployed server has been accepted.
 
 ## Current phase: independent real-integration v1.1 acceptance
 
+### R16/R17 final independent acceptance: synthetic code and preparation PASS
+
+Accepted code SHA: **`239baa69b06bf9ede8c71391d12a2cb89e1a1064`**.
+This closes the R16 regressions and R17 implementation compatibility failure
+recorded below. It accepts the bounded synthetic code and offline deployment
+preparation only; it does not accept a deployed trial, real source/model/Feishu
+request, phone receipt or production factory. Earlier results below are history.
+
+E's retained clean branch normally fast-forwarded from
+`3afa038214309188d26db2448eb5be076d42e7ed` to this exact I candidate.
+Public origin I branch independently matched that full SHA. Explicit
+`git merge-base --is-ancestor` checks passed for AB
+`dea13fa81825f1160ef44187885a98c569375edb`, E `3afa038214309188d26db2448eb5be076d42e7ed`
+and M `e2aabc85b8f121381f667691b05fe5805f36e5ee`.
+`git diff --exit-code b9a241a HEAD -- tests/integration/test_contextual_guards.py
+tests/integration/test_rules_acceptance.py` confirmed unchanged original assertions.
+The E deployment script, overlay, Nginx config, wrapper, tests and focused workflow
+are unchanged from verified `3afa038`; I changes stay in its environment/runbook/
+handoff seams. No domain changes came from E or the coordinator.
+
+E independently inspected exact-run metadata, job steps/logs and downloaded JUnit
+ZIP bytes for [complete CI 34669549557](https://github.com/songconmaisaix31-design/oil-agent/actions/runs/34669549557)
+and [deployment CI 34669549519](https://github.com/songconmaisaix31-design/oil-agent/actions/runs/34669549519).
+Both completed **SUCCESS** on the accepted code SHA, Ubuntu 24.04 and Python
+3.13.13. C and E tests used their separate real PostgreSQL services/schema scopes;
+there was no SQLite substitution, xfail or deselection. Existing Starlette/AnyIO
+deprecation warnings remain. The focused 70 are also in the 237 integration cases,
+and the Windows 106 overlap those scopes; these counts must not be added together.
+
+| Actual command or step | Result |
+| --- | --- |
+| E local `uv run --locked pytest tests/integration/test_contextual_guards.py tests/integration/test_rules_acceptance.py tests/integration/test_controlled_trial_deploy.py tests/integration/test_deploy_safety.py -q --tb=short --junitxml=e2e/runtime-artifacts/r16-r17-final-focused.xml` | 106 passed, zero failures/errors/skips, 1.52 seconds |
+| CI `uv sync --locked`, scenario-corpus validation and scoped Ruff | PASS |
+| CI migrate separate C PostgreSQL test service | PASS |
+| CI `uv run --locked pytest tests/contracts tests/unit -q --tb=short --junitxml=e2e/core-acceptance.xml` | 375 passed, zero failures/errors/skips, 24.706 seconds |
+| CI `uv run --locked pytest tests/integration -q --tb=short --junitxml=e2e/local-acceptance.xml` | 237 passed, zero failures/errors/skips, 31.022 seconds |
+| CI `npm ci --ignore-scripts`, `npm test`, `npm run build` in web | PASS; 23 tests; schema, TypeScript and Vite build |
+| CI `bash -n deploy/entrypoint.sh scripts/backup.sh scripts/restore-isolated.sh scripts/compose_scope.sh` | PASS |
+| CI `docker build -f deploy/app.Dockerfile -t oil-agent-app:ci .` and corresponding web Dockerfile | Both Linux image builds PASS; neither published nor deployed |
+| Focused CI `uv run --locked pytest tests/integration/test_controlled_trial_deploy.py tests/integration/test_deploy_safety.py -q --tb=short --junitxml=e2e/controlled-trial.xml` | 70 passed, zero failures/errors/skips, 0.480 seconds; Compose 2.38.2 |
+| Focused CI script/test Ruff and `bash -n scripts/trial-start.sh` | PASS |
+| Actual digest-pinned Nginx `-t` in read-only, cap-dropped UID 101 container with `--network none` | PASS; authored disposable test certificate/key only; no server or provider request |
+
+The CI-built image IDs are app
+`sha256:8a87cb57e1b0970bff3d69ba49cf93ddbfbf466086d55ef18b2852abded2ce35`
+and web `sha256:745193f346672694491d4fde38d5739192509636f3e4818766716e5230e71561`.
+Image construction and Nginx syntax/key loading do not prove runtime packet
+filtering, public certificate trust or an actual callback round trip.
+
+R16's original 21 cases all pass, including the eight first reproduced failures
+and preserved denial, planning, drill/training/procedure, conditional, archive,
+stale, future and ambiguous controls. Bounded casualty-only negation cannot
+satisfy affirmative impact criteria; source quotations remain unchanged. The
+approved elapsed-age limit permits the 50-second midnight crossing. This is not
+general Chinese semantic coverage. PostgreSQL T05 lower-severity denial correction
+still targets original authorized recipients, T18 binds reminders per recipient/
+revision, and T27 preserves fixture isolation. The full integration result also
+includes 13 shared-factory cases, 17 Jin10 isolated-transport cases, 15 rule/model
+cases, 12 OAuth, 12 security and 7 operational-trial cases; their remote replies
+are explicitly synthetic and never real provider/phone evidence.
+
+R17 preparation checks pass for internal/separate database resources, explicit
+IPv4 pins compatible with direct non-proxy adapters, closed defaults, loopback
+HTTPS, callback/SPA configuration, no sensitive proxy access/error logging,
+resource limits and readonly cold/retained preflight. Unapproved/changed scopes
+fail before activation. The initial Linux failure at E `c557665` is closed by
+`3afa038`, whose own focused [CI 34669473354](https://github.com/songconmaisaix31-design/oil-agent/actions/runs/34669473354)
+also passed 70 checks in 0.602 seconds plus actual isolated Nginx `-t`.
+At intermediate I `f8c549b`, [CI 34669364995](https://github.com/songconmaisaix31-design/oil-agent/actions/runs/34669364995)
+already passed all R16/PG cases, but its sole old E mount-check failure correctly
+prevented whole-candidate acceptance. That result is superseded by `239baa6`.
+
+Remaining limits are classified separately:
+
+- **Implemented, awaiting authorized real test:** host firewall/IP/DNS/IPv6
+  behavior, TLS trust/callback reachability, trial startup and graceful stopped-
+  resource recovery. The new checker uses isolated Docker command doubles;
+  Nginx ran only in network-none CI. Automatic activation and new-trial backup/
+  restore automation are not supplied; existing backup guards stay unchanged.
+- **Missing authorization/inputs:** exact host/TLS setup, source rights and caps,
+  model/data-processing approval and spending control, approved first-report
+  rubric, exact Feishu test recipient and phone/account/window. The sole intake
+  remains M's V01-TODO.md; technical input mappings are in the existing runbook
+  and `deploy/controlled-trial.md`. No credentials were inspected or solicited.
+- **Unavailable execution environment:** local Docker Linux named pipe is still
+  unavailable. Exact old E container
+  `b3c3a345428590922eb8e628a996dd634cb3333e5f0c86f588eede8fb7101cab`, volume
+  `oil-agent-e_postgres-data` and interrupted schema cleanup remain unverified.
+  No daemon restart, unknown-resource inspection, stop, deletion, firewall/network
+  mutation or local deployment occurred. Historical stopped-state evidence does
+  not establish current state after the later interruption.
+- **Intentionally unsupported:** production factory/activation, paid-host purchase
+  and public exposure. No unresolved implementation defect is claimed fixed beyond
+  the bounded tested scope, and no real accuracy or operating-period acceptance
+  is inferred from this report.
+
+Actual product source requests **0**, model requests/tokens **0**, Feishu requests
+**0**, sends **0**, paid product cost **0**. Development-agent/CI billing is
+unmeasured. This report is an E evidence-only follow-up to the accepted code SHA;
+I/M's final documentation merge requires a last code-equality and remote-SHA audit.
+
 ### R16 contextual-guard reproduction on accepted unchanged code
 
 E normally merged accepted I `cd6e8d9d87acbde9b844b4568ab2df72e00bab8d`
