@@ -17,7 +17,7 @@ from cryptography.hazmat.primitives import padding
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from pydantic import ValidationError
 
-from oil_agent.channels.common import FeishuSettings, budget
+from oil_agent.channels.common import FeishuSettings, budget, feishu_identity
 from oil_agent.contracts.dto import AckPayload, ExternalIdentity, VerifiedAck
 from oil_agent.contracts.services import CallContext, ErrorCode, ServiceError
 
@@ -146,9 +146,7 @@ class FeishuAckVerifier:
                     or value["operation"] != "ack"
                 ):
                     raise ValueError("Invalid acknowledgement action")
-                identity = ExternalIdentity(
-                    provider="feishu", subject=f"{self.settings.tenant_key}:{open_id}"
-                )
+                identity = feishu_identity(self.settings, open_id)
                 if not await self.delivery_matches(value["delivery_id"], message_id):
                     raise ValueError("Message does not match delivery")
                 actor_id, recipient_id = await self.identity_resolver(identity)

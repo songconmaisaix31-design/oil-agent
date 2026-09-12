@@ -21,11 +21,12 @@ from oil_agent.channels import (
     FeishuIdentityAdapter,
     FeishuRecipient,
     FeishuSettings,
+    feishu_identity,
 )
 from oil_agent.channels.cards import build_message
 from oil_agent.channels.feishu import idempotency_uuid
 from oil_agent.channels.identity import TOKEN_URL
-from oil_agent.contracts.dto import AckPayload, NotificationIntent
+from oil_agent.contracts.dto import AckPayload, NotificationIntent, Provenance
 from oil_agent.contracts.services import CallContext, ServiceError
 
 
@@ -293,7 +294,8 @@ def signed(settings, data, encrypted=True, age=0):
 
 
 async def resolve(identity):
-    assert identity.provider == "feishu" and identity.subject == "test-tenant:ou_synthetic"
+    assert identity.provider == "feishu"
+    assert identity.subject == "test-tenant:cli_synthetic:ou_synthetic"
     return "actor-from-server", "recipient-from-server"
 
 
@@ -376,7 +378,7 @@ async def test_encrypted_challenge_is_separate_and_token_checked(settings, conte
     )
 
 
-async def test_oauth_v3_form_exchange_only_returns_tenant_scoped_identity(settings, context):
+async def test_oauth_v3_form_exchange_only_returns_app_tenant_scoped_identity(settings, context):
     requests = []
 
     def handler(request):
@@ -408,7 +410,7 @@ async def test_oauth_v3_form_exchange_only_returns_tenant_scoped_identity(settin
     adapter = FeishuIdentityAdapter(settings, transport=httpx.MockTransport(handler))
     assert "state=synthetic-state-0001" in adapter.authorization_url("synthetic-state-0001")
     result = await adapter.authenticate("synthetic-code", context=context)
-    assert result.model_dump() == {"provider": "feishu", "subject": "test-tenant:ou_synthetic"}
+    assert result == feishu_identity(settings, "ou_synthetic")
     assert len(requests) == 2 and "TOKEN" not in repr(adapter) and "SECRET" not in repr(settings)
 
 
@@ -533,3 +535,101 @@ def test_oauth_redirect_preserves_exact_registered_trailing_slash(settings):
     adapter = FeishuIdentityAdapter(configured)
     query = parse_qs(adapter.authorization_url("synthetic-state-0001").split("?", 1)[1])
     assert query["redirect_uri"] == [configured.redirect_uri]
+
+
+def test_identity_keys_isolate_application_and_tenant_without_legacy_fallback(settings):
+    original = feishu_identity(settings, "ou_synthetic")
+    assert original.subject == "test-tenant:cli_synthetic:ou_synthetic"
+    assert original != feishu_identity(replace(settings, app_id="cli_other"), "ou_synthetic")
+    assert original != feishu_identity(replace(settings, tenant_key="other"), "ou_synthetic")
+    with pytest.raises(ServiceError, match="Invalid Feishu identity binding"):
+        feishu_identity(replace(settings, app_id="injected:component"), "ou_synthetic")
+
+
+async def test_valid_other_application_callback_cannot_use_existing_identity(settings, context):
+    other = replace(settings, app_id="cli_other")
+
+    async def only_original(identity):
+        assert identity == feishu_identity(other, "ou_synthetic")
+        assert identity != feishu_identity(settings, "ou_synthetic")
+        raise ServiceError("forbidden", "Identity is not preprovisioned")
+
+    checker = FeishuAckVerifier(other, identity_resolver=only_original, delivery_matches=matches)
+    with pytest.raises(ServiceError, match="not preprovisioned"):
+        await checker.verify(signed(other, event_data(other)), context=context)
+
+
+@pytest.mark.parametrize(
+    "provenance,expected",
+    [
+        ("fixture", "合成演练 · 非真实事件"),
+        ("trial", "试运行 · 真实来源"),
+        ("production", "生产数据"),
+    ],
+)
+@pytest.mark.parametrize("large", [False, True])
+def test_card_and_text_fallback_keep_provenance_explicit(intent, provenance, expected, large):
+    changed = intent.model_copy(
+        update={
+            "provenance": provenance,
+            "is_fixture": provenance == "fixture",
+            "fixture_dataset": intent.fixture_dataset if provenance == "fixture" else None,
+            "body": "中" * 20000 if large else intent.body,
+        }
+    )
+    kind, content = build_message(changed, public_base_url="https://example.invalid")
+    assert expected in content
+    assert ("非真实事件" in content) == (provenance == "fixture")
+    if not large:
+        assert kind == "interactive"
+        assert expected in json.loads(content)["header"]["title"]["content"]
+    else:
+        assert kind == "text"
+
+
+@pytest.mark.parametrize("mapped_test,grant_test", [(False, False), (False, True), (True, False)])
+async def test_trial_recipient_scope_rejected_before_token_http(
+    settings, intent, context, mapped_test, grant_test
+):
+    trial = intent.model_copy(
+        update={
+            "provenance": Provenance.TRIAL,
+            "is_fixture": False,
+            "fixture_dataset": None,
+            "recipient_scope": intent.recipient_scope.model_copy(
+                update={"is_test_recipient": grant_test}
+            ),
+        }
+    )
+    bot = channel(settings, lambda _: pytest.fail("No token or message HTTP is allowed"))
+    bot.recipients["recipient-1"] = FeishuRecipient("ou_synthetic", mapped_test)
+    result = await bot.send(trial, context=context)
+    assert result.state == "failed_final" and result.error_code == "trial_recipient_forbidden"
+
+
+async def test_exact_test_recipient_trial_card_reaches_mock_acceptance(settings, intent, context):
+    def handler(request):
+        if request.url.path.endswith("internal"):
+            return token_reply()
+        message = json.loads(request.content)
+        assert message["receive_id"] == "ou_synthetic"
+        assert "试运行 · 真实来源" in message["content"]
+        assert "非真实事件" not in message["content"]
+        return httpx.Response(200, json={"code": 0, "data": {"message_id": "om_synthetic"}})
+
+    trial = intent.model_copy(
+        update={
+            "provenance": Provenance.TRIAL,
+            "is_fixture": False,
+            "fixture_dataset": None,
+        }
+    )
+    result = await channel(settings, handler).send(trial, context=context)
+    assert result.state == "accepted"
+
+
+@pytest.mark.parametrize("open_id", ["ou_synthetic\n", "ou_", "ou_bad:value", "oc_group", None])
+async def test_malformed_recipient_never_reaches_token_http(settings, intent, context, open_id):
+    bot = channel(settings, lambda _: pytest.fail("No token or message HTTP is allowed"))
+    bot.recipients["recipient-1"] = FeishuRecipient(open_id, True)
+    assert (await bot.send(intent, context=context)).error_code == "recipient_unconfigured"

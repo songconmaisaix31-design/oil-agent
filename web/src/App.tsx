@@ -22,11 +22,22 @@ export function App() {
     const params = new URLSearchParams(location.search);
     const code = params.get("code");
     const state = params.get("state");
+    const oauthReturn = ["code", "state", "error"].some((key) =>
+      params.has(key),
+    );
+    const invalidReturn =
+      oauthReturn &&
+      (params.has("error") ||
+        params.getAll("code").length !== 1 ||
+        params.getAll("state").length !== 1 ||
+        !code ||
+        !state);
     // Remove transient OAuth values before rendering links or calling any third party.
-    if (params.has("code") || params.has("state") || params.has("error"))
+    if (oauthReturn)
       history.replaceState(null, "", location.pathname + location.hash);
-    const load =
-      code && state
+    const load = invalidReturn
+      ? Promise.reject(new Error("invalid_oauth_return"))
+      : code && state
         ? api.POST("/api/v1/session", { body: { code, state } })
         : api.GET("/api/v1/session");
     unwrap(load)
@@ -34,7 +45,13 @@ export function App() {
         setSession(value);
         setCsrf(value.csrf_token ?? null);
       })
-      .catch((e) => setError(errorText(e)))
+      .catch((e) =>
+        setError(
+          invalidReturn
+            ? "登录未完成或返回信息无效，请重新使用飞书登录。"
+            : errorText(e),
+        ),
+      )
       .finally(() => setLoading(false));
     const expired = () => {
       setSession(undefined);

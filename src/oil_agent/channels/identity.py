@@ -11,6 +11,7 @@ from oil_agent.channels.common import (
     ProviderHTTP,
     RequestFailure,
     budget,
+    feishu_identity,
     https_url,
     safe_service_failure,
 )
@@ -101,9 +102,7 @@ class FeishuIdentityAdapter:
                 subject = user.get("open_id")
                 if not isinstance(subject, str) or not re.fullmatch(r"ou_[A-Za-z0-9_-]+", subject):
                     raise ServiceError(ErrorCode.INVALID_OUTPUT, "Identity subject is unavailable")
-                return ExternalIdentity(
-                    provider="feishu", subject=f"{self.settings.tenant_key}:{subject}"
-                )
+                return feishu_identity(self.settings, subject)
         except (RequestFailure, TimeoutError):
             # A one-time OAuth code might already be consumed. Start a new challenge, never retry.
             raise ServiceError(
