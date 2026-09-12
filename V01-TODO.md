@@ -34,8 +34,8 @@ question is superseded by the explicit budget instruction above.
 | E | Existing deployment/integration tests and runtime evidence. | Verify only affected paths, prepare the smallest one-shot host launch for the actual dated product job, verify host/time/stop behavior and actual send records. Never restart shared Docker or relabel synthetic evidence. |
 | I | Existing integration branch and explicitly assigned bootstrap/fixed-entry glue. | Integrate exact owner commits, remove only reproduced assembly coupling via the approved status path, run affected checks/build, preserve source owners and normal push. |
 
-Confirmed implementation gaps are distinct from missing external input: current
-model assembly only accepts OpenAI; normal Feishu wiring depends on identity,
+The implementation gaps identified at the start of this increment were distinct
+from missing external input: model assembly only accepted OpenAI; normal Feishu wiring depended on identity,
 redirect and callback configuration and lacks the C1 wire hooks; the only
 existing no-action cards are fixed C1 fixtures and their scope cannot cover an
 overnight report. Fix only these necessary gaps. Reuse the dedicated C1 database
@@ -111,7 +111,7 @@ and sole confirmed self recipient. D ran the fixed `status_local prepare`,
 The first platform acceptance is real evidence, not proof of phone display,
 login/callback confirmation, live news/model integration or production readiness.
 E's independent real-record readback and actual one-shot host registration are
-the remaining execution steps. Do not manually run the morning notification.
+separately recorded below. Do not manually run the morning notification.
 E's real registration on I `b2c85b8fc1affdbcf50592f0b01cd6f15142e515`
 created the exact dated task, but the existing XML byte comparison rejected
 Windows' omission of default fields (`STATUS_TASK_EFFECT_UNKNOWN`, followed
@@ -123,6 +123,70 @@ E repaired the verifier at `99ef76fcb4559673542afd9756aa563417bb6233`:
 the nine affected host checks passed, including readback of the existing exact
 task as `STATUS_TASK_DEFINITION_VERIFIED`. No registration, overwrite or execution
 was repeated. I integration and actual keep-awake activation follow this repair.
+
+### Current real execution evidence, checked 2026-09-13 02:00 Shanghai
+
+I integrated the repaired deployment verifier at
+`ffa93a7047599fabd6b6465fb6f80f348af5a372`. The notification runtime remains
+byte-identical to the successfully used `c99d327b3bf76a06878401dc17c6e87c4ffeb614`.
+E's final evidence commit is `98e04380d71d81c77a47d06daa391d08538816f3`;
+its history retains the actual registration-mismatch incident. E independently
+ran the fixed product `status` entry once: exit 0, the same accepted onboarding
+receipt and four requests, and the dated morning notification `STATUS_WAITING`.
+This readback made no Feishu request and released its short-lived DB bridge.
+
+The exact existing Windows task `OilAgent-StatusMorning-20260913` is enabled.
+Actual COM readback at 02:00 Shanghai returned next run `2026-09-13 07:58:00`.
+The verified action uses the I interpreter with
+`-I -B -m oil_agent.runtime.status_local morning` in the I worktree, current-user
+InteractiveToken, one trigger, no recurrence/retry/catch-up and a PT17M limit.
+The product queue waits until 08:00 Shanghai and expires at 08:15. This is
+actual host deployment evidence; the future morning run and its message ID do
+not yet exist. The task has not been manually run, duplicated or re-registered.
+
+E replaced only its verified owned, originally unlogged helper under explicit
+maintenance authorization. The final chain is wrapper PID 63088 and Python PID
+62064, observed active at `2026-09-12T17:55:56.1798459Z` (01:55:56 Shanghai).
+It uses the fixed I helper and expected startup SHA `ffa93a7`; M rechecked both
+exact command lines and process identities at 02:00. Captured stdout reports
+`STATUS_AWAKE_ACTIVE`, PID 62064, until `2026-09-13T00:15:00+00:00`; stderr is
+zero bytes. This proves the helper's native keep-awake call returned success,
+not an elevated independent power-state query. The earlier unlogged helper and
+its ambiguous timestamp are superseded by this captured launch evidence.
+
+Logs are outside Git at
+`C:/Users/DW/AppData/Local/oil-agent/runtime/status-morning-20260913/awake-20260912T175556165Z.out.log`
+and the same stem `.err.log`. Leave this single helper running to its fixed
+08:15 Shanghai deadline. No global power plan, shared Docker service or unknown
+resource was changed. The host must remain on mains, online, logged in, and must
+not be manually put to sleep or shut down; future successful delivery is not
+guaranteed by registration or keep-awake evidence.
+
+Actual product commands, from
+`C:/Users/DW/orca/workspaces/oil-agent/oil-v01-i`:
+
+```powershell
+.\.venv\Scripts\python.exe -I -B -m oil_agent.runtime.status_local status
+```
+
+To revoke/stop this scope before future sending (not executed during acceptance):
+
+```powershell
+.\.venv\Scripts\python.exe -I -B -m oil_agent.runtime.status_local stop
+```
+
+The dated start is already installed in Windows Task Scheduler; do not manually
+run `onboarding` or `morning` again. The finite helper releases by 08:15 even if
+the product scope is stopped earlier. Final I work is evidence-only integration;
+all executable files must remain identical to the active deployment.
+
+Remaining limits: phone display awaits the user's observation; the 08:00
+message awaits its actual scheduled run. Login, signed confirmation callbacks,
+live source/model calls and production acceptance were not performed. The model
+adapter is implemented but its real destination still needs the existing key's
+official-versus-gateway origin, with no secret value requested in chat. No new
+paid service or recharge occurred; actual provider invoice cost is unavailable.
+No continuous monitoring or indefinite daily broadcast was enabled.
 
 ## Previous phase: minimal autonomous Feishu notification exercise
 
