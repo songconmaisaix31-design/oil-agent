@@ -1,5 +1,56 @@
 # I integration handoff
 
+## Active C1: local preparation only
+
+The retained I baseline is `3a5591a9fd6f8d76a6a209e4ec9a780496a773ce`.
+M governance `7ba4c2f8115775b5e1bbdc5db2e806bb56ef08b0` was ordinarily merged;
+all C1 increments use `[skip ci]` and focused checks only. The labels
+`油品预警助手（测试）` / `oil-agent-feishu-trial` identify an app not yet created.
+No real binding or start authorization is inferred from them.
+
+C's private helper `611c7a99866de5fa21f6c2f292b31548949bd809` and D's pure
+preview `584c9a3b49c549a4602bc32b0a29d0e7261d7425` are ordinarily integrated.
+The actual restricted file is
+`C:/Users/DW/AppData/Local/oil-agent/private/feishu-c1/config.json`, outside Git.
+After actual application creation, change `application_state` to `CREATED` and
+privately fill the five binding fields: `app_id`, `app_secret`, `tenant_key`,
+`recipient_open_id`, `host_binding`. Keep the fixed labels/schema; see C's
+[preparation contract](c1-preparation.md). Never put values in chat or a command.
+No start/approval timestamp is accepted by this preparation file.
+
+From this retained project, the following commands check the approved file and
+its Windows ACL, or inject allowlisted fields into one fixed isolated process:
+
+```powershell
+uv run --locked python -m oil_agent.runtime.c1_private check
+uv run --locked python -m oil_agent.runtime.c1_private inject-check
+```
+
+Both actual commands returned exit **2** and only
+`WAITING_FOR_APPLICATION_CREATION`, `NOT_CREATED`, `NOT_CONFIGURED`, missing
+field names, `start_trigger=NOT_AUTHORIZED` and `product_requests=0`.
+The child does not construct a runtime, connect a database, run a server or send.
+The no-overwrite `prepare` command remains C-owned; I did not rewrite the file.
+`web/c1-preview.html` opens directly without a server; its matching
+`web/c1-preview.json` is an offline card payload, not a platform/phone receipt.
+
+I first reproduced the ordinary factory rules/OAuth/callback-key requirements in
+`1c5f292b7a9807802b7bd5b158d99d35e2809cad`: the three offline guard checks pass
+and will remain in the C1 acceptance scope. Integrated D preview checks passed
+2 cases and the exact HTML/card text check at 390/320px, without actions, links,
+network requests or browser errors. Integrated C helper checks passed 16 cases;
+scoped Ruff and diff checks passed. Existing PostgreSQL factory cases were not
+run; no database or live-service acceptance is claimed by these offline checks.
+
+Pending implementation at this checkpoint: C's explicit exercise/permission/
+durable budget path and fixed private preview mode, D's guarded display-only
+transport, and I's exact factory branch. Missing authorization remains separate:
+the actual app, tenant, recipient and host are unconfigured and the user has not
+issued `开始手机测试`. Future first-one / at-most-three attempts / at-most-twenty
+all-Feishu-API requests / zero new fee / thirty-minute limits are ceilings, not a
+current start window. All live operation evidence is **NOT EXECUTED**; source,
+model and Feishu calls, tokens and paid product cost remain zero.
+
 ## Active bounded increment: contextual guards and controlled trial preparation
 
 Starting point `cd6e8d9d87acbde9b844b4568ab2df72e00bab8d` remains accepted only
