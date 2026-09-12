@@ -490,48 +490,57 @@ class Runtime(C1Runtime, RuntimeAuthorization):
         )
         if reserved is None:
             return None
-        await self._processing_budget(urgent=False, uses_model=self.services.reports_use_model)
-        report_id, token = reserved
-        records, events, observations = await self.db(
-            self.repository.report_snapshot,
-            now,
-            self.settings.data_provenance,
-            self.settings.fixture_dataset,
-        )
-        request = ReportBuildRequest(
-            report_id=report_id,
-            report_date=local.date(),
-            timezone=config.report_timezone,
-            cutoff_at=now,
-            revision=1,
-            records=records,
-            events=events,
-            observations=observations,
-            is_fixture=self.settings.data_provenance == "fixture",
-            provenance=self.settings.data_provenance,
-            fixture_dataset=self.settings.fixture_dataset,
-        )
-        report = await self.bounded(
-            lambda ctx: self.services.reports.build(request, context=ctx),
-            context=self.context(seconds=60),
-        )
-        if (report.report_id, report.cutoff_at, report.provenance, report.fixture_dataset) != (
-            request.report_id,
-            request.cutoff_at,
-            request.provenance,
-            request.fixture_dataset,
-        ):
-            raise ServiceError(
-                ErrorCode.INVALID_OUTPUT, "Report changed its input snapshot identity"
+        try:
+            await self._processing_budget(urgent=False, uses_model=self.services.reports_use_model)
+            report_id, token = reserved
+            records, events, observations = await self.db(
+                self.repository.report_snapshot,
+                now,
+                self.settings.data_provenance,
+                self.settings.fixture_dataset,
             )
-        gaps = await self.db(self.repository.coverage_gaps)
-        report = report.model_copy(
-            update={
-                "delayed": local > scheduled + timedelta(minutes=5),
-                "gaps": tuple(sorted(set(report.gaps) | set(gaps))),
-            }
-        )
-        result = await self.db(self.repository.commit_report, report, token)
+            request = ReportBuildRequest(
+                report_id=report_id,
+                report_date=local.date(),
+                timezone=config.report_timezone,
+                cutoff_at=now,
+                revision=1,
+                records=records,
+                events=events,
+                observations=observations,
+                is_fixture=self.settings.data_provenance == "fixture",
+                provenance=self.settings.data_provenance,
+                fixture_dataset=self.settings.fixture_dataset,
+            )
+            report = await self.bounded(
+                lambda ctx: self.services.reports.build(request, context=ctx),
+                context=self.context(seconds=60),
+            )
+            if (report.report_id, report.cutoff_at, report.provenance, report.fixture_dataset) != (
+                request.report_id,
+                request.cutoff_at,
+                request.provenance,
+                request.fixture_dataset,
+            ):
+                raise ServiceError(
+                    ErrorCode.INVALID_OUTPUT, "Report changed its input snapshot identity"
+                )
+            gaps = await self.db(self.repository.coverage_gaps)
+            report = report.model_copy(
+                update={
+                    "delayed": local > scheduled + timedelta(minutes=5),
+                    "gaps": tuple(sorted(set(report.gaps) | set(gaps))),
+                }
+            )
+            result = await self.db(self.repository.commit_report, report, token)
+        except Exception as error:
+            # Keep the lease until expiry: idle retries must neither clear failure health
+            # nor trigger an immediate rebuild loop that spends the remaining normal quota.
+            code = error.code if isinstance(error, ServiceError) else ErrorCode.INVALID_OUTPUT
+            await self.db(self.repository.health, "report", "degraded", code.value)
+            if isinstance(error, ServiceError):
+                raise
+            raise ServiceError(code, "Report failed output validation") from None
         await self.db(self.repository.health, "report")
         return result
 
