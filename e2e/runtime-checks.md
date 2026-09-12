@@ -523,6 +523,42 @@ the coordinator directed remaining PostgreSQL acceptance to Linux CI and forbade
 a shared daemon restart. Final candidate acceptance remains pending its complete
 CI, independent factory checks and the two owner fixes. Product calls/cost stay 0.
 
+The independent E file `test_trial_configuration.py` adds constructor-boundary
+checks without modifying I's factory or factory test. It supplies an authored
+environment only to the factory module and traps PostgreSQL connection attempts,
+DNS and HTTP client sends. The actual PostgreSQL dialect, Repository, Runtime and
+AB/D constructors remain in use; **no database I/O is performed or claimed**.
+Checks cover unread disabled-capability credentials, identity-only isolation,
+source rights and runtime budget callbacks, no implicit sender or report model,
+wrong provider/provenance, expired/unapproved rules, permission validity outside
+rules, missing injected keys and explicitly unsupported production assembly.
+Two new Chinese messages use the same loaded approved rule, with no per-message
+review; a routine bulletin stays routine and the rule snapshot is unchanged.
+These newly authored trial-shaped records remain synthetic test material.
+
+`uv run --locked pytest tests/integration/test_trial_configuration.py -q --tb=short
+--junitxml=e2e/runtime-artifacts/v11-candidate9-configuration.xml`:
+**13 passed, 0 failed, 0 skipped, 1.22 seconds**, Windows Python 3.13.13; Ruff
+check/format and diff-check PASS. Synthetic network requests **0**, database
+requests **0**, product source/model/Feishu calls/sends/tokens/cost **0**.
+
+Exact E Compose increment **`49c75d32f6a6f9e15aef4cc0855a89ac10d66365`** (before
+these 13 new tests) completed Linux CI
+[34665288636](https://github.com/songconmaisaix31-design/oil-agent/actions/runs/34665288636):
+**340 core passed**, zero skips, 19.223 seconds; **135 integration passed,
+2 failed, 0 errors, 0 skips**, 29.593 seconds. All 13 I factory cases passed on
+real migrated PostgreSQL, including actual injected source/model storage with
+zero routine outbox, restart/history/budget behavior, scoped OAuth/send/signed ack
+with isolated HTTP responses and five missing/mismatched-rule variants. The static
+Compose migration passed. The only failures remain unchanged C approval reuse and
+AB T05 denial; owner fixes are not in this candidate. Later frontend/image steps
+were not reached. Aggregate synthetic HTTP requests across the full suite were
+not instrumented; individual cases assert their own bounded counts. There were no
+authorized or executed real product requests. Factory implementation now has
+scoped local integration evidence; real provider operation remains
+IMPLEMENTED_AWAITING_REAL_TEST with MISSING_AUTHORIZATION, while these two domain
+defects keep overall acceptance FAIL.
+
 ## Verified checkpoint, 2026-09-11 UTC
 
 - Dependencies: reviewed C `41a00ded1f949aee8099b549d5d419f0487dd0f9`,
