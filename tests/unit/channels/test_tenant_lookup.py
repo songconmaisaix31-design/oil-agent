@@ -41,9 +41,12 @@ async def reserve(_):
     return "synthetic-reservation"
 
 
-def lookup(settings, handler, authorize=reserve):
+def lookup(settings, handler, authorize=reserve, observe=None):
     return channels.FeishuTenantLookup(
-        settings, authorize_request=authorize, transport=httpx.MockTransport(handler)
+        settings,
+        authorize_request=authorize,
+        observe_request=observe,
+        transport=httpx.MockTransport(handler),
     )
 
 
@@ -89,6 +92,42 @@ async def test_lookup_is_app_scoped_and_reserves_before_each_wire(settings, cont
     assert settings.tenant_key == ""
     with pytest.raises(ServiceError, match="not configured"):
         settings.require_app()
+
+
+async def test_tenant_lookup_observes_each_exact_reservation_without_cached_token_calls(
+    settings, context
+):
+    reservations, events = [], []
+
+    async def authorize(operation):
+        reservation = f"synthetic-{operation}-{len(reservations)}"
+        reservations.append(reservation)
+        return reservation
+
+    async def observe(reservation_id, phase, *, http_status=None):
+        events.append((reservation_id, phase, http_status))
+
+    def handler(request):
+        assert events[-1] == (reservations[-1], "started", None)
+        if request.url.path.endswith("internal"):
+            return token_response()
+        return httpx.Response(
+            200, json={"code": 0, "data": {"tenant": {"tenant_key": "synthetic-tenant"}}}
+        )
+
+    client = lookup(settings, handler, authorize, observe)
+    assert await client.lookup(context=context) == "synthetic-tenant"
+    assert await client.lookup(context=context) == "synthetic-tenant"
+    assert reservations == [
+        "synthetic-tenant_token-0",
+        "synthetic-tenant_query-1",
+        "synthetic-tenant_query-2",
+    ]
+    assert events == [
+        (reservation, phase, 200 if phase == "responded" else None)
+        for reservation in reservations
+        for phase in ("started", "responded")
+    ]
 
 
 @pytest.mark.parametrize("changes", [{"enabled": False}, {"app_id": ""}, {"app_secret": None}])

@@ -15,7 +15,7 @@ class FeishuTenantToken:
         self,
         settings: FeishuSettings,
         http: ProviderHTTP,
-        before_request: Callable[[], Awaitable[None]],
+        before_request: Callable[[], Awaitable[str | None]],
     ):
         self.settings = settings
         self.http = http
@@ -32,11 +32,12 @@ class FeishuTenantToken:
         async with self._lock:
             if self._token and time.monotonic() < self._expires:
                 return self._token
-            await self.before_request()
+            reservation = await self.before_request()
             status, data, _ = await self.http.request(
                 "POST",
                 f"{API}/auth/v3/tenant_access_token/internal",
                 seconds=budget(context),
+                reservation_id=reservation,
                 json={
                     "app_id": self.settings.app_id,
                     "app_secret": self.settings.app_secret.get_secret_value(),
