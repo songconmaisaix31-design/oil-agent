@@ -5,6 +5,91 @@ Feishu recipient, actual phone receipt or deployed server has been accepted.
 
 ## Current phase: independent real-integration v1.1 acceptance
 
+### Final independent code acceptance: PASS for synthetic integration
+
+Accepted code: **`63627eee09bc9fb10e32b68f979f7715db199791`**, including I's
+configured factory, C `17238867091e1a6529ab91568dff18c32ede32c2`, AB
+`6c517f5c4e5ffc2b4b844f91d49de90aba3848b8` and E checks through
+`87a737b4e837e8552399e1f066f576202f906187`. E's clean existing branch fast-forwarded
+to that exact I candidate; E independently matched the public origin I branch to
+the same SHA. No producer tip, new branch/worktree or business edit was used.
+This final result closes the earlier code failures recorded chronologically below;
+it does not turn synthetic fixtures into real provider, account or phone evidence.
+
+E independently inspected the successful conclusion, individual job steps/logs and
+downloaded JUnit artifacts from exact-code
+[Actions 34665612094](https://github.com/songconmaisaix31-design/oil-agent/actions/runs/34665612094).
+The run completed **SUCCESS** on Ubuntu 24.04, Python 3.13.13, uv 0.11.26,
+Node 24.16.0, with separate real PostgreSQL 16 services for C and E. Each E case
+uses its isolated migrated schema; no SQLite, auth dependency override, xfail or
+test deselection substitutes for these results. The existing Starlette/AnyIO
+deprecation warning remains.
+
+| Required command / evidence | Exact result |
+| --- | --- |
+| `uv sync --locked` | PASS; existing lock used |
+| `uv run --locked python scripts/validate_scenario_corpus.py` | PASS; corpus consistency only |
+| `uv run --locked ruff check tests/integration deploy/worker_health.py` | PASS |
+| `uv run --locked python -m oil_agent.runtime.cli migrate` on separate C test service | PASS |
+| `uv run --locked pytest tests/contracts tests/unit -q --tb=short --junitxml=e2e/core-acceptance.xml` | **343 passed, 0 failures/errors/skips**, 20.891 seconds |
+| `uv run --locked pytest tests/integration -q --tb=short --junitxml=e2e/local-acceptance.xml` | **150 passed, 0 failures/errors/skips**, 26.829 seconds |
+| `npm ci --ignore-scripts`, then `npm test` in `web` | PASS; **23 tests passed**, 1.53 seconds |
+| `npm run build` in `web` | PASS; authoritative generated schema/types, TypeScript and Vite |
+| `bash -n deploy/entrypoint.sh scripts/backup.sh scripts/restore-isolated.sh scripts/compose_scope.sh` | PASS; syntax only |
+| `docker build -f deploy/app.Dockerfile -t oil-agent-app:ci .` | PASS; Linux image construction, Python 3.13.15 in image |
+| `docker build -f deploy/web.Dockerfile -t oil-agent-web:ci .` | PASS; frontend rebuilt inside Linux image |
+
+Built CI image IDs: app
+`sha256:ce5f31e16b1ea1d8f476757a35a7aad3e0d5e6ed7fed756585a409d07af9c83d`, web
+`sha256:56030c244cc5858356796f592725323e08d321e8b5869033b3cea00134c0b36b`.
+These images were built in CI, not published or deployed to a user server.
+
+| Independent acceptance scope | Final status and observations |
+| --- | --- |
+| R1/R4 synthetic transport -> model -> approved rule -> PostgreSQL ordinary silence | **PASS**: all 13 I factory cases, E source/network cases and E configuration checks pass; actual injected adapters retain provenance/rights/history and model usage; the routine source/model path persists with zero notification intents; new messages reuse one loaded rule without per-message ClaimReview |
+| R2 permission scope, budgets and concurrency | **PASS**: separate C PostgreSQL suite and E 7 operational trial cases pass, including final-reservation contention, durable unknown usage/overrun, immutable approval reuse, fixture-session rejection, revocation and mixed pending/outbox/API scope |
+| R3 labeled synthetic login, test-recipient send and ack | **PASS**: 3 E trial-exercise sender cases, 12 OAuth cases, 12 security cases and the I factory OAuth/send/signed-ack chain pass; callback/replay/recipient/revision boundaries hold, UNKNOWN is not blindly retried; all platform replies are isolated doubles |
+| Preserved C/AB regressions | **PASS**: unchanged T05 denial correction (0.376 seconds), unchanged same-ID expiry/session case (0.232 seconds), both Chinese procedure/training guards and positive unseen phrasings pass; Git diff confirms E assertions unchanged from 87a737b |
+| Frontend, shared deployment defaults and Linux image build | **PASS within automated scope**: 23 frontend tests, schema/type/Vite build, shared default environment/security checks, shell syntax and both serial image builds pass; no new actual-browser, Compose runtime, TLS or phone acceptance is inferred |
+
+Product source requests **0**; product model requests/input tokens/output tokens
+**0**; product Feishu login/message requests and sends **0**; paid product cost
+**0**. Git/Orca/public CI operations are not product provider calls. Synthetic
+HTTP counts and usage are separate: selected case counts are recorded below;
+the complete suite's aggregate synthetic request count was **not instrumented**.
+No actual provider billing or successful real request is inferred from mock usage.
+
+Remaining classifications and **NOT EXECUTED** operations:
+
+- **MISSING_AUTHORIZATION:** exact provider/license/rights, business rule approval,
+  model/budget, tenant/app, test actor/recipient, account, quote sample and server/
+  probe inputs. No existing credential was searched, read or copied.
+- **IMPLEMENTED_AWAITING_REAL_TEST:** Jin10/OpenAI/Feishu adapter paths have the
+  scoped synthetic acceptance above; authorized real source/model ingestion,
+  OAuth/account login, platform sends/callbacks and actual phone receipt are not
+  executed. Source comparison >=7 days and operation >=14 days have not started.
+- **MISSING_IMPLEMENTATION / unsupported:** production factory startup explicitly
+  rejects; trial report reminders are explicitly unsupported. The current Compose
+  is an internal-network local reference, not a prepared real-provider deployment
+  with authorized egress, HTTPS and off-host probes. These are not credential-only
+  gaps and were not expanded in this phase.
+- **ENVIRONMENT_FAILURE / local verification incomplete:** Docker's Linux engine
+  pipe disappeared during the two Windows usage checks. Only the verified waiting
+  E pytest PID 2384 was stopped; those cases subsequently passed on CI PostgreSQL.
+  Exact retained E container
+  `b3c3a345428590922eb8e628a996dd634cb3333e5f0c86f588eede8fb7101cab`
+  (`oil-agent-e-postgres-1`, loopback 55434) was last known running in its allocated
+  slot. Its current state and interrupted UUID-schema cleanup are **unverified**;
+  no successful stop, daemon restart, volume deletion or unrelated-container
+  operation is claimed. No E full Compose or local image job was started in v1.1.
+- New-schema backup/isolated restore/rollback, real deployment, off-host outage
+  detection and a new actual-browser/phone matrix were **NOT EXECUTED** in v1.1.
+  Earlier v1.0 artifacts remain attached to their historical candidates only.
+
+This evidence-only follow-up does not rerun unchanged passing code. I owns final
+report/governance integration, final delivery SHA and its resulting CI receipt;
+M owns the unique board. E's acceptance is tied to the code SHA above.
+
 E started from a clean `06af7997043c03bd06c91e9afab560bcf4432ae5`, normally
 merged accepted I `ed1de2e24634e8471e0979cfc168eebec4c12e4c` and governance
 `57e72ee`. That application baseline is accepted **only for local fixture/dry-run**.
