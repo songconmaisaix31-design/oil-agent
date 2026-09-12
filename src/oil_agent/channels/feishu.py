@@ -15,6 +15,7 @@ from oil_agent.channels.common import (
     FeishuSettings,
     ProviderHTTP,
     RequestFailure,
+    RequestObserver,
     budget,
     preflight,
     provider_error,
@@ -61,6 +62,7 @@ class FeishuChannel:
         c1_display_only: bool = False,
         authorize_request: Callable[[Literal["tenant_token", "message_send"]], Awaitable[str]]
         | None = None,
+        observe_request: RequestObserver | None = None,
         transport: httpx.AsyncBaseTransport | None = None,
     ):
         if c1_display_only and not callable(authorize_request):
@@ -73,7 +75,7 @@ class FeishuChannel:
         self.public_base_url = public_base_url
         self.c1_display_only = c1_display_only
         self.authorize_request = authorize_request
-        self.http = ProviderHTTP(transport)
+        self.http = ProviderHTTP(transport, observe_request=observe_request)
         self._tokens = FeishuTenantToken(
             settings, self.http, lambda: self._reserve_request("tenant_token")
         )
@@ -81,7 +83,9 @@ class FeishuChannel:
     async def _access_token(self, context: CallContext) -> str:
         return await self._tokens.get(context)
 
-    async def _reserve_request(self, operation: Literal["tenant_token", "message_send"]) -> None:
+    async def _reserve_request(
+        self, operation: Literal["tenant_token", "message_send"]
+    ) -> str | None:
         if self.authorize_request is None:
             if self.c1_display_only:
                 raise ServiceError(ErrorCode.FORBIDDEN, "C1 request authorization is unavailable")
@@ -89,6 +93,7 @@ class FeishuChannel:
         reservation = await self.authorize_request(operation)
         if not isinstance(reservation, str) or not reservation:
             raise ServiceError(ErrorCode.FORBIDDEN, "Request authorization was not reserved")
+        return reservation
 
     async def send(self, intent: NotificationIntent, *, context: CallContext) -> Delivery:
         preflight(intent, "feishu")
@@ -128,13 +133,14 @@ class FeishuChannel:
                         intent, context, DeliveryState.FAILED_FINAL, "authorization_revoked"
                     )
                 # Reservation is before the HTTP effect and before setting UNKNOWN-sensitive state.
-                await self._reserve_request("message_send")
+                reservation = await self._reserve_request("message_send")
                 seconds = budget(context)
                 sending = True
                 status, data, _ = await self.http.request(
                     "POST",
                     f"{API}/im/v1/messages",
                     seconds=seconds,
+                    reservation_id=reservation,
                     params={"receive_id_type": "open_id"},
                     headers={"Authorization": f"Bearer {token}"},
                     json={
