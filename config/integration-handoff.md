@@ -7,12 +7,55 @@ fixture/dry-run only. The original I branch/worktree/session were clean and reus
 Governance `57e72ee` was ordinary-merged at
 `7c55e6add97de8170f43652f8b356abae1e914b8`. The current phase in V01-TODO.md
 supersedes the historical delivery timing and external-gap labels below.
-The initial design below is now assembled and locally verified. Independent E
-acceptance and complete CI on the assembly commit remain pending at this receipt.
+The initial design below is assembled and verified. Complete CI on the repaired
+code candidate passed; E's final independent report and current governance are
+adopted. The final delivery receipt records its own exact SHA and CI result.
+
+### Repaired code acceptance
+
+Exact code candidate `63627eee09bc9fb10e32b68f979f7715db199791` completed
+[Actions 34665612094](https://github.com/songconmaisaix31-design/oil-agent/actions/runs/34665612094)
+with **SUCCESS**. Downloaded JUnit results show 343 core tests passed in 20.891
+seconds and 150 integration tests passed in 26.829 seconds, with zero failures,
+errors or skips in either suite. All 23 frontend tests, generated-schema and
+TypeScript/Vite checks, shell checks, corpus/Ruff and both serial Linux image
+builds passed. C and E PostgreSQL used the workflow's distinct ephemeral services;
+no test deselection or database guard exception was introduced.
+
+The unchanged T05 denial/correction case, the same-approval-ID session-expiry
+regression, Chinese conditional/training negatives, all 13 factory PostgreSQL
+cases and 13 independent configuration cases pass in this candidate. Repairs are
+AB `6c517f5c4e5ffc2b4b844f91d49de90aba3848b8`, C
+`17238867091e1a6529ab91568dff18c32ede32c2` and E
+`49c75d32f6a6f9e15aef4cc0855a89ac10d66365`, integrated normally along with E
+configuration verification `87a737b4e837e8552399e1f066f576202f906187`.
+I's assembly code remains `8de731b259b676a3187b2b04a63010f59d9371d4`; subsequent
+domain repairs came only from their original owners. No feature work followed
+the passing code candidate. The final delivery commit may add evidence/governance
+only and must have its own exact remote SHA and completed CI receipt.
+
+E's independent acceptance is adopted from
+`467682783f1bd1f455a27249fe3e20b69accf115` in
+[`e2e/runtime-checks.md`](../e2e/runtime-checks.md). M governance
+`b9a55fdc428b9d81368041283e4ed43205902376`, including the capacity-interruption
+history `9612613`, was ordinary-merged on the existing I branch. The user-authorized
+replacement I continues task `task_642b869e5aaa` under dispatch `ctx_c95adee1e8f5`;
+the exhausted attempt is fenced, and its evidence draft is preserved here.
+This remainder changes only this report directly. Relative to the accepted code,
+the delivery changes only AGENTS.md, README.md, V01-TODO.md,
+e2e/runtime-checks.md and config/integration-handoff.md; application code, tests,
+dependencies, workflow and deployment configuration are identical.
+
+This is implemented trial code with synthetic/local acceptance, not an authorized
+real-provider or phone run. Product source/model/platform requests, model tokens
+and paid product cost remain zero. Production assembly is explicitly unimplemented
+and rejects startup. Real source/model/rule/recipient approvals, credentials,
+real-world tests, production deployment/TLS/probes and long-running operation
+remain outside this acceptance.
 
 ### Assembled code increment
 
-Assembly code `8de731b259b676a3187b2b04a63010f59d9371d4` was pushed with exact
+Initial assembly code `8de731b259b676a3187b2b04a63010f59d9371d4` was pushed with exact
 origin match and clean status. Its first complete
 [Actions run 34664381567](https://github.com/songconmaisaix31-design/oil-agent/actions/runs/34664381567)
 failed: 340 core tests passed; integration had 128 passed and two failed; both
@@ -20,20 +63,25 @@ suites had zero errors/skips. All 13 factory PostgreSQL cases passed. E's static
 Compose test still expected literal default values after I added explicit safe
 environment interpolation; AB's conditional-text guard caused the unchanged T05
 denial/correction case to return UNKNOWN instead of DENIED. Both failures were
-reported to M for original-owner repair. This is not full acceptance.
+reported to M for original-owner repair. That failed run was not full acceptance;
+the repaired candidate and passing run are recorded above.
 
 Independent E evidence `f783bac621b8e8e5a246cd953bdbed4fec295dd0` and
 `a6ee4e49555be839a7d40a5aff0048cf8f7cf722` was ordinary-merged subsequently.
 It preserves another C failure: extending the expiry while reusing an identity
 approval ID can reactivate an old scoped session. M routed this to C for an
 immutable-approval check on session use; the E regression remains unchanged.
-This is missing correctness repair, not missing external authorization.
+This was a missing correctness repair, not missing external authorization.
 
 The final local application-image refresh after C's small reminder guard fix
 failed with Docker RPC EOF; Docker Desktop's Linux named pipe then disappeared.
 I did not restart the shared daemon. Earlier app/web image builds succeeded;
-the exact final application image requires a successful refresh or remote CI.
+the exact repaired application image was subsequently built successfully by the
+remote CI above. The shared local daemon was not restarted by I.
 I's 18-check PostgreSQL smoke and explicit container stop finished beforehand.
+C/I containers were stopped before the outage. E's retained PostgreSQL container
+was last known running; its current state and interrupted schema cleanup remain
+unverified, as recorded in E's adopted report. No daemon recovery is claimed.
 
 All integrations used ordinary merges on the original branch. Intermediate
 candidates were pushed and sent to M/E as each producer increment arrived:
@@ -73,7 +121,7 @@ I edits in this increment: `src/oil_agent/bootstrap.py`, `.env.example`,
 factory loading required no additional edit. Compose remains internal-only;
 environment wiring does not enable network egress or deployment.
 
-Local checks on the assembled tree:
+Local checks on the initial assembled tree:
 
 - `uv sync --locked`, full `ruff check src tests`, `git diff --check`, and
   `uv build --out-dir <I-private-temp>` passed. Corpus checker passed consistency
@@ -115,8 +163,9 @@ two explicit services, `OIL_TEST_DATABASE_URL`, `OIL_E_TEST_DATABASE_URL` and
 Prior failures remain recorded by E: the initial three fixture/production sender
 cases, stale app-identity fixture, and two false-urgent rule cases. E supplied
 scoped fixture-trial sender/identity repairs without relabeling data; AB supplied
-the rule repair and E's unchanged 15 rule cases now pass locally. Remote full-suite
-success and E's independent assembled-factory acceptance still need confirmation.
+the rule repair and E's unchanged 15 rule cases now pass locally. The final repaired
+full suite has now passed as recorded above; E's independent report is adopted at
+4676827, preserving all historical failure evidence.
 
 ### Minimal assembly design and owner contracts
 
@@ -177,11 +226,12 @@ Labeled urgent exercises are separate from actual emergencies and require their
 own exact test-recipient permission. No test principal is seeded by a factory.
 
 Current gaps: the bounded source/model/rule/runtime/channel assembly is implemented
-and locally checked, awaiting E and complete CI confirmation. Actual provider,
+and its full CI passed; E's final report is adopted at 4676827. Actual provider,
 rules, budget and exact-recipient inputs are **missing authorization**; all real
 source/model/identity/send behavior is **implemented, awaiting real testing**.
 Production factory/deployment remains **missing implementation** outside this
-local increment. Prior local evidence does not settle any real chain. Product
+local increment; trial report reminders are unsupported. Prior local evidence
+does not settle any real chain. Product
 source calls 0, model calls/tokens 0, Feishu sends 0 and paid product cost 0.
 Public documentation,
 dependency, Git and Orca traffic are excluded from product call counts.
