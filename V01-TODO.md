@@ -1,6 +1,56 @@
 # V01 delivery board
 
-## Current phase: minimal autonomous Feishu notification exercise
+## Current phase: personal Feishu presence and one dated morning broadcast
+
+The user has filled the project-private API intake with a DeepSeek V4.1 Flash
+key and explicitly instructed: "send if possible, build the application, use
+the budget as needed." This authorizes agent-executed delivery to the already
+confirmed sole personal Feishu recipient, using the existing application and
+host. Preserve accepted I delivery `56b49bb4df272d58b4ae3357ede4a5ac09b7dc83`.
+Do not fabricate a user-local C1 start or extend an old thirty-minute window.
+
+M's stated bounded interpretation is one onboarding notification and one dated
+morning broadcast, initially the nearest morning at 2026-09-13 08:00 Asia/Shanghai
+(2026-09-13T00:00:00Z), subject to the user's correction. Keep at most twenty
+Feishu wire requests and three total send attempts for this scope. The initial
+model scope is at most ten requests and 100,000 total reserved tokens using
+existing account credit; no recharge, purchased service or added recipient.
+Only this one morning is in scope, not indefinite daily operation. Record a
+missed/failed run honestly rather than claiming a punctual delivery afterwards.
+
+The private intake has a present key but blank platform, purpose, base_url and
+model fields. User text identifies DeepSeek V4.1 Flash; official versus gateway
+origin remains a necessary destination check before transmitting the key.
+The published official model is `deepseek-flash` and the official Responses
+base is `https://api.deepseek.com`; these do not establish this key's origin.
+The user was asked only for that remaining platform identity. The earlier fee
+question is superseded by the explicit budget instruction above.
+
+| Owner | Exclusive bounded increment | Evidence required |
+| --- | --- | --- |
+| AB | Existing intelligence model client and its unit tests/handoff only. | Minimal official DeepSeek transport reusing bounded HTTP, extraction validation and C request/usage callbacks; preserve OpenAI behavior, labels and rules. No private key access or unsolicited source/model calls. |
+| C | Existing contracts/runtime/storage/private configuration and corresponding C tests. | Map the protected key, add only the explicit dated nonmarket status scope/task needed by the existing outbox and Procrastinate, preserve C1, singleton recipient and durable request limits, and expose fixed process entry contracts to I. |
+| D | Existing channels, card renderer and corresponding tests. | Reuse Feishu sender and HTTP hooks for closed onboarding/morning-status cards, with factual trial labels and no login/actions/links; no alternate sender or OAuth work. |
+| E | Existing deployment/integration tests and runtime evidence. | Verify only affected paths, prepare the smallest one-shot host launch for the actual dated product job, verify host/time/stop behavior and actual send records. Never restart shared Docker or relabel synthetic evidence. |
+| I | Existing integration branch and explicitly assigned bootstrap/fixed-entry glue. | Integrate exact owner commits, remove only reproduced assembly coupling via the approved status path, run affected checks/build, preserve source owners and normal push. |
+
+Confirmed implementation gaps are distinct from missing external input: current
+model assembly only accepts OpenAI; normal Feishu wiring depends on identity,
+redirect and callback configuration and lacks the C1 wire hooks; the only
+existing no-action cards are fixed C1 fixtures and their scope cannot cover an
+overnight report. Fix only these necessary gaps. Reuse the dedicated C1 database
+and existing queues without changing its internal network or adding a scheduler.
+A bounded launch near the due time may reuse the existing thirty-minute stdio
+connection; do not keep or pretend an expired C1 authorization alive overnight.
+
+Onboarding must state that it is a project trial and real monitoring is not yet
+enabled. With no verified real source, the morning message must explicitly state
+that it has no verified current news/market data and cannot make an event
+assessment; model memory is not a live news source. Report model connectivity,
+platform acceptance, actual phone display and host scheduling independently.
+No login, callback or production-factory work is required for this increment.
+
+## Previous phase: minimal autonomous Feishu notification exercise
 
 The user now prioritizes actual program execution and two real messages to the
 already confirmed sole personal Feishu recipient. Preserve delivery
