@@ -3065,3 +3065,28 @@ fail-closed readiness check correctly rejects the mismatch. Minimum repair is to
 compare normalized semantic/default values (or emit stable explicit XML) while
 retaining the exact task name, host-only action, trigger window, no recurrence,
 retry or catch-up behavior; no task or power state was changed by E.
+
+## Final status readback and bounded keep-awake activation (2026-09-13)
+
+Using the fixed I interpreter in `C:/Users/DW/orca/workspaces/oil-agent/oil-v01-i`,
+`python.exe -I -B -m oil_agent.runtime.status_local status` exited 0 with
+`STATUS_WAITING`; the persisted onboarding receipt remained accepted (attempt 1,
+four reserved/started/responded requests, zero uncertain/transport failures) and
+the morning task remained waiting for `2026-09-13T00:00:00Z` through
+`00:15:00Z`. The process-only bridge exited cleanly; the exact E PostgreSQL
+container remained running/healthy with its existing loopback binding.
+
+After the semantic verifier returned `STATUS_TASK_DEFINITION_VERIFIED`, the
+existing `OilAgent-StatusMorning-20260913` task was left untouched. Its action is
+the exact I interpreter with `-I -B -m oil_agent.runtime.status_local morning`,
+one trigger at `07:58+08:00` ending `08:00+08:00`, current interactive token,
+WakeToRun and PT17M limit; no recurrence, manual run, retry or catch-up is
+configured. E then started one hidden process using the exact I interpreter and
+`deploy/status_morning_awake.py ffa93a7047599fabd6b6465fb6f80f348af5a372` from
+the I worktree. PID **61216** was alive and responsive at `2026-09-12T17:51:38Z`
+(local `2026-09-13 01:51:38 +08:00`); it is bounded by the helper's
+`08:15+08:00` deadline and must not be stopped before then. `powercfg /requests`
+was unavailable without elevation, so native power-request state could not be
+independently read; process liveness and source/task checks are the available
+evidence. No Feishu request was made by E (request count remains four), and no
+morning send, phone receipt, or production acceptance is inferred.
