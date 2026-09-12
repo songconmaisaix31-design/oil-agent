@@ -14,9 +14,22 @@ bounded LangGraph processing and React/Vite. Do not build an agent scheduler.
 - Each verified increment must be committed and pushed to the existing origin.
   Never force push, overwrite public history, delete unknown work or expose secrets.
 - Use English in code and technical artifacts, Chinese for user-facing discussion.
-- Production sending is disabled by default. No paid service, account login,
-  guessed commercial endpoint, customer message or deployment is authorized here.
-  Never read, print, copy or store existing secret values.
+- Follow the user's real-integration v1.1 instructions recorded at the top of
+  V01-TODO.md. The accepted ed1de2e baseline is local fixture/dry-run only.
+  Implement source/model transport and trial assembly using the existing stack.
+- Production sending stays disabled by default. Real source/model calls and
+  Feishu login/test delivery require the user's specified provider, permission,
+  budget and exact test-recipient scope. Ordinary implementation and tests are
+  already authorized. Missing credentials do not block independent coding.
+  Do not buy services, guess commercial endpoints, inspect unrelated credentials,
+  expand recipients or send exercises to unauthorized customers. Inject secrets
+  through an explicit project-scoped mechanism; never expose them in logs or Git.
+- Each increment is integrated by I and independently accepted by E. Domain
+  defects return to the original owner. Only the explicit I glue paths in the
+  current board transfer ownership; C/D/AB must not concurrently edit those paths.
+- Keep fixture, trial and production provenance distinct. Non-urgent real news
+  must remain silent. Urgent delivery exercises require explicit exercise labels
+  and authorized test recipients; they are not evidence of a real emergency.
 - Fixtures remain labeled and isolated. API acceptance is not phone receipt;
   dry-run is not production; PostgreSQL concurrency cannot be verified by SQLite.
 - UTC-aware storage, Decimal prices, explicit evidence, original publisher grouping,
