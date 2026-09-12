@@ -11,9 +11,14 @@
     "content_excerpt": "合成演练，非真实行情：样例企业公布常规供货计划，尚未发生供应中断。",
     "origin_publisher": "Synthetic Supplier A"
   },
-  "occurred": {
+  "exercise": {
     "title": "合成演练：样例港口装卸暂停",
     "content_excerpt": "合成演练，非真实行情：样例港口装卸已暂停，持续时间和成品油到货影响尚不明确。",
+    "origin_publisher": "Synthetic Port A"
+  },
+  "occurred": {
+    "title": "样例港口供运通知",
+    "content_excerpt": "今日样例港口装卸已暂停，成品油运输受阻。",
     "origin_publisher": "Synthetic Port A"
   },
   "later": {

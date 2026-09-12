@@ -23,9 +23,9 @@ def business_case():
     )
 
 
-async def build_snapshot(case, make_record, revision_state=None):
+async def build_snapshot(case, make_record, revision_state=None, *, exercise=False):
     now = datetime.fromisoformat(case["clock_at"])
-    original = make_record(case, case["occurred"], "before")
+    original = make_record(case, case["exercise" if exercise else "occurred"], "before")
     later = make_record(
         case,
         case["later"],
@@ -51,6 +51,11 @@ async def build_snapshot(case, make_record, revision_state=None):
         ),
         clock=lambda: now,
     ).assess((original,), context=context)
+    if not exercise:
+        assert events[0].assertion_status == "occurred", "Positive event precondition must hold"
+        assert events[0].evidence_status == "credible_single_source"
+        assert events[0].severity == "urgent"
+    assert events[0].is_fixture and events[0].fixture_dataset == case["fixture_dataset"]
     records = (original, later)
     if revision_state:
         corrected = make_record(
@@ -111,6 +116,13 @@ async def test_daily_analysis_is_chinese_conditional_and_traceable(business_case
         assert ref.excerpt in original.content_excerpt
     assert report.facts and all(fact.evidence for fact in report.facts)
     assert report.processing.model_version is None
+
+
+async def test_exercise_and_uncertainty_text_stays_a_nonurgent_negative(business_case, make_record):
+    report, _, _, event = await build_snapshot(business_case, make_record, exercise=True)
+    assert event.assertion_status == "unknown"
+    assert event.severity == "routine" and event.evidence_status == "unverified"
+    assert not report.impact_analysis
 
 
 async def test_cutoff_excludes_later_facts_from_every_report_section(business_case, make_record):
