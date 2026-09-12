@@ -90,6 +90,80 @@ identified E-owned PostgreSQL test resources before proposing targeted execution
 of the eleven pending C1 storage regressions. No shared service restart, unknown
 resource operation or live test-host approval is inferred.
 
+C continues the bounded owner repair in task `task_8d50445f6a5e` /
+`ctx_14b98dc95b3f`. The immutable app request owner must be explicitly linked to
+the complete send permission; omitting or replacing it after lookup must not
+reset the request or three-send counters. Existing recipient/revision/lease
+checks remain in the same send-reservation transaction. I's read-only design
+review is complete and its session is retained pending exact owner commits.
+
+E recorded its actual resource observation in
+`a9264158e5ec64983f700d8c0a68373fff7f5be8`: the configured local Docker endpoint
+was readable, but one exact E container inspection failed because
+`dockerDesktopLinuxEngine` was absent. No current container/volume/cleanup state
+was verified and no service was started, restarted or cleaned up. The eleven
+C1 SQL cases remain **IMPLEMENTED, VERIFICATION NOT EXECUTED**. Their existing C
+fixture rejects E's database; reusing those assertions on E's own database needs
+a narrow E-owned fixture adapter, **NOT IMPLEMENTED**. That harness gap and the
+unavailable engine are separate from missing live provider authorization.
+
+D delivered `da65fb1f2f80a455c058e3107a3df3964c22fbd5` on its existing branch:
+fixed app-only `FeishuTenantLookup` reuses the token/HTTP implementation, requires
+a nonempty reservation before each token/query wire request, validates the
+response-derived tenant identity and never retries automatically. The initial
+missing-export assertion failed; the new lookup selection passed 34 and related
+existing channel checks passed 36, with original assertions retained. These are
+synthetic transport checks, not platform authentication. I task
+`task_8fb163cd7182` / `ctx_98d0b0ec61f9` integrates that exact increment and the
+governance/E evidence first; C's shared-budget and entry repair remains separate
+work in progress. No current provider request, send or added product cost exists.
+
+E independently accepted D transport only at I
+`d4414f9a3b24dc104e2f622ee0391f4ac811811a`, recorded in
+`5aa4219fd09473e7ab6f645289e00de0fde3ec85`. The same 34 new and 36 related original
+checks passed offline, with 56 deliberately unselected and no skips; these
+repeat checks are not an additive test total. E verified original channel test
+files and ordinary guards unchanged. Shared C runtime, SQL and live platform
+acceptance are outside that result.
+
+During the C repair, a focused regression reproduced that separate full send
+approvals sharing one app window could create separate first-message subjects.
+C owns the minimal correction in the existing exercise/outbox identity, without
+new tables or historical data mutation. M also reproduced a selected-result
+handoff gap: the new read probe discarded the returned tenant before private
+configuration mapping. C is authorized to repair this with an explicit option
+in the existing controlled entry and a checked parent update of only a blank
+`tenant_key`. The default probe remains non-writing; an equal value is a no-op,
+conflicting nonempty values or changed bindings are refused, and ordinary output
+stays redacted. This authorizes code and synthetic tests only: no real query,
+private update, new file, start window or recipient is authorized here. Both
+repairs need committed owner evidence, I integration and independent E review.
+
+C delivered core `1a699c7713ea4c62b5cd81b4e47e1c6909064042` and mapping delta
+`3dd8cb43c19fac00a6d1099baa4a8f28f3d63671`, both pushed on its existing branch.
+Core checks passed 115 after three initial missing-seam failures and one
+shared-first-message identity failure. The existing C storage selection now
+collects 21 cases, including the original eleven: **none were executed**.
+Mapping checks passed 75, including 19 Windows temporary synthetic-file cases
+with a mocked ACL verifier; the initial explicit-option regression failed before
+repair. Scoped Ruff and diff checks passed. The selections overlap and are not
+an additive acceptance total. `tenant-lookup --bind-if-unset` is now implemented;
+the prior result-to-private-binding implementation gap is superseded, with real
+protected-file/platform verification still pending. In-place I/O failure can
+leave modified or unconfirmed bytes; the code reports binding failure and does
+not claim crash-atomic writes or retry the lookup automatically.
+
+I integrated the core in `775308f7ded755da410044f8634b2e5f11a6ff23` and delivered
+its three-path fixed-factory glue in
+`d842b7b43c2f6ed91198a3e3695650db3b2a8cfe`. The new regression first reached the
+ordinary fixture factory; the repaired query branch passed 20 offline factory
+checks, with 13 PostgreSQL cases unselected and all sixteen original factory
+test function ASTs unchanged. E task `task_a8f43e8d111d` / `ctx_65f739b1af73`
+reproduced 26 original-entry fixture setup errors caused by the required app
+owner, and owns the necessary synthetic-input adaptation without weakening
+assertions. Combined integration, independent acceptance and the final single
+build remain pending at this checkpoint. No live window or resource is started.
+
 This bounded preparation is owned by C (runtime/private setup), D (channel and
 preview), I (existing explicit assembly seams), and E (independent focused
 verification). C may create only the authorized private directory/files outside
