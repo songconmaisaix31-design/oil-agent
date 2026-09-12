@@ -16,6 +16,27 @@ from oil_agent.storage.models import BudgetRow, SourceRecordRow
 pytestmark = pytest.mark.postgres
 
 
+@pytest.mark.asyncio
+async def test_committed_source_history_is_revisioned_and_scope_bound(repository, source_record):
+    rt = runtime_for(repository)
+    assert await rt.latest_source_record(source_record.source_id, source_record.external_id) is None
+    repository.persist_batch(batch(source_record), expected=None)
+    assert (
+        await rt.latest_source_record(source_record.source_id, source_record.external_id)
+        == source_record
+    )
+    revised = source_record.model_copy(update={"revision": 2, "content_hash": "b" * 64})
+    repository.persist_batch(batch(revised, "two"), expected=repository.checkpoint("replay"))
+    assert (
+        await rt.latest_source_record(source_record.source_id, source_record.external_id) == revised
+    )
+    rt.settings = rt.settings.model_copy(
+        update={"data_provenance": "trial", "fixture_dataset": None}
+    )
+    with pytest.raises(ServiceError):
+        await rt.latest_source_record(source_record.source_id, source_record.external_id)
+
+
 def second_record(record):
     return record.model_copy(
         update={

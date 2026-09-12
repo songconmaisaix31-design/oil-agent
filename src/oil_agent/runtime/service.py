@@ -48,6 +48,16 @@ class RuntimeServices:
 
 
 class Runtime:
+    async def latest_source_record(self, source_id: str, external_id: str):
+        """AB receives committed immutable history in this runtime's exact data scope."""
+        record = await self.db(self.repository.latest_source_record, source_id, external_id)
+        if record and (record.provenance, record.fixture_dataset) != (
+            self.settings.data_provenance,
+            self.settings.fixture_dataset,
+        ):
+            raise ServiceError(ErrorCode.FORBIDDEN, "Source history belongs to another data scope")
+        return record
+
     async def authorize_recipient(self, scope):
         return await self.db(self.repository.authorize_recipient, scope)
 
