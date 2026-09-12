@@ -58,6 +58,19 @@ shared Docker restart or unknown-resource cleanup. Phone feedback is not a
 signed callback. Record actual version, aliases, counts, message ID/time and
 phone observation separately; login/interaction receipts remain NOT EXECUTED.
 
+The user subsequently sent `开始手机测试` directly to the retained D session.
+M verified the exact user message in Orca's structured transcript (message
+`01a094c8-fd4d-78a3-9c36-3fab5186f263`): its timestamp is
+2026-09-12T08:43:15.149Z, so the conservative thirty-minute limit is
+2026-09-12T09:13:15.149Z (17:13:15 Asia/Shanghai). D's later processing observation
+at 08:43:24Z does not extend that limit. This trigger supplies no missing app,
+person, host or database binding and created no executable permission record.
+D's redacted check through the committed C helper still reported `CREATED` /
+`NOT_CONFIGURED`, missing `app_id`, `tenant_key`, `recipient_open_id` and
+`host_binding`, with zero product requests. An earlier path/ACL denial from D's
+older helper context did not reproduce with C's helper; no ACL or private file
+was changed. No message was attempted and the window must not renew silently.
+
 This bounded preparation is owned by C (runtime/private setup), D (channel and
 preview), I (existing explicit assembly seams), and E (independent focused
 verification). C may create only the authorized private directory/files outside
@@ -67,7 +80,7 @@ PTYs are positively reported exited by the execution host; resume their original
 provider sessions, preserving all code/history. No general audit or repeated full
 synthetic acceptance is part of C1 preparation.
 
-### Current bounded continuation: connect the C1 execution entry
+### Completed increment: bounded C1 execution entry, local evidence only
 
 The user's instruction to continue development does not start the phone window
 or authorize provider requests. M observed that the accepted
@@ -87,6 +100,48 @@ No direct provider sender, parallel approval registry, background loop, fabricat
 identity/start record or new product feature is authorized. Private files remain
 untouched; local tests use explicitly synthetic inputs. Production, real
 PostgreSQL acceptance, platform receipt and phone display remain separate gaps.
+
+C delivered the five-path owner repair
+`7167c63d61a9501c9a69e4a112d9c4a64e86911b`; its two initial regressions failed
+before repair and the final focused execution/preparation/runtime selection
+passed 47. E first preserved the missing-entry failure in
+`2ca3c87577b7b0283e69d475f7822a7623622923`, expanded it in
+`618e173cbb5549b55662349cbe9f9b29394e2f9e`, and independently found an integration
+failure in its own product-call harness. E reproduced and corrected explicit
+argument passing, the second authorization assertion and the actual Delivery DTO
+in `cdf3f8a57f2a678110133410735d05eb7d53baf5`. The original positive assertion and
+RED history remain unchanged; production authorization and receipt validation
+were not relaxed. All nine product-denial cases now execute the explicit mode.
+
+I's accepted candidate and single build source is
+`ca0a425dc7bcb7b4c7c0c89b16ba8b7842a050db` on
+`songconmaisaix31-design/oil-v01-i`. E independently accepted that exact source
+in evidence commit `1a414917bf9b95676f79719102170cb06ef7367d`:
+`uv run --locked pytest tests/integration/test_c1_entry.py
+tests/integration/test_bootstrap_factory.py -k 'c1_entry or offline_factory'
+-q --tb=short` passed 38, with 13 existing PostgreSQL cases deliberately
+unselected and no skips. Original ordinary-flow guards and fixed-factory
+construction remain; I's scoped lint and diff checks passed. These checks overlap
+the owner checks and are not an additive acceptance total.
+
+I performed one `uv build --out-dir
+C:/Users/DW/AppData/Local/Temp/oil-agent-i-ctx-1b00956b6bcd/dist`, producing the
+wheel and source distribution for that exact candidate. E inspected six scoped
+entries in each existing archive in memory: all twelve matched candidate Git
+source after LF normalization. Raw archive/Git bytes differed because of Windows
+CRLF; raw byte equality is not claimed. No artifact was extracted, installed,
+rewritten or rebuilt. I subsequently adopts E evidence and this sole-board
+update without changing the accepted application or rebuilding it.
+
+The explicit future entry is `python -m oil_agent.runtime.c1_private send-once`
+from the integrated I worktree, supplied only through the protected existing
+configuration and bounded structured stdin. A command name alone does not
+authorize execution. Accepted output retains the actual platform message ID,
+UTC acceptance time and attempt when available; `receipt.api_requests=null`
+means UNKNOWN. The entry does not yet report a measured total HTTP count; do not
+infer one from the attempt or equate ledger reservations with remote receipt.
+Real execution still needs the approved isolated PostgreSQL checks and exact
+bindings, plus its unexpired explicit start. No live execution was attempted.
 
 The retained D session completed a read-only official-document mapping without
 changing its clean `5355446d00e23dc64b1cd133ec191cfa0467bad8` branch. The next
@@ -193,12 +248,15 @@ I owns conditional factory assembly. No fake event, callback or approval is used
 
 - CODE NOT YET IMPLEMENTED: the production factory remains unimplemented before
   formal delivery; it is not a C1 prerequisite. The reproduced C1 coupling and
-  helper preview defects now have integrated owner repairs; acceptance remains
-  limited to the explicitly recorded local checks.
+  helper preview defects and missing foreground execution entry now have
+  integrated owner repairs; acceptance remains limited to the explicitly
+  recorded local checks. A controlled tenant-query intake path remains absent;
+  its additional permission/API scope has not been approved or executed.
 - EXTERNAL CONFIGURATION / AUTHORIZATION MISSING: the latest local schema is
   valid but `app_id`, exact tenant, personal open ID and existing test host are
   not configured. Platform ownership/permissions and entitlement coverage remain
-  unverified; the user has not triggered the 30-minute window.
+  unverified. The direct user start and its fixed expiry are recorded above;
+  missing bindings still prevent execution and no renewal is inferred.
 - IMPLEMENTED, VERIFICATION NOT EXECUTED: C's 11 PostgreSQL storage tests were
   collected only, without an approved injected database. No database was started
   and no SQLite result substitutes for PostgreSQL transactions/concurrency.
