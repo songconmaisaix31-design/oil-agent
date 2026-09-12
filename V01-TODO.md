@@ -35,10 +35,18 @@ verified both old I/E terminals ended on usage-limit errors, stopped/fenced thei
 dispatches, archived/released I's exhausted terminal through its actual resource
 owner, and stopped E's exhausted supervised terminal. Worktrees, branches,
 commits and I's uncommitted evidence draft remain intact. Two fresh replacement
-workers will resume I and E on those exact separate worktrees and exclusive paths;
+workers now resume I and E on those exact separate worktrees and exclusive paths;
 AB/C/D implementations remain accepted. No project rebuild or feature expansion
 is authorized by this recovery. The previous request for a main integration
 exception is superseded by this explicit new-worker instruction.
+
+Recovery execution is verified, not just input acceptance: fresh I
+`ctx_c95adee1e8f5` / `term_ca3b9e78-e837-4c93-9fc3-09fac513daad` and fresh E
+`ctx_5635456cade8` / `term_9931c47c-89cd-4906-a451-0e3c10cd537f` both have exact
+new-session transcripts with actual tools executing. They retry the original
+I/E Tasks, preserving the original branches/worktrees and role boundaries.
+R-15 capacity interruption is resolved for this execution; final document
+delivery is again in progress, with no change to product authorization gates.
 
 Initial read-only audit: M HEAD `7839b316dad94296857c4b901fe11333a8d24644`; AB
 `f3c835793da03a0b0f1b8fb130c6312db2094d80`; C
@@ -61,10 +69,10 @@ No duplicate worker, terminal, worktree or Run was created.
 | Track | Current task / dispatch | Current state |
 | --- | --- | --- |
 | AB | task_2eacda0db6eb / ctx_a5f1b25a8789 | Delivered 6c517f5; settled and explicitly retained; E unchanged T05 passed |
-| C | task_5614734edbd3 / ctx_96bb71f83ff1 | Delivered 1723886; E unchanged immutable-session regression passed; closing handoff |
+| C | task_5614734edbd3 / ctx_96bb71f83ff1 | Delivered 1723886; E unchanged immutable-session regression passed; settled and retained |
 | D | task_c2c9686439df / ctx_87f9412b8dde | Code delivered at ea2c3abb; settled and explicitly retained |
-| E | task_826e16b53577 / ctx_2437b4eb6866 | Exact 63627ee code accepted independently; final evidence handoff |
-| I | task_642b869e5aaa / ctx_faf7e2afa63d | Code 63627ee passed; final evidence/governance adoption and delivery receipt |
+| E | task_826e16b53577 / ctx_5635456cade8 | Replacement verified executing; 4676827 accepted-code evidence retained; final delivery audit |
+| I | task_642b869e5aaa / ctx_c95adee1e8f5 | Replacement verified executing; accepted 63627ee and original draft retained; final document delivery |
 
 Construction decisions: AB calls C authorization before every provider request,
 including MCP setup/discovery/pagination; no hidden retries. C returns durable
@@ -128,7 +136,6 @@ implementation. No additional workers/worktrees/branches are needed.
 | R-08 | 已有实现待实测 | Authorized real quote sample, external deployment probes and 7/14-day operation | Outside this increment's first chain; preserve prior gates and do not claim production acceptance |
 | R-13 | 代码尚未实现 | Production assembly / I | Deliberately rejected by build_runtime; outside the current trial-first increment. It is missing implementation, not merely missing credentials |
 | R-14 | 已有实现待实测 | Local container final-state verification / C + E + I | Docker Linux named pipe disappeared during I final image refresh; C/I had stopped their own containers, E was interrupted. Preserve resources; remote isolated PostgreSQL CI supplies testing while host recovery remains pending |
-| R-15 | 执行环境受限 | Final document delivery / I | User authorized fresh workers after changing account; exhausted I/E attempts are fenced and context/ownership transfers to replacements on the same worktrees. Final documentation delivery awaits their verified execution and final receipt; this is separate from R-05/R-06 product authorization |
 
 Resolved during this phase: R-09 fixture/identity test migrations (E d4d772a and
 6be21de), R-10 immutable approval on session/API/callback use (C 1723886), R-11
@@ -137,6 +144,8 @@ explicit denial correction (AB 6c517f5), and R-12 Compose safe-default assertion
 failed assertions. E 87a737b adds independent configuration boundaries; D ea2c3abb
 is the final channel/mobile handoff. The earlier failed candidate records below
 remain historical evidence and are superseded by the acceptance at this section's top.
+R-15 execution capacity was resolved by the explicitly authorized replacement I/E
+workers; original stopped attempts and their evidence remain recorded above.
 
 Current construction decisions: rule identity is exactly authorization_ref@version,
 with @ excluded from either component, and the loaded rule must match both model
