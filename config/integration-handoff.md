@@ -1,6 +1,75 @@
 # I integration handoff
 
-## Current C1 tenant lookup assembly
+## Current C1 bounded integration and single build
+
+Code/test/build source: `e98d4a69a2e317b8f573f1c868571dd66fccd1e3` on the retained
+`songconmaisaix31-design/oil-v01-i` branch. The clean baseline was
+`d842b7b43c2f6ed91198a3e3695650db3b2a8cfe`. Ordinary `[skip ci]` merges adopted:
+
+- C binding: `3dd8cb43c19fac00a6d1099baa4a8f28f3d63671` (five owner paths).
+- E fixtures: `8fbea024aabd1ff6ae77c2f2514fee2f53f1662e` (entry tests and evidence).
+- M board: `eeaf925c6169793f867e5f2a0391265f1fb8ac65` (only V01-TODO.md).
+
+Each exact owner remote and already-integrated parent was verified before merge;
+merged C/E file contents match their supplied commits. I made no further code or
+test edits. The existing query-only factory consumes C's shared app permission
+and D's mandatory request hook. C's explicit `tenant-lookup --bind-if-unset` now
+carries a selected result through the captured fixed child boundary and updates
+only an unset tenant binding after the documented checks. The default probe does
+not write. Full sending still needs the complete linked recipient permission and
+the same shared app-window budget; lookup never supplies send authorization.
+
+Actual checks at the code/build source, using existing local dependencies:
+
+| Command | Result |
+| --- | --- |
+| `uv run --offline --locked --no-sync pytest tests/integration/test_c1_entry.py tests/integration/test_bootstrap_factory.py -k 'c1_entry or offline_factory' -q --tb=short` | 65 passed, 13 PostgreSQL cases deliberately deselected, zero skips, 1.08 seconds |
+| `uv run --offline --locked --no-sync pytest tests/unit/runtime/test_c1_tenant_binding.py -q --tb=short` | 19 passed on Windows, zero skips, 0.51 seconds |
+| `uv run --offline --locked --no-sync ruff check src/oil_agent/bootstrap.py src/oil_agent/runtime/c1_execution.py src/oil_agent/runtime/c1_private.py src/oil_agent/runtime/c1_product.py tests/integration/test_c1_entry.py tests/integration/test_bootstrap_factory.py tests/unit/runtime/test_c1_tenant_binding.py` | Passed |
+| `git diff --check` and exact owner-content/ancestry checks | Passed |
+
+There were no failures in this combined selection. One existing Starlette/AnyIO
+BlockingPortal deprecation warning remains. The binding cases use temporary
+synthetic Windows files and mocked ACL verification; they do not verify the real
+protected configuration or its ACL. No unchanged D selection or full suite was
+rerun. C's 21 SQL cases remain collected-only owner evidence, not executed here.
+
+One build, from the exact clean source above:
+
+```text
+uv build --offline --out-dir C:/Users/DW/AppData/Local/Temp/oil-agent-i-ctx-8394797ac280/dist
+```
+
+The previously absent output directory contains newly produced artifacts:
+
+- `C:/Users/DW/AppData/Local/Temp/oil-agent-i-ctx-8394797ac280/dist/oil_agent-0.1.0-py3-none-any.whl` (185696 bytes).
+- `C:/Users/DW/AppData/Local/Temp/oil-agent-i-ctx-8394797ac280/dist/oil_agent-0.1.0.tar.gz` (782516 bytes).
+
+The offline build completed successfully without a build warning; the source
+remained clean and unchanged. No wheel was installed or deployed, and no previous
+artifact was reused. E's later evidence
+`723fbf2da4ee8da99ab8c24e27c57cda053e14c4` was ordinarily merged as
+`c5b52c7b04fcf85b856e907083423caf1f9fe077`; its previously integrated merge parents
+and I glue bytes were verified. Only e2e/runtime-checks.md changed relative to the
+build source. This handoff update also changes documentation only; the final
+delivery SHA is reported separately through Orca, without another build.
+
+E independently accepted the earlier app-owner core/factory selection, not this
+final binding/package combination. E's final bounded review remains pending. The
+binding implementation is now present but awaits real testing and authorization.
+An I/O or final-validation error after an in-place write yields
+`C1_LOOKUP_COMPLETED_BINDING_FAILED`; it does not prove unchanged file bytes or
+crash-atomic replacement. No automatic requery follows that uncertain outcome.
+
+No real protected file was read or written, and no database, container, service,
+source/model/Feishu request or send was executed. Product calls, model tokens and
+new paid cost remain zero; live API totals remain null/UNKNOWN. The earlier phone
+window expired at 2026-09-12T09:13:15.149Z and was not renewed. Actual tenant/person/
+host bindings, tenant-read permission, approved PostgreSQL and a new explicit
+active window remain external prerequisites. PostgreSQL transaction/concurrency,
+phone display, login/callback and production acceptance are not established.
+
+## Historical C1 tenant lookup assembly
 
 Transport candidate `d4414f9a3b24dc104e2f622ee0391f4ac811811a` was independently
 accepted by E. I ordinarily merged C core
