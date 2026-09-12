@@ -2,7 +2,7 @@
 
 ## Current phase: controlled real integration
 
-### Active bounded development: C1 PostgreSQL test adapter
+### Bounded increment: C1 PostgreSQL test adapter
 
 The user's new multi-agent development instruction resumes the existing C/E/I
 sessions on the accepted delivery `f04f64f55cc12e7fea4cfa5d56ee768816bad561`.
@@ -18,11 +18,12 @@ and E's isolated migrated PostgreSQL fixture. E has implemented the adapter;
 | I | After the E commit, integrate only this adapter/evidence and M governance on the existing integration branch. | Check exact source changes and applicable targeted checks; hand the final candidate to E for independent delivery review. |
 | M | Maintain this board and dispatch/acceptance records only. | Retain all sessions; AB/D have no task in this increment. |
 
-The existing Run is `run_64e3991f76b9`. E is executing
+The existing Run is `run_64e3991f76b9`. E completed
 `task_7c47961827c9` / `ctx_6e13f25bb2a2` in `oil-v01-e`; C completed
 `task_505e05b63fc7` / `ctx_a1ab0dd1210a` in `oil-v01-c`. Both original
-terminals were reused and actual task activity was observed. I remains retained
-until the owner commit is ready; no new worker, branch or worktree was created.
+terminals were reused and actual task activity was observed. I integration was
+assigned as `task_f832cecd3377` / `ctx_77ed1ec38dc1` in the retained `oil-v01-i`
+session. No new worker, branch or worktree was created.
 C's read-only handoff confirmed 12 original functions expanding to 21 cases,
 shared function-scoped repository routing, assignable frozen UTC clock and
 independent transactional sessions. E's real migrations already insert the
@@ -41,8 +42,8 @@ Original tests, both existing fixtures, product sources and locks are unchanged.
 One exact E container inspection failed because `dockerDesktopLinuxEngine` is
 absent. No retry or resource mutation followed. This resolves the missing
 adapter implementation only; actual SQL, live C1 database permission and all
-Feishu/phone acceptance remain unexecuted. I integration and E final delivery
-review are the next steps for this exact increment.
+Feishu/phone acceptance remain unexecuted. I owns integration of this exact
+increment; E owns its final delivery review, with settlement in the existing Run.
 
 Do not rerun full synthetic acceptance, change product code or production flags,
 read private credentials, start Docker, restart shared services or clean old
