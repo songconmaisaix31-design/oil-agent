@@ -367,7 +367,7 @@ export interface components {
              * @default dry_run
              * @enum {string}
              */
-            outbound_mode: "dry_run" | "production";
+            outbound_mode: "dry_run" | "trial" | "production";
             /**
              * Phone Enabled
              * @default false
@@ -826,6 +826,8 @@ export interface components {
             counters?: {
                 [key: string]: number;
             };
+            /** @default fixture */
+            data_provenance: components["schemas"]["Provenance"];
             /**
              * Database
              * @enum {string}
@@ -841,9 +843,19 @@ export interface components {
              * Outbound Mode
              * @enum {string}
              */
-            outbound_mode: "dry_run" | "production";
+            outbound_mode: "dry_run" | "trial" | "production";
+            /** Permissions */
+            permissions?: {
+                [key: string]: boolean;
+            };
             /** Phone Enabled */
             phone_enabled: boolean;
+            /**
+             * Production Accepted
+             * @default false
+             * @constant
+             */
+            production_accepted: false;
             /** Reminders Enabled */
             reminders_enabled: boolean;
             /** Sms Enabled */

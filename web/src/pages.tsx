@@ -7,6 +7,7 @@ import {
   Fixture,
   label,
   Panel,
+  RuntimeClassification,
   State,
   time,
   useLoad,
@@ -36,6 +37,7 @@ export function Home() {
         <State resource={status} />
         {status.data && (
           <>
+            <RuntimeClassification status={status.data} />
             <div className="status-grid">
               <div>
                 <small>通知模式</small>

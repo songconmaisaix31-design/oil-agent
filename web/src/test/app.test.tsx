@@ -122,6 +122,73 @@ describe("session and transport boundaries", () => {
   );
 });
 
+describe("runtime classification", () => {
+  it.each([
+    ["fixture", "合成演练数据"],
+    ["trial", "试运行 · 真实来源"],
+    ["production", "生产数据"],
+  ] as const)(
+    "keeps %s data separate from production acceptance and an empty market",
+    async (provenance, text) => {
+      const value: Schema<"RuntimeStatus"> = {
+        ...status,
+        data_provenance: provenance,
+        outbound_mode: provenance === "trial" ? "trial" : "dry_run",
+        production_accepted: false,
+      };
+      mock((req) =>
+        req.url.endsWith("/status")
+          ? respond(value)
+          : respond({ items: [], next_cursor: null, data_cutoff_at: null }),
+      );
+      render(<Home />);
+      expect(
+        await screen.findByText(`数据性质：${text} · 尚未完成生产验收`),
+      ).toBeInTheDocument();
+      expect(await screen.findByText("暂无可见事件")).toBeInTheDocument();
+      if (provenance === "trial")
+        expect(
+          screen.getByText("试运行 · 仅授权测试接收人"),
+        ).toBeInTheDocument();
+    },
+  );
+  it.each([true, false])(
+    "shows permission configuration only for admin=%s without claiming real acceptance",
+    async (admin) => {
+      mock((req) =>
+        req.url.endsWith("/status")
+          ? respond({
+              ...status,
+              permissions: {
+                source_requests: false,
+                real_identity: true,
+                production_accepted: false,
+              },
+            })
+          : respond({ code: "not_implemented" }, 501),
+      );
+      render(<Configuration admin={admin} />);
+      await screen.findByText(/数据性质：合成演练数据/);
+      expect(
+        screen.queryByRole("heading", { name: "授权配置状态" }) !== null,
+      ).toBe(admin);
+      if (admin) {
+        expect(
+          screen.getByText("来源请求").nextElementSibling,
+        ).toHaveTextContent("未就绪");
+        expect(
+          screen.getByText("飞书身份登录").nextElementSibling,
+        ).toHaveTextContent("配置有效");
+        expect(
+          screen.getByText(/配置有效不代表实机验证通过/),
+        ).toBeInTheDocument();
+      } else {
+        expect(screen.queryByText("飞书身份登录")).not.toBeInTheDocument();
+      }
+    },
+  );
+});
+
 describe("business views", () => {
   it("distinguishes empty data from healthy market and keeps dry-run visible", async () => {
     mock((req) =>

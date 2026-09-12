@@ -47,6 +47,28 @@ export const labels: Record<string, string> = {
   retention_exceeded: "历史缺口",
 };
 export const label = (value: string) => labels[value] ?? value;
+const provenanceLabels: Record<Schema<"Provenance">, string> = {
+  fixture: "合成演练数据",
+  trial: "试运行 · 真实来源",
+  production: "生产数据",
+};
+export function RuntimeClassification({
+  status,
+}: {
+  status: Pick<
+    Schema<"RuntimeStatus">,
+    "data_provenance" | "production_accepted"
+  >;
+}) {
+  return (
+    <p className="notice">
+      数据性质：{provenanceLabels[status.data_provenance]} ·
+      {status.production_accepted === false
+        ? " 尚未完成生产验收"
+        : " 验收状态未提供"}
+    </p>
+  );
+}
 export function time(value: string | null | undefined) {
   return value
     ? new Intl.DateTimeFormat("zh-CN", {
@@ -133,9 +155,9 @@ export function Fixture({
   return item.is_fixture ? (
     <span className="badge fixture">演练数据 · {item.fixture_dataset}</span>
   ) : item.provenance === "trial" ? (
-    <span className="badge">试运行 · 真实来源</span>
+    <span className="badge">{provenanceLabels.trial}</span>
   ) : (
-    <span className="badge">生产数据</span>
+    <span className="badge">{provenanceLabels.production}</span>
   );
 }
 export function EventSummary({ event }: { event: Schema<"EventAssessment"> }) {
