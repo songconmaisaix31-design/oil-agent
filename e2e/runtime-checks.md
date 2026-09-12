@@ -1916,3 +1916,71 @@ Docker, test suite, build or dependency installation. Product calls/sends and
 added product cost are zero for these local checks; earlier browser background
 request counts remain UNKNOWN. Source/model/platform/phone/login/callback and
 production acceptance remain unexecuted.
+
+## C1 PostgreSQL adapter: routing verified, SQL not executed
+
+On 2026-09-12, E normally merged accepted I
+`f04f64f55cc12e7fea4cfa5d56ee768816bad561` and M governance
+`0341190eab575e4711fde607762c65257ecb8ec8` from its clean retained branch.
+The pre-edit merge checkpoint is `365007b1a429c4ff10a4ca701b50f15d5d759ca2`.
+The only new harness file is `tests/integration/test_postgres_c1.py`.
+
+Before implementation, an inline `.venv/Scripts/python.exe -B -` probe supplied
+a synthetic E-shaped URL to C's original first C1 case and trapped SQLAlchemy
+engine construction. The original C fixture failed with **1 setup error**,
+`Refusing a database outside C test scope`, pytest **exit 1**, 0.34 seconds;
+engine constructions were **0**. The probe's expected-failure validation exited
+0. C's guard was not changed or bypassed.
+
+The adapter imports the original C module using pytest's existing test-root
+import path, exports its original 12 callable objects, `c1` fixture and postgres
+mark, and binds only this module's `repository` fixture to `e_repository`.
+There are no copied assertions, wrapper test bodies or global fixture overrides.
+The original parametrizations still expand to **21 cases**. E's migration 0001
+already seeds the default BusinessConfig singleton; no extra insert or actors
+fixture is added. The original `c1` captures and freezes E's assignable clock.
+One function-scoped repository/engine is shared with `c1`; its ordinary sessions,
+parallel connections and disposable-schema cleanup remain unchanged. C's
+read-only contract handoff `msg_a2e4ba1e5310`, relayed by M, confirmed these seams.
+
+```text
+uv run --offline --locked --no-sync pytest tests/integration/test_postgres_c1.py --collect-only -q -p no:cacheprovider
+uv run --offline --locked --no-sync ruff check tests/integration/test_postgres_c1.py
+uv run --offline --locked --no-sync ruff format --check tests/integration/test_postgres_c1.py
+```
+
+Final collection: **21 collected**, exit 0, 0.04 seconds; both Ruff checks passed.
+The initial `tests.unit` import failed under the console pytest entry; using
+pytest's existing `unit.storage` namespace resolved that observed import error.
+An inline collection audit compared original and adapted case names/parameters,
+original callable/fixture/mark identity, and effective fixture definitions for
+all 21 cases: **PASS**, exit 0, no engine construction. C still resolves its own
+guarded fixture; E resolves the existing function-scoped migrated fixture and
+never requests `e_actors`. Original C1 source, C fixture and E fixture content
+and AST were unchanged against accepted I; product sources and locks were also
+unchanged.
+
+Focused adapter guard probes used engine-construction traps, not fake SQL
+repositories. With no E URL: **21 skipped**, zero test bodies executed, pytest
+exit 0, 0.03 seconds, each citing E's explicit `NOT EXECUTED` reason. With a
+synthetic C-shaped URL supplied to E: the first case had **1 expected setup
+error**, pytest exit 1, 0.17 seconds, `Refusing database outside the explicit E
+local/CI synthetic scope`. Both probes validated the expected outcomes with
+outer exit 0 and **0 engine constructions**. These are harness checks, not
+passed SQL assertions.
+
+The one authorized resource observation used `docker --host
+npipe:////./pipe/dockerDesktopLinuxEngine inspect --type container` against exact
+previous E container `b3c3a345428590922eb8e628a996dd634cb3333e5f0c86f588eede8fb7101cab`,
+requesting only identity/state/labels/mount/port metadata. It exited **1** because
+the named pipe was missing. No current ownership, running state or database
+binding was proven. No retry, enumeration, start, restart, cleanup or SQL/schema
+operation followed; old E resources were untouched.
+
+Verdict: **ADAPTER IMPLEMENTED; COLLECTION / ROUTING / GUARDS VERIFIED;
+21 POSTGRESQL CASES NOT EXECUTED**. No domain failure was observed because SQL
+test bodies did not run. A confirmed E-owned PostgreSQL scope is still needed
+for those original assertions; this grants no live C1 database permission.
+No private configuration, clipboard/browser, provider/model call, send, new phone
+window, dependency installation, full-suite replay or build was performed.
+Platform, phone, login, callback and production acceptance remain unexecuted.
