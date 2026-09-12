@@ -5,6 +5,37 @@ Feishu recipient, actual phone receipt or deployed server has been accepted.
 
 ## Current phase: independent real-integration v1.1 acceptance
 
+### R16 contextual-guard reproduction on accepted unchanged code
+
+E normally merged accepted I `cd6e8d9d87acbde9b844b4568ab2df72e00bab8d`
+and M `b51b152` at `61194af8c082518c1f6e119b12792eb48858dfab` before adding
+`tests/integration/test_contextual_guards.py`. No application code or existing
+test assertion changed. All new material is explicitly synthetic, using one
+approved test rubric and no model, provider, database or sender.
+
+`uv run --locked pytest tests/integration/test_contextual_guards.py
+tests/integration/test_rules_acceptance.py -q --tb=short
+--junitxml=e2e/runtime-artifacts/contextual-guards-baseline.xml` produced
+**8 failed, 28 passed, 0 skipped, 2.42 seconds** on Windows Python 3.13.13.
+The eight required failures are preserved, without xfail or weakened assertions:
+
+- Attack plus supply interruption followed by unrelated `未造成人员伤亡`, in
+  the same clause and in a separate sentence: `ApprovedRules.match` returns None
+  in both cases; `guarded_status` returns UNKNOWN instead of OCCURRED in both;
+  the actual assessment graph also returns UNKNOWN/routine in both.
+- A qualifying publication at `2026-09-12T23:59:30+08:00` processed at
+  `2026-09-13T00:00:20+08:00` is only 50 seconds old, inside the unchanged
+  approved 60-minute maximum: both rule matching and full assessment reject it.
+
+The positive control and 12 negative controls pass: event denial, impact denial,
+planning, drill, training, procedure, conditional, archive, ambiguous text,
+61-minute-old text, future publication and unknown time quality. All 15 existing
+rule/model acceptance cases also pass unchanged. These results reproduce missing
+contextual correctness, not missing authorization, and are handed to M/AB before
+owner repairs. Independent acceptance of any repair requires a later I candidate.
+Product source/model/Feishu requests, sends, tokens and paid product cost are 0;
+the existing isolated model tests use synthetic HTTP responses only.
+
 ### Final independent code acceptance: PASS for synthetic integration
 
 Accepted code: **`63627eee09bc9fb10e32b68f979f7715db199791`**, including I's
