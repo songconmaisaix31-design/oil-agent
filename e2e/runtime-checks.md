@@ -2055,3 +2055,62 @@ dependency installation, daemon restart, resource recreation, provider/source/
 model/Feishu call, send, new phone window or UI/private-file action occurred.
 The E test database is not approved as the future live C1 database; platform,
 phone, login, callback, deployment and production acceptance remain unexecuted.
+
+## Dedicated C1 database: offline deployment preparation
+
+On 2026-09-12, E continued from pushed SQL evidence
+`87065fea2e5ccfddad918dabf6db4a39df3d51d1` and normally merged exact M governance
+`d38af512d295e6f237936a71d4bee6f4f1a3dd31` at
+`d52790701e5b299fa09cd1f3173bb8b31b9c3637`; no conflict or history replacement
+occurred. The accepted **21 real E PostgreSQL passes were not rerun** and their
+container, volume, database and credentials were not accessed in this task.
+
+The new standalone `deploy/compose.c1-db.yaml` renders only `postgres` under
+project `oil-agent-feishu-trial`, with database/user `oil_c1_trial`, volume
+`oil-agent-feishu-trial_c1-data`, sole internal IPv4 backend network and requested
+loopback `127.0.0.1:55436:5432`. It reuses the accepted pinned PostgreSQL 16 image,
+requires only process-injected `OIL_C1_DB_PASSWORD`, retains fixture/`feishu-c1`
+labels, disables automatic restart and bounds resources/logs. These names are
+proposed resources, not existing or activated identities.
+
+Red/green evidence:
+
+- Before the Compose file existed,
+  `uv run --offline --locked --no-sync pytest tests/integration/test_c1_database_deploy.py::test_standalone_database_has_no_application_or_activation_services -q --tb=short`
+  exited **1** with **one setup error**: the standalone database definition was
+  missing. No daemon was contacted.
+- The first render run had **4 passed, 1 failed** because Compose serialized
+  `mem_limit` as a string. The assertion now compares its numeric value to the
+  same 128 MiB bound; no configuration limit was weakened.
+- Final command:
+  `uv run --offline --locked --no-sync pytest tests/integration/test_c1_database_deploy.py tests/integration/test_controlled_trial_deploy.py::test_trial_rejects_unsafe_resolved_configuration[db-port] tests/integration/test_controlled_trial_deploy.py::test_trial_refuses_invalid_tls_prerequisites[http] -q --tb=short`
+  exited **0**, **7 passed in 0.61 seconds**, none skipped. The five new cases
+  cover actual Compose rendering, exact service/network/port/volume boundaries,
+  fixture labels/resource bounds and refusal of missing/empty process passwords.
+  The two unchanged general-trial cases still reject a database port and HTTP.
+- `uv run --offline --locked --no-sync ruff check tests/integration/test_c1_database_deploy.py`
+  and the corresponding `ruff format --check` both exited **0**.
+- Actual `docker-compose version --short` returned **5.1.4**. Tests invoked its
+  `--env-file deploy/compose.env --file deploy/compose.c1-db.yaml config --format json`
+  with an isolated child environment and synthetic in-memory password. Resolved
+  output was captured; passwords were compared then removed before assertions.
+  No full rendered environment or credential was emitted or stored.
+
+**WINDOWS HOST DATABASE ACCESS IS NOT ESTABLISHED.** The bounded primary-source
+review used Docker's [internal network contract](https://docs.docker.com/reference/cli/docker/network/create/#internal)
+and [Desktop networking limits](https://docs.docker.com/desktop/features/networking/networking-how-tos/#known-limitations).
+Internal mode still permits Docker-host communication; those documents do not
+prove that localhost publication always fails. The old E second-network
+workaround is historical evidence, not a current C1 packet test. No ordinary
+external bridge was added. The exact later finite activation/mapping/read-only
+identity probe and stop-on-failure boundary are recorded in the existing
+`deploy/controlled-trial.md`; rendering does not settle live network behavior.
+
+M instructed E to finish this preparation without waiting for C's owner commit.
+The resource/label contract was handed to M for C; exact committed helper
+integration and its fail-closed runtime mapping checks remain pending owner
+handoff. No C helper, original test/fixture, general trial gate, product source
+or lock was edited. No new resource, image pull, migration, queue initialization,
+recovery, SQL run, private credential access, provider call, send, phone window,
+full suite, build or CI job was performed. Verdict: **OFFLINE COMPOSE PREPARATION
+PASSED; C1 ACTIVATION, HOST ASSEMBLY AND PHONE/PRODUCTION ACCEPTANCE NOT EXECUTED**.

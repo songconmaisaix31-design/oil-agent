@@ -1,0 +1,40 @@
+# Standalone C1 database preparation; never merge with the general trial stack.
+# Rendering is not authorization to create or start these proposed resources.
+name: oil-agent-feishu-trial
+
+services:
+  postgres:
+    image: postgres:16-alpine@sha256:e013e867e712fec275706a6c51c966f0bb0c93cfa8f51000f85a15f9865a28cb
+    environment:
+      POSTGRES_DB: oil_c1_trial
+      POSTGRES_USER: oil_c1_trial
+      POSTGRES_PASSWORD: ${OIL_C1_DB_PASSWORD:?Inject the dedicated C1 database password into this process}
+      TZ: UTC
+    labels:
+      oil-agent.scope: feishu-c1
+      oil-agent.data-provenance: fixture
+      oil-agent.fixture-dataset: feishu-c1
+    command: [postgres, -c, timezone=UTC, -c, max_connections=40, -c, shared_buffers=32MB]
+    ports: ["127.0.0.1:55436:5432"]
+    volumes: [c1-data:/var/lib/postgresql/data]
+    networks: [backend]
+    restart: "no"
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U oil_c1_trial -d oil_c1_trial]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
+    shm_size: 64m
+    mem_limit: 128m
+    cpus: 0.5
+    pids_limit: 64
+    security_opt: [no-new-privileges:true]
+    logging:
+      driver: json-file
+      options: {max-size: 5m, max-file: "2"}
+
+networks:
+  backend: {internal: true, enable_ipv6: false}
+volumes:
+  c1-data: {}
