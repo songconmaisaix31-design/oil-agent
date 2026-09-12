@@ -93,6 +93,56 @@ counts will be reported separately. No real provider login, phone check, deploym
 authorized-source comparison, 7-day or 14-day run was executed. Future unmeasured
 provider billing must be recorded as unknown, not inferred to be zero.
 
+### Candidate 1: C permission construction and committed history
+
+Exact integrated candidate **`26e3391c24afaa5e098f545831610961204a7802`** includes
+C `aa7d638dbbb9041bf3c9465803b6b61bb939e5bd`, governance `86aaadf`, and E preparation
+`4a55ffe95e1a13efb0ccbe4f365306a26b1e3333`. E's clean branch fast-forwarded to this
+exact I SHA before adding only the independent history tests/report below.
+
+**ACCEPTED for its construction scope only**: validated fixture/trial/production
+settings and explicit bounded permission objects; scoped latest committed source
+revision lookup; preserved default factory and local OAuth behavior. The new
+request reservations, operational trial send/session grants, pending/outbox/API
+scope enforcement and actual configured source/model factory are still
+**MISSING_IMPLEMENTATION / not accepted in candidate 1**, as C's handoff explicitly
+states. Missing external inputs are a separate MISSING_AUTHORIZATION gate.
+
+```text
+uv sync --locked
+uv run --locked pytest tests/unit/runtime/test_permissions.py tests/integration/test_postgres_source_history.py tests/integration/test_postgres_oauth.py tests/integration/test_bootstrap_factory.py -q --tb=short --junitxml=e2e/runtime-artifacts/v11-candidate1.xml
+```
+
+Results: locked sync PASS; **26 passed, 0 failed, 0 skipped, 11.55 seconds**, exit 0.
+Breakdown: 10 C configuration checks + 3 new E history checks + 10 E OAuth checks +
+3 I factory checks; 16 tests used actual PostgreSQL. Windows Python 3.13.13,
+PostgreSQL 16.14, exact E loopback 55434 / `oil_e_test`, migrated isolated schemas.
+The existing Starlette/AnyIO warning remains. Ruff check/format and diff-check PASS.
+
+Independent history tests interrupt the actual record or cursor SQL write and
+verify that the new history API still returns the previous committed revision;
+successful retry and a reconstructed Repository return revision 2 with the correct
+checkpoint. Another test puts explicitly synthetic fixture/trial/production-shaped
+records in one schema and checks all cross-provenance and different fixture-dataset
+history reads fail. These records test DTO classification only; their rights refs
+and text explicitly identify synthetic origins, and no source adapter or sender is
+attached. This does **not** prove mixed pending/outbox/API isolation, which remains
+in the next operational acceptance set. Direct provisioning must likewise fail to
+bypass future real identity grants; it is not accepted by these history tests.
+
+Counts: product source requests **0**, model calls/input/output tokens **0**,
+Feishu requests/sends **0**, paid product cost **0**; synthetic OAuth transport
+requests **10**. No image build, full Compose, real identity/phone or deployment
+was executed. Only the exact retained E PostgreSQL container was started after
+ownership/free-port checks; it was then **stopped and retained, exit 0, OOM=false**,
+and the short slot released. Domain implementation is unchanged by E.
+
+The preceding E preparation commit separately passed Linux CI
+[34662932987](https://github.com/songconmaisaix31-design/oil-agent/actions/runs/34662932987)
+on exact `4a55ffe95e1a13efb0ccbe4f365306a26b1e3333`: 195 core tests, 82 integration
+tests, 13 frontend tests, frontend build and both Linux image builds. That earlier
+run is not exact-candidate-1 CI evidence.
+
 ## Verified checkpoint, 2026-09-11 UTC
 
 - Dependencies: reviewed C `41a00ded1f949aee8099b549d5d419f0487dd0f9`,
