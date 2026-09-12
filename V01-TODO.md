@@ -52,9 +52,10 @@ factory/environment seam in `deploy/compose.yaml` and integrated startup notes
 in `docs/runbook.md`. No simultaneous edits to those seams. No production
 factory work, project rebuild, new services purchase or public ingress activation.
 
-New gaps for this increment: R-16 `代码尚未实现` contextual false-negative guard
-repair / AB pending E reproduction; R-17 `代码尚未实现` controlled trial deployment
-preparation / E; R-14 `已有实现待实测` exact E container final state. R-05/R-06
+Current gaps for this increment: R-16 `已有实现待实测` contextual guard repair
+AB `dea13fa` integrated by I at `f8c549b`, pending independent E/complete CI;
+R-17 `代码尚未实现` remaining deployment compatibility/retained-resource repair
+after E `c557665` preparation; R-14 `已有实现待实测` exact E container final state. R-05/R-06
 remain `缺外部授权`; only their corresponding live actions pause. MCP initialize,
 discovery, pagination and every explicit retry count against the approved request
 budget; never silently increase cost or hide degraded monitoring. Real source,
@@ -104,6 +105,29 @@ zero errors/skips. R-14 actual recheck: Docker Linux pipe remains unavailable an
 targeted inspection of the known E container failed for that reason. No daemon
 restart, deletion, resource stop or cross-track container inspection occurred;
 E final container/schema-cleanup state remains unverified.
+
+R-16 owner repair `dea13fa81825f1160ef44187885a98c569375edb` is pushed,
+with four AB-owned paths only. Unchanged E regressions changed from 8 fail/28 pass
+to 36 pass; AB 210 pass, non-PostgreSQL 435 pass/111 deselected, Ruff and package
+build pass. The bounded casualty-only predicate view cannot supply affirmative
+event/impact criteria; source quotations remain unchanged. Approved elapsed age
+replaces calendar-date equality; explicit denial, compound negative objects,
+conditional/procedure/training/archive/future protections remain. It is not a
+general Chinese semantic model or live accuracy acceptance. I integrated at
+`f8c549b6acdd5a53e6552b969d353c965c6d3d97`, with 147 relevant tests passing;
+independent E and full PostgreSQL CI remain pending at this checkpoint.
+
+R-17 E preparation `c557665440ce537017741d84b46396fac77da404` adds opt-in
+trial overlay, loopback TLS proxy, explicit approved IPv4 pins, internal database,
+read-only preflight, guarded future start wrapper and tests. I integrated it at
+`9c5cba6baac9d2ed33a653515334046bae3a8bac` through authorized documentation
+and environment-example seams only. Local preparation checks: 54 pass. Linux
+focused CI 34669072808: 53 pass/1 fail because an older Compose serializer omits
+the explicit false bind field. This is an E implementation compatibility defect,
+not missing external authorization; E repairs it without weakening unsafe-mount
+assertions. E also implements a read-only stopped-resource revalidation path so
+future recovery does not bypass cold-start checks. No network/firewall/container
+activation, public exposure, real source/model/platform call or phone test occurred.
 
 ## Current phase: real integration v1.1 (2026-09-12)
 
