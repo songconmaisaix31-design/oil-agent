@@ -4,6 +4,42 @@ Provider replies and market content in this report are synthetic. Actual local
 file/ACL observations are labeled separately. No source license, production
 account, model, Feishu recipient, phone receipt or deployed server is accepted.
 
+## C1 controlled-entry regression: RED on accepted preparation baseline
+
+On 2026-09-12, E independently reproduced the missing supported execution entry
+against unchanged application baseline
+`41cfed431d8c8ac882d4cee88267cc20299b3c83`. The new
+`tests/integration/test_c1_entry.py` invokes `c1_private.main(["send-once"])`
+with an explicit synthetic active permission and PostgreSQL-shaped URL through
+bounded-input-compatible stdin. Private loading and the child process are test
+doubles; the real private path is disabled and database construction fails the
+test if reached. No actual private file, database or provider is accessed.
+
+The positive regression requires exactly one fixed isolated child invocation:
+`[sys.executable, "-I", "-B", "-m", "oil_agent.runtime.c1_product", "send-once"]`.
+It also preserves the agreed structured input, protected binding injection and
+environment allowlist despite hostile ambient factory/Python settings. The
+baseline returns `INVALID_COMMAND` and invokes the child **zero** times, failing
+`assert len(calls) == 1`. This is an implementation gap, independently of missing
+real authorization. A synthetic child UNKNOWN is not a platform response.
+
+Actual commands at the unchanged baseline:
+
+| Command | Result |
+| --- | --- |
+| `uv run --locked ruff check tests/integration/test_c1_entry.py` | Passed |
+| `uv run --locked ruff format --check tests/integration/test_c1_entry.py` | Passed; one file already formatted |
+| `uv run --locked pytest tests/integration/test_c1_entry.py -q --tb=short --junitxml=e2e/runtime-artifacts/c1-entry-red.xml` | **1 failed**, 4.19 seconds, exit 1; missing supported entry reproduced |
+
+This RED regression preserves the earlier local-preparation acceptance below;
+it does not accept controlled execution. C/I own the entry/runtime repair and
+integration, after which E must verify the exact integrated SHA. Real start
+authorization, PostgreSQL transaction/concurrency behavior, platform acceptance
+and phone receipt remain unexecuted boundaries. This increment reads no private
+configuration and makes no claim about its current state. Source/model/Feishu
+product calls, sends and external cost are all **0**; no old PostgreSQL tests,
+full suite, build, CI, Docker or service startup ran.
+
 ## C1 independent acceptance: LOCAL PREPARATION ONLY
 
 E accepts integrated code **`f86c29e3bc99f9f761ebb32236b2dd37a7800357`** for
