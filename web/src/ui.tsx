@@ -19,6 +19,7 @@ export const labels: Record<string, string> = {
   withdrawn: "已撤回",
   unverified: "未核验",
   dry_run: "演练 · 不外发",
+  trial: "试运行 · 仅授权测试接收人",
   production: "生产模式",
   available: "正常",
   unavailable: "不可用",
@@ -132,8 +133,10 @@ export function Fixture({
   return item.is_fixture ? (
     <span className="badge fixture">演练数据 · {item.fixture_dataset}</span>
   ) : item.provenance === "trial" ? (
-    <span className="badge">试用数据</span>
-  ) : null;
+    <span className="badge">试运行 · 真实来源</span>
+  ) : (
+    <span className="badge">生产数据</span>
+  );
 }
 export function EventSummary({ event }: { event: Schema<"EventAssessment"> }) {
   return (

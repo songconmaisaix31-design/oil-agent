@@ -26,6 +26,9 @@ describe the implemented protocol; all executable acceptance evidence uses mocks
   accounts.feishu.cn authorization page, registered redirect, response_type=code.
 - [User information](https://open.feishu.cn/document/uAjLw4CM/ukTMukTMukTM/reference/authen-v1/user_info/get):
   v1 user_info resolves tenant_key/open_id from the server-only bearer token.
+  Rechecked the official Markdown page during R3: open_id is application scoped,
+  tenant_key identifies the tenant. Local identity keys now include both app and
+  tenant; the helper never aliases an old tenant-only binding.
 
 The official Python SDK HEAD was resolved through git ls-remote as
 `0b9e6e48b74bb4b34462fc67b7e738b27e73e697`. Inspected pinned files:
@@ -47,6 +50,8 @@ No private application credential, actual tenant data or real callback was used.
 
 `oil_agent.channels` exports `DryRunChannel`, `FeishuSettings`, `FeishuRecipient`,
 `FeishuChannel`, `FeishuAckVerifier`, `FeishuIdentityAdapter`.
+R3 also exports `feishu_identity(settings, open_id) -> ExternalIdentity` with
+subject `tenant_key:app_id:open_id`; see [trial procedure](TRIAL.md).
 
 - `DryRunChannel().send(intent, *, context) -> Delivery` requires channel=dry_run.
 - `FeishuChannel(settings, *, recipients, authorize, public_base_url, transport=None)`

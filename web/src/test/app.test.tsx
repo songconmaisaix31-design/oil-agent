@@ -99,6 +99,27 @@ describe("session and transport boundaries", () => {
       "https://example.invalid/source",
     );
   });
+  it.each([
+    "error=access_denied&error_description=PRIVATE",
+    "code=PRIVATE",
+    "state=PRIVATE",
+    "code=first&code=PRIVATE&state=state",
+    "code=code&state=first&state=PRIVATE",
+  ])(
+    "rejects incomplete or ambiguous OAuth returns without API calls: %s",
+    async (query) => {
+      history.replaceState(null, "", `/?${query}`);
+      const fetch = mock(() => respond({ actor }));
+      render(<App />);
+      expect(await screen.findByRole("alert")).toHaveTextContent(
+        "登录未完成或返回信息无效，请重新使用飞书登录。",
+      );
+      expect(location.search).toBe("");
+      expect(fetch).not.toHaveBeenCalled();
+      expect(screen.queryByRole("navigation")).not.toBeInTheDocument();
+      expect(document.body.textContent).not.toContain("PRIVATE");
+    },
+  );
 });
 
 describe("business views", () => {
