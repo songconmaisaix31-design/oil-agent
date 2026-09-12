@@ -87,6 +87,9 @@ class DeliveryRepository:
             )
 
     def create_notifications(self, session, subject, item, *, kind):
+        if subject.kind == "status":
+            self.create_status_grant(session, subject, item)
+            return
         if subject.kind == "exercise":
             self.create_c1_notification(session, subject, item)
             return
@@ -158,15 +161,19 @@ class DeliveryRepository:
 
     def _intent(self, session, subject, item, grant, user, kind):
         exercise = subject.kind == "exercise"
+        status = subject.kind == "status"
+        scoped = exercise or status
         config = (
             None
-            if exercise
+            if scoped
             else BusinessConfig.model_validate(session.get(BusinessConfigRow, 1).payload)
         )
-        channel = "feishu" if exercise else config.notification_channel
+        channel = "feishu" if scoped else config.notification_channel
         live_allowed = (
             bool(self.c1_permission_provider())
             if exercise
+            else bool(self.status_permission_provider())
+            if status
             else (
                 (config.outbound_mode == "production" and self.production_gate())
                 or (self.trial_config_gate(config) and self.trial_item_gate(item, user, kind))
@@ -204,10 +211,10 @@ class DeliveryRepository:
             ),
             channel=channel,
             idempotency_key=key,
-            created_at=item.created_at if exercise else self.clock(),
+            created_at=item.created_at if scoped else self.clock(),
             title=getattr(item, "title", f"Daily report {getattr(item, 'report_date', '')}"),
             body=item.body
-            if exercise
+            if scoped
             else notification_body(
                 item,
                 {
@@ -247,6 +254,8 @@ class DeliveryRepository:
         )
 
     def _live_grant(self, session, intent):
+        if intent.subject_type == "status":
+            return self.status_live_grant(session, intent)
         if intent.subject_type == "exercise":
             return self.c1_live_grant(session, intent)
         grant = session.get(
@@ -312,6 +321,7 @@ class DeliveryRepository:
         provenance=None,
         fixture_dataset=None,
         max_attempts=3,
+        subject_ids=None,
     ):
         scope = self.data_scope()
         if scope is not None:
@@ -321,15 +331,17 @@ class DeliveryRepository:
         now = self.clock()
         with self.sessions.begin() as session:
             query = select(DeliveryRow)
-            if subject_type is not None or provenance is not None:
+            if subject_type is not None or provenance is not None or subject_ids is not None:
                 query = query.join(IntentRow)
+            if subject_ids is not None:
+                query = query.where(IntentRow.subject_id.in_(subject_ids))
             if provenance is not None:
                 query = query.where(
                     IntentRow.payload["provenance"].astext == str(provenance),
                     IntentRow.payload["fixture_dataset"].astext == fixture_dataset,
                 )
             if subject_type is not None:
-                if subject_type not in {"event", "report", "exercise"}:
+                if subject_type not in {"event", "report", "exercise", "status"}:
                     reject(ErrorCode.INVALID_INPUT, "Unknown delivery lane")
                 query = query.join(SubjectRow, SubjectRow.subject_id == IntentRow.subject_id).where(
                     SubjectRow.kind == subject_type
@@ -419,13 +431,14 @@ class DeliveryRepository:
             self.audit(session, "delivery_result", row.delivery_id, details={"state": row.state})
             return self.delivery_dto(row, claim.intent)
 
-    def recover_deliveries(self):
+    def recover_deliveries(self, *, subject_ids=None):
         with self.sessions.begin() as session:
             rows = session.scalars(
                 select(DeliveryRow)
                 .join(IntentRow)
                 .where(
                     DeliveryRow.state == "in_flight",
+                    *([IntentRow.subject_id.in_(subject_ids)] if subject_ids is not None else []),
                     *self.payload_scope(IntentRow.payload),
                     DeliveryRow.lease_until <= self.clock(),
                 )
@@ -447,7 +460,7 @@ class DeliveryRepository:
             intent = NotificationIntent.model_validate(
                 session.get(IntentRow, row.intent_id).payload
             )
-            if intent.subject_type == "exercise":
+            if intent.subject_type in {"exercise", "status"}:
                 reject(ErrorCode.FORBIDDEN, "C1 phone observation is not an authenticated callback")
             user = session.get(UserRow, verified.actor_id)
             if actor is not None:

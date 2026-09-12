@@ -14,6 +14,7 @@ def create_db_engine(settings: Settings) -> Engine:
     c1_pool = (
         {"pool_size": 2, "max_overflow": 0}
         if (settings.data_provenance == "fixture" and settings.fixture_dataset == "feishu-c1")
+        or settings.trial_status_only
         else {}
     )
     return create_engine(
