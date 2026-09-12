@@ -71,13 +71,24 @@ class C1Runtime:
             raise ServiceError(ErrorCode.FORBIDDEN, "C1 lookup operation is not authorized")
         return await self.db(self.repository.reserve_c1_app_request, app, operation)
 
-    async def prepare_c1_exercise(self):
+    async def prepare_c1_exercise(self, message=1):
         """Requires an actual user-start permission; creates no OAuth session."""
         permission = self.current_c1_permission()
         await self.db(
             self.repository.provision_scoped_user, permission, permission.identity.actor_id
         )
-        return await self.db(self.repository.create_c1_exercise, permission)
+        if message == 1:
+            return await self.db(self.repository.create_c1_exercise, permission)
+        return await self.db(self.repository.create_c1_exercise, permission, message)
+
+    async def observe_c1_request(self, reservation_id, phase, *, http_status=None):
+        # Completion may arrive at expiry; recording evidence grants no new request.
+        app = self._c1_constructed_app_permission
+        if app is None or app != self.settings.c1_app_request_permission:
+            raise ServiceError(ErrorCode.FORBIDDEN, "C1 observation scope changed")
+        return await self.db(
+            self.repository.observe_c1_request, app, reservation_id, phase, http_status=http_status
+        )
 
     async def send_c1_once(self):
         """One existing pending intent at most; caller explicitly initiates each attempt."""

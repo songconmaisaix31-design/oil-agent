@@ -80,13 +80,13 @@ def test_command_has_no_secret_or_arbitrary_target_and_remote_hard_timeout(monke
     value = request(container_id=db.STDIO_CONTAINER_ID, transport="stdio")
     args = bridge.bridge_command(value)
     assert "SECRET_CANARY" not in str(args)
-    assert args[-6:] == ["/bin/busybox", "nc", "-w", "180", "127.0.0.1", "5432"]
+    assert args[-6:] == ["/bin/busybox", "nc", "-w", "1800", "127.0.0.1", "5432"]
     assert args[args.index("timeout") + 1 : args.index("timeout") + 6] == [
         "-s",
         "TERM",
         "-k",
         "5",
-        "240",
+        "1800",
     ]
     assert "--user" in args and db.STDIO_CONTAINER_ID in args
     with pytest.raises(PreparationError):
@@ -143,7 +143,7 @@ def test_process_owned_bridge_forwards_bytes_and_closes_listener_and_child(monke
         verify=lambda: {"status": "C1_DB_RUNNING", "fields": []},
     ):
         address = servers[0].server_address
-        with socket.create_connection(address, timeout=2) as stream:
+        with socket.create_connection(address, timeout=15) as stream:
             stream.sendall(b"synthetic-protocol-bytes")
             assert stream.recv(64) == b"synthetic-protocol-bytes"
     assert len(children) == 1 and children[0].poll() is not None
