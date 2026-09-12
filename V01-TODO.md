@@ -59,10 +59,23 @@ Current bounded execution decisions and findings:
 - C's actual dedicated database start created the exact project container,
   volume and internal network. The container is healthy, but the runtime port
   binding is absent and the strict helper returned `C1_DB_EFFECT_UNKNOWN`.
-  No migration or database-connectivity acceptance is claimed. E dispatch
-  `ctx_13fb0d6d365e` owns this reproduced deployment diagnosis; C pauses resource
-  mutation while continuing the runner. Preserve the new data and internal
-  network. Any necessary runtime-helper correction returns to C, integration to I.
+  No migration or database-connectivity acceptance is claimed. E independently
+  reproduced Windows connection refusal and exchanged a PostgreSQL SSL-request
+  byte through fixed Docker exec/BusyBox `nc`; this is protocol feasibility only,
+  without authentication or SQL. E evidence is pushed at
+  `e0ccbeabd3c1b99f6c541a73d40ae9d1ee264145` and its session is retained.
+- The bounded repair is C's explicit fixed-container stdio transport, without
+  changing the original database, volume or internal network. C commit
+  `94542e2d81ccc14b94d7bcabec2d0adfe48fb978` keeps native checks strict by default,
+  adds a process-owned loopback connection with bounded children/deadlines and
+  narrows the C1 SQL pool. I integrates this repair; C then performs authenticated
+  database identity checks and existing migrations, followed by E's independent
+  runtime verification. No new general gateway, service or scheduler is authorized.
+- The earlier C private/closed-card and D card/request-observation increments are
+  integrated at `d27368a37af85be7ab3ec87a1a948dd8c24b9dc8` and independently checked
+  by E. The autonomous runner, durable request recorder and actual stdio runtime
+  still require their corresponding integration and real execution evidence.
+  Platform requests, sends and new exercise windows remain zero at this checkpoint.
 
 ## Previous phase: event business, daily analysis and operating usability
 
