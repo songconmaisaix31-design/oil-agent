@@ -9,6 +9,8 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, SecretStr, ValidationError, model_validator
 
+from oil_agent.contracts.dto import UtcDatetime
+
 FIELD_NAMES = ("app_id", "app_secret", "tenant_key", "recipient_open_id", "host_binding")
 ENV_FIELDS = {name: "OIL_C1_" + name.upper() for name in FIELD_NAMES}
 Identifier = Annotated[str, Field(min_length=1, max_length=160, pattern=r"^[A-Za-z0-9_-]+$")]
@@ -42,11 +44,30 @@ class C1Bindings(BaseModel):
         return self
 
 
+class C1LocalStart(BaseModel):
+    """One actual local user action, retained across retries; never made by prepare."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True, hide_input_in_errors=True)
+    start_id: str = Field(pattern=r"^[a-f0-9]{32}$")
+    started_at: UtcDatetime
+
+
 class C1Preparation(C1Bindings):
     schema_version: Literal[1] = 1
     display_name: Literal["油品预警助手（测试）"] = "油品预警助手（测试）"
     alias: Literal["oil-agent-feishu-trial"] = "oil-agent-feishu-trial"
     application_state: Literal["NOT_CREATED", "CREATED"] = "NOT_CREATED"
+    database_password: SecretStr | None = Field(default=None, repr=False)
+    database_container_id: str | None = Field(default=None, pattern=r"^[a-f0-9]{64}$")
+    exercise_start: C1LocalStart | None = None
+
+    @model_validator(mode="after")
+    def bounded_database_password(self):
+        if self.database_password is not None:
+            value = self.database_password.get_secret_value()
+            if not 1 <= len(value) <= 512 or any(ord(char) < 32 for char in value):
+                raise ValueError("database_password")
+        return self
 
     @model_validator(mode="after")
     def not_created_means_blank(self):
