@@ -1,5 +1,73 @@
 # V01 delivery board
 
+## Current phase: real integration v1.1 (2026-09-12)
+
+The user's current conversation is the v1.1 execution authority. The Downloads
+directory contains the original v1.0 plan; no separate v1.1 file was found in the
+scoped filename check. The user explicitly accepts
+`ed1de2e24634e8471e0979cfc168eebec4c12e4c` as the local fixture/dry-run integration
+baseline, never production acceptance. Reuse that implementation and the five
+original worker sessions/worktrees/branches. Do not rebuild or expand features.
+
+Read-only audit: M HEAD `7839b316dad94296857c4b901fe11333a8d24644`; AB
+`f3c835793da03a0b0f1b8fb130c6312db2094d80`; C
+`41a00ded1f949aee8099b549d5d419f0487dd0f9`; D
+`0bbdc217b43aec94e66ead9863a734f7902d20f2`; E
+`06af7997043c03bd06c91e9afab560bcf4432ae5`; I accepted baseline above.
+All six worktrees are clean. Original terminals are live, exact, connected and
+writable; old dispatches are settled and require fresh dispatch authority.
+Run remains `run_64e3991f76b9`. Public origin and directory ownership are unchanged.
+
+### One-page incremental execution and ownership
+
+| Increment / owner | Bounded work | Integration and acceptance |
+| --- | --- | --- |
+| R1 AB | Concrete documented Jin10 MCP flash transport/adapter; concrete documented model client with explicit configuration; approved-rule assessment without per-message manual ClaimReview injection | I merges each verified commit; E checks exact candidate, malformed/duplicate/stale source, untrusted model output and non-urgent silence |
+| R2 C | Explicit fixture/trial/production classification, trial permissions and runtime gates; remove unconditional implementation prohibition through validated configuration, not bypasses | I merges; E tests scope, provenance, source/model budget and send denials |
+| R3 D | Reuse existing Feishu HTTP/OAuth/callback code; address trial-channel and phone/login/ack seams; provide exact safe test procedure | I assembles; E verifies identity/message binding; actual phone evidence only after approved external inputs |
+| R4 I | Assemble R1-R3 incrementally, preserving default fixture/dry-run behavior and all gates | E accepts each integrated increment; failures return to original owner |
+
+M owns only AGENTS.md, README.md and this unique TODO. AB/D/E retain their existing
+recursive write paths below. C retains its existing paths EXCEPT the I transfers
+below. I owns `src/oil_agent/bootstrap.py`, `.env.example`,
+`config/integration-handoff.md`, `tests/integration/test_bootstrap_factory.py`,
+the factory seam only in `src/oil_agent/runtime/cli.py`, factory/environment wiring
+only in `deploy/compose.yaml`, and integrated startup notes only in
+`docs/runbook.md`. C owns all other runtime/contracts/storage/API/config changes;
+E owns all other integration tests and deployment/verification files. Shared-file
+changes require a coordinator handoff and sequential ownership, never concurrent
+edits. Owners merge the accepted I baseline and this governance normally before
+implementation. No additional workers/worktrees/branches are needed.
+
+### Current gaps (one authoritative list)
+
+| ID | Classification | Gap / owner | Evidence and next gate |
+| --- | --- | --- | --- |
+| R-01 | 代码尚未实现 | Concrete news network transport and adapter / AB | Existing bounded reader has injected transport only; implement documented Jin10 endpoint and parser with deterministic network doubles |
+| R-02 | 代码尚未实现 | Concrete model client and approved-rule assessment / AB | ModelClient protocol exists; trusted ClaimReview currently required per record; implement bounded client and configured rules while preserving evidence validation |
+| R-03 | 代码尚未实现 | Trial assembly and classification / C + I | Settings reject external source/model flags unconditionally; bootstrap wires dry-run only; several request paths force fixture |
+| R-04 | 已有实现待实测 | Feishu send/OAuth/signed callback / D + E | Existing implementations and local tests exist; actual tenant login, test-phone receipt and acknowledgement unverified |
+| R-05 | 缺外部授权 | Source/model/provider/rules/budget and project credential injection / user | One minimal external-input request is pending; no unrelated credential search or paid calls |
+| R-06 | 缺外部授权 | Feishu app/tenant, exact test-recipient allowlist, redirect/callback/public URL and test phone / user | No customer-scope expansion; credentials must not enter chat, public Git or logs |
+| R-07 | 已有实现待实测 | Real non-urgent source-to-model-to-storage chain and zero-alert result / AB + C + I + E | Requires R-01/R-02/R-03 and approved inputs; a marked urgent exercise is separate evidence |
+| R-08 | 已有实现待实测 | Authorized real quote sample, external deployment probes and 7/14-day operation | Outside this increment's first chain; preserve prior gates and do not claim production acceptance |
+
+Minimal external inputs were requested once: (1) approved source/interface/license,
+(2) approved model provider/model and this run's budget, (3) alert rules and
+first-report policy, (4) Feishu tenant/app, exact test recipients, registered
+login/message callback URLs and available test phone. Supply only the controlled
+project injection method, never credential values in chat. Missing inputs leave
+live calls pending while implementation and isolated tests continue.
+
+Usage at phase audit: product source requests 0; product model requests/tokens 0;
+Feishu sends 0; paid product cost 0. Documentation/Git/Orca reads are excluded from
+product-call counts. Record actual provider usage and cost evidence when available;
+unknown cost must be reported as unknown, never invented as zero.
+
+The sections below preserve the previous local phase's historical decisions and
+evidence. Their old BLOCKED_EXTERNAL labels and integration timing are superseded
+by the classifications and incremental I/E workflow above.
+
 ## One-page execution plan
 
 Build the independent refined-oil alert workflow described in the user-supplied
