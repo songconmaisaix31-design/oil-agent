@@ -1,5 +1,7 @@
 """Atomic provider request reservations and immutable approval scopes in PostgreSQL."""
 
+from contextlib import nullcontext
+
 from sqlalchemy.orm import object_session
 
 from oil_agent.contracts.services import ErrorCode
@@ -57,13 +59,14 @@ class PermissionRepository:
         request_reserve=0,
         token_reserve=0,
         urgent=True,
+        session=None,
     ):
         if type(reserved_tokens) is not int or not 0 <= reserved_tokens <= 100_000_000:
             reject(ErrorCode.INVALID_INPUT, "Invalid token reservation")
         if kind == "model" and not reserved_tokens:
             reject(ErrorCode.INVALID_INPUT, "Model requests require a positive token reservation")
         today = self.clock().date()
-        with self.sessions.begin() as session:
+        with self.sessions.begin() if session is None else nullcontext(session) as session:
             self.bind_permission(session, permission)
             scope_bucket = "scope:" + fingerprint({"id": permission.approval_id})
             budgets = [

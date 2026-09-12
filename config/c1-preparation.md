@@ -83,3 +83,38 @@ twenty total Feishu API requests (token/identity/send/query/retry included), zer
 new fee, thirty minutes from the actual explicit start. All bindings and that
 start remain missing. Production, OAuth, callbacks, monitoring, reports and
 source/model execution are outside C1 preparation.
+
+## Narrow runtime repair handoff
+
+Internal C1Exercise / NotificationKind.EXERCISE / subject_type="exercise" represent
+only the fixed labeled display exercise. HTTP endpoints and checked OpenAPI are
+unchanged. C1Permission is a supplied actual start in the existing immutable
+PermissionRow ledger, with one exact app/tenant/person/viewer/host, first message
+one, <=3 send attempts, <=20 HTTP requests, zero new fee and <=30 minutes.
+The private JSON helper cannot create this object or invent its timestamps.
+
+I constructs Settings(c1_display_only=True, c1_permission=approved_start,
+c1_host_binding=approved_host, data_provenance="fixture",
+fixture_dataset="feishu-c1", outbound_mode="trial") and Runtime with only D's
+C1 channel. It must not install identity/ack/source/assessment/report services or
+start a queue/monitor for this path. D uses authorize=runtime.authorize_recipient
+and authorize_request=runtime.authorize_c1_request. Its token and message HTTP
+operations each reserve before the request; all share the same existing approval
+budget, and message resends during token refresh also consume the three-send cap.
+
+Only an explicitly initiated future foreground operation calls
+await runtime.prepare_c1_exercise() then await runtime.send_c1_once(). Preparation
+uses exact approved user provisioning without issuing a session; repeated
+preparation creates one stable exercise/version/grant/intent/delivery per approval.
+Every HTTP reservation rechecks the current user, immutable permission, exact
+stored payload and active fenced attempt in the same short transaction as budget
+reservation. ACCEPTED remains separate from phone observation and ACKED; callbacks
+for exercises are rejected. UNKNOWN and expired in-flight rows never auto-requeue.
+No source evidence, event assessment, first-report rules or OAuth approval is faked.
+
+Focused database regressions: tests/unit/storage/test_c1_storage.py exercises
+atomic rollback, concurrent idempotency, total/send budgets, revocation, expiry,
+host/recipient changes, fencing, UNKNOWN and callback rejection. These require the
+unchanged C PostgreSQL guard and were collected only in this no-Docker turn;
+transaction acceptance remains unverified pending E's focused authorized run.
+Runtime/control-flow and contract checks use synthetic in-memory doubles only.

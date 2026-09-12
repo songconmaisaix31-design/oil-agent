@@ -87,6 +87,9 @@ class DeliveryRepository:
             )
 
     def create_notifications(self, session, subject, item, *, kind):
+        if subject.kind == "exercise":
+            self.create_c1_notification(session, subject, item)
+            return
         config = BusinessConfig.model_validate(session.get(BusinessConfigRow, 1).payload)
         users = session.scalars(
             select(UserRow)
@@ -154,10 +157,20 @@ class DeliveryRepository:
             self._intent(session, subject, item, grant, user, kind)
 
     def _intent(self, session, subject, item, grant, user, kind):
-        config = BusinessConfig.model_validate(session.get(BusinessConfigRow, 1).payload)
-        channel = config.notification_channel
-        live_allowed = (config.outbound_mode == "production" and self.production_gate()) or (
-            self.trial_config_gate(config) and self.trial_item_gate(item, user, kind)
+        exercise = subject.kind == "exercise"
+        config = (
+            None
+            if exercise
+            else BusinessConfig.model_validate(session.get(BusinessConfigRow, 1).payload)
+        )
+        channel = "feishu" if exercise else config.notification_channel
+        live_allowed = (
+            bool(self.c1_permission_provider())
+            if exercise
+            else (
+                (config.outbound_mode == "production" and self.production_gate())
+                or (self.trial_config_gate(config) and self.trial_item_gate(item, user, kind))
+            )
         )
         if channel != "dry_run" and not live_allowed:
             reject(ErrorCode.FORBIDDEN, "Live channel readiness gates are not satisfied")
@@ -191,9 +204,11 @@ class DeliveryRepository:
             ),
             channel=channel,
             idempotency_key=key,
-            created_at=self.clock(),
+            created_at=item.created_at if exercise else self.clock(),
             title=getattr(item, "title", f"Daily report {getattr(item, 'report_date', '')}"),
-            body=notification_body(
+            body=item.body
+            if exercise
+            else notification_body(
                 item,
                 {
                     (ref.record_id, ref.revision): SourceRecord.model_validate(
@@ -232,6 +247,8 @@ class DeliveryRepository:
         )
 
     def _live_grant(self, session, intent):
+        if intent.subject_type == "exercise":
+            return self.c1_live_grant(session, intent)
         grant = session.get(
             AuthorizationRow,
             (intent.subject_id, intent.revision, intent.recipient_scope.recipient_id),
@@ -287,7 +304,14 @@ class DeliveryRepository:
         )
 
     def claim_deliveries(
-        self, *, limit=1, lease_seconds=45, subject_type=None, provenance=None, fixture_dataset=None
+        self,
+        *,
+        limit=1,
+        lease_seconds=45,
+        subject_type=None,
+        provenance=None,
+        fixture_dataset=None,
+        max_attempts=3,
     ):
         scope = self.data_scope()
         if scope is not None:
@@ -305,7 +329,7 @@ class DeliveryRepository:
                     IntentRow.payload["fixture_dataset"].astext == fixture_dataset,
                 )
             if subject_type is not None:
-                if subject_type not in {"event", "report"}:
+                if subject_type not in {"event", "report", "exercise"}:
                     reject(ErrorCode.INVALID_INPUT, "Unknown delivery lane")
                 query = query.join(SubjectRow, SubjectRow.subject_id == IntentRow.subject_id).where(
                     SubjectRow.kind == subject_type
@@ -313,7 +337,7 @@ class DeliveryRepository:
             rows = session.scalars(
                 query.where(
                     DeliveryRow.state.in_(["pending", "failed_retryable"]),
-                    DeliveryRow.attempt < 3,
+                    DeliveryRow.attempt < min(max_attempts, 3),
                     or_(DeliveryRow.next_attempt_at.is_(None), DeliveryRow.next_attempt_at <= now),
                 )
                 .order_by(DeliveryRow.updated_at, DeliveryRow.delivery_id)
@@ -423,6 +447,8 @@ class DeliveryRepository:
             intent = NotificationIntent.model_validate(
                 session.get(IntentRow, row.intent_id).payload
             )
+            if intent.subject_type == "exercise":
+                reject(ErrorCode.FORBIDDEN, "C1 phone observation is not an authenticated callback")
             user = session.get(UserRow, verified.actor_id)
             if actor is not None:
                 self.check_actor(session, actor)
