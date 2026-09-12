@@ -12,6 +12,7 @@ from sqlalchemy.engine import make_url
 
 from oil_agent.contracts.dto import NonEmpty, Provenance, StableId
 from oil_agent.runtime.permissions import (
+    C1Permission,
     IdentityPermission,
     ModelPermission,
     SourcePermission,
@@ -44,6 +45,9 @@ class Settings(BaseSettings):
     source_permissions: tuple[SourcePermission, ...] = ()
     model_permission: ModelPermission | None = None
     identity_permission: IdentityPermission | None = None
+    c1_display_only: bool = False
+    c1_permission: C1Permission | None = None
+    c1_host_binding: StableId | None = None
     trial_send_permission: TrialSendPermission | None = None
     quote_upload_rights_ref: NonEmpty | None = None
     quote_origin_publisher: NonEmpty | None = None
@@ -80,6 +84,25 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def safe_defaults(self):
+        if self.c1_display_only:
+            if (
+                not self.c1_permission
+                or self.c1_host_binding != self.c1_permission.host_binding
+                or self.data_provenance != Provenance.FIXTURE
+                or self.fixture_dataset != "feishu-c1"
+                or self.outbound_mode != "trial"
+                or self.identity_enabled
+                or self.external_sources_enabled
+                or self.model_calls_enabled
+                or self.identity_permission
+                or self.trial_send_permission
+                or self.source_permissions
+                or self.model_permission
+                or self.first_report_policy is not None
+            ):
+                raise ValueError("C1 requires its own exact nonmarket display-only permission")
+        elif self.c1_permission or self.c1_host_binding:
+            raise ValueError("C1 bindings require explicit display-only mode")
         if self.environment == "production" and (
             not self.cookie_secure or not self.public_origin.startswith("https://")
         ):
@@ -113,7 +136,7 @@ class Settings(BaseSettings):
             not self.cookie_secure or not self.public_origin.startswith("https://")
         ):
             raise ValueError("Real identities require HTTPS and Secure cookies")
-        if self.outbound_mode == "trial":
+        if self.outbound_mode == "trial" and not self.c1_display_only:
             permission = self.trial_send_permission
             if not permission or not self.identity_permission or not self.identity_enabled:
                 raise ValueError("Trial sending requires send and identity permissions")

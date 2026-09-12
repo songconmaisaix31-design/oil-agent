@@ -62,6 +62,24 @@ class ProvenancedDTO(DTO):
         return self
 
 
+C1_TITLE = "【油品预警 Agent｜演练消息】"
+C1_BODY = "本条消息用于验证飞书推送与手机显示，\n不代表真实市场事件，不构成采购或交易建议。"
+
+
+class C1Exercise(ProvenancedDTO):
+    """One explicit local exercise version, never a market event or assessment."""
+
+    exercise_id: StableId
+    revision: Literal[1] = 1
+    title: Literal[C1_TITLE] = C1_TITLE
+    body: Literal[C1_BODY] = C1_BODY
+    created_at: UtcDatetime
+    is_fixture: Literal[True] = True
+    provenance: Literal[Provenance.FIXTURE] = Provenance.FIXTURE
+    fixture_dataset: Literal["feishu-c1"] = "feishu-c1"
+    evidence: tuple[()] = ()
+
+
 class GapState(StrEnum):
     NONE = "none"
     PAGINATION_LIMIT = "pagination_limit"
@@ -261,7 +279,7 @@ class ExternalIdentity(DTO):
 
 class RecipientAuthorization(DTO):
     recipient_id: StableId
-    subject_type: Literal["event", "report"]
+    subject_type: Literal["event", "report", "exercise"]
     subject_id: StableId
     revision: Revision
     authorized_at: UtcDatetime
@@ -270,6 +288,7 @@ class RecipientAuthorization(DTO):
 
 
 class NotificationKind(StrEnum):
+    EXERCISE = "exercise"
     FIRST_REPORT = "first_report"
     UPDATE = "update"
     CORRECTION = "correction"
@@ -283,7 +302,7 @@ class NotificationIntent(ProvenancedDTO):
 
     intent_id: StableId
     delivery_id: StableId
-    subject_type: Literal["event", "report"]
+    subject_type: Literal["event", "report", "exercise"]
     subject_id: StableId
     revision: Revision
     kind: NotificationKind
@@ -306,6 +325,18 @@ class NotificationIntent(ProvenancedDTO):
             raise ValueError("Recipient authorization must match the exact object revision")
         if self.is_fixture and self.channel != "dry_run" and not scope.is_test_recipient:
             raise ValueError("Fixtures must use dry_run or an authorized test recipient")
+        if (self.subject_type == "exercise") != (self.kind == NotificationKind.EXERCISE):
+            raise ValueError("Exercise kind requires an explicit exercise subject")
+        if self.subject_type == "exercise" and (
+            self.fixture_dataset != "feishu-c1"
+            or not self.is_fixture
+            or self.revision != 1
+            or self.evidence
+            or not scope.is_test_recipient
+            or self.title != C1_TITLE
+            or self.body != C1_BODY
+        ):
+            raise ValueError("C1 is a fixed nonmarket exercise for one test recipient")
         return self
 
 
