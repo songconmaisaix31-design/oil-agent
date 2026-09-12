@@ -64,6 +64,17 @@ class ProvenancedDTO(DTO):
 
 C1_TITLE = "【油品预警 Agent｜演练消息】"
 C1_BODY = "本条消息用于验证飞书推送与手机显示，\n不代表真实市场事件，不构成采购或交易建议。"
+C1_CONNECTION_TITLE = "【油品预警助手｜连接测试】"
+C1_CONNECTION_BODY = "飞书通知通道已接通。\n本消息由项目程序发送，不代表真实市场事件。"
+C1_AUTOMATIC_TITLE = "【油品预警助手｜自动通知演练】"
+C1_AUTOMATIC_BODY = (
+    "这条消息由程序定时触发，无需用户发送指令。\n当前尚未开启真实行情监控，不构成交易建议。"
+)
+C1_MESSAGE_PAIRS = (
+    (C1_TITLE, C1_BODY),
+    (C1_CONNECTION_TITLE, C1_CONNECTION_BODY),
+    (C1_AUTOMATIC_TITLE, C1_AUTOMATIC_BODY),
+)
 
 
 class C1Exercise(ProvenancedDTO):
@@ -71,13 +82,19 @@ class C1Exercise(ProvenancedDTO):
 
     exercise_id: StableId
     revision: Literal[1] = 1
-    title: Literal[C1_TITLE] = C1_TITLE
-    body: Literal[C1_BODY] = C1_BODY
+    title: Literal[C1_TITLE, C1_CONNECTION_TITLE, C1_AUTOMATIC_TITLE] = C1_TITLE
+    body: Literal[C1_BODY, C1_CONNECTION_BODY, C1_AUTOMATIC_BODY] = C1_BODY
     created_at: UtcDatetime
     is_fixture: Literal[True] = True
     provenance: Literal[Provenance.FIXTURE] = Provenance.FIXTURE
     fixture_dataset: Literal["feishu-c1"] = "feishu-c1"
     evidence: tuple[()] = ()
+
+    @model_validator(mode="after")
+    def fixed_message_pair(self):
+        if (self.title, self.body) not in C1_MESSAGE_PAIRS:
+            raise ValueError("C1 requires one exact approved message pair")
+        return self
 
 
 class GapState(StrEnum):
@@ -333,8 +350,7 @@ class NotificationIntent(ProvenancedDTO):
             or self.revision != 1
             or self.evidence
             or not scope.is_test_recipient
-            or self.title != C1_TITLE
-            or self.body != C1_BODY
+            or (self.title, self.body) not in C1_MESSAGE_PAIRS
         ):
             raise ValueError("C1 is a fixed nonmarket exercise for one test recipient")
         return self

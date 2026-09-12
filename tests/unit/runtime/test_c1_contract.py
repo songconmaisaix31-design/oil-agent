@@ -145,3 +145,43 @@ def test_exercise_intent_rejects_fabricated_market_semantics(change):
 def test_ordinary_trial_still_requires_original_approvals():
     with pytest.raises(ValidationError):
         Settings(outbound_mode="trial", fixture_dataset="feishu-c1")
+
+
+@pytest.mark.parametrize(
+    "title,body",
+    [
+        (C1_TITLE, C1_BODY),
+        (
+            "【油品预警助手｜连接测试】",
+            "飞书通知通道已接通。\n本消息由项目程序发送，不代表真实市场事件。",
+        ),
+        (
+            "【油品预警助手｜自动通知演练】",
+            "这条消息由程序定时触发，无需用户发送指令。\n当前尚未开启真实行情监控，不构成交易建议。",
+        ),
+    ],
+)
+def test_closed_user_approved_pairs_preserve_fixture_scope(title, body):
+    item = C1Exercise(exercise_id="synthetic-task", created_at=NOW, title=title, body=body)
+    intent = NotificationIntent(**(intent_values() | {"title": title, "body": body}))
+    assert (item.title, item.body) == (intent.title, intent.body) == (title, body)
+    assert item.provenance == intent.provenance == "fixture"
+    assert item.fixture_dataset == intent.fixture_dataset == "feishu-c1"
+    for altered in ({"title": title + "!"}, {"body": body + "!"}, {"revision": 2}):
+        with pytest.raises(ValidationError):
+            C1Exercise(**(item.model_dump() | altered))
+        with pytest.raises(ValidationError):
+            NotificationIntent(**(intent.model_dump() | altered))
+
+
+def test_new_titles_cannot_be_mixed_with_another_approved_body():
+    from oil_agent.contracts.dto import C1_MESSAGE_PAIRS
+
+    for title, body in C1_MESSAGE_PAIRS:
+        for _, other in C1_MESSAGE_PAIRS:
+            if body == other:
+                continue
+            with pytest.raises(ValidationError):
+                C1Exercise(exercise_id="synthetic-task", created_at=NOW, title=title, body=other)
+            with pytest.raises(ValidationError):
+                NotificationIntent(**(intent_values() | {"title": title, "body": other}))
