@@ -6,6 +6,7 @@ import re
 import time
 from collections.abc import Awaitable, Callable, Mapping
 from dataclasses import dataclass
+from typing import Literal
 from uuid import NAMESPACE_URL, uuid5
 
 import httpx
@@ -59,13 +60,22 @@ class FeishuChannel:
         *,
         recipients: Mapping[str, FeishuRecipient],
         authorize: Callable[[RecipientAuthorization], Awaitable[bool]],
-        public_base_url: str,
+        public_base_url: str = "",
+        c1_display_only: bool = False,
+        authorize_request: Callable[[Literal["tenant_token", "message_send"]], Awaitable[str]]
+        | None = None,
         transport: httpx.AsyncBaseTransport | None = None,
     ):
+        if c1_display_only and not callable(authorize_request):
+            raise ValueError("C1 requires per-request authorization")
+        if c1_display_only and len(recipients) != 1:
+            raise ValueError("C1 requires exactly one configured test recipient")
         self.settings = settings
         self.recipients = dict(recipients)
         self.authorize = authorize
         self.public_base_url = public_base_url
+        self.c1_display_only = c1_display_only
+        self.authorize_request = authorize_request
         self.http = ProviderHTTP(transport)
         self._token: str | None = None
         self._expires = 0.0
@@ -75,6 +85,7 @@ class FeishuChannel:
         async with self._token_lock:
             if self._token and time.monotonic() < self._expires:
                 return self._token
+            await self._reserve_request("tenant_token")
             status, data, _ = await self.http.request(
                 "POST",
                 f"{API}/auth/v3/tenant_access_token/internal",
@@ -97,6 +108,15 @@ class FeishuChannel:
             self._token = token
             self._expires = time.monotonic() + max(0, expire - 60)
             return token
+
+    async def _reserve_request(self, operation: Literal["tenant_token", "message_send"]) -> None:
+        if self.authorize_request is None:
+            if self.c1_display_only:
+                raise ServiceError(ErrorCode.FORBIDDEN, "C1 request authorization is unavailable")
+            return
+        reservation = await self.authorize_request(operation)
+        if not isinstance(reservation, str) or not reservation:
+            raise ServiceError(ErrorCode.FORBIDDEN, "Request authorization was not reserved")
 
     async def send(self, intent: NotificationIntent, *, context: CallContext) -> Delivery:
         preflight(intent, "feishu")
@@ -124,13 +144,19 @@ class FeishuChannel:
                     return receipt(
                         intent, context, DeliveryState.FAILED_FINAL, "authorization_revoked"
                     )
-                kind, content = build_message(intent, public_base_url=self.public_base_url)
+                kind, content = build_message(
+                    intent,
+                    public_base_url=self.public_base_url,
+                    c1_display_only=self.c1_display_only,
+                )
                 token = await self._access_token(context)
                 # Recheck live permission after token/network work and immediately before send.
                 if not await self.authorize(intent.recipient_scope):
                     return receipt(
                         intent, context, DeliveryState.FAILED_FINAL, "authorization_revoked"
                     )
+                # Reservation is before the HTTP effect and before setting UNKNOWN-sensitive state.
+                await self._reserve_request("message_send")
                 seconds = budget(context)
                 sending = True
                 status, data, _ = await self.http.request(

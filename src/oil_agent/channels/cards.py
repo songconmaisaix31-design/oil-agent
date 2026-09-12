@@ -4,8 +4,10 @@ import json
 from urllib.parse import quote
 from zoneinfo import ZoneInfo
 
+from oil_agent.channels.c1 import C1_BODY, C1_DATASET, C1_TITLE, build_c1_card
 from oil_agent.channels.common import https_url
 from oil_agent.contracts.dto import NotificationIntent
+from oil_agent.contracts.services import ErrorCode, ServiceError
 
 LABELS = {
     "first_report": ("事件首报", "red"),
@@ -43,7 +45,13 @@ def notification_text(intent: NotificationIntent) -> str:
     )
 
 
-def build_message(intent: NotificationIntent, *, public_base_url: str) -> tuple[str, str]:
+def build_message(
+    intent: NotificationIntent, *, public_base_url: str = "", c1_display_only: bool = False
+) -> tuple[str, str]:
+    if c1_display_only:
+        return c1_message(intent)
+    if intent.subject_type == "exercise" or intent.kind == "exercise":
+        raise ServiceError(ErrorCode.INVALID_INPUT, "Exercise requires C1 display-only mode")
     base = https_url(public_base_url).rstrip("/")
     route = "events" if intent.subject_type == "event" else "reports"
     link = f"{base}/#/{route}/{quote(intent.subject_id, safe='')}?revision={intent.revision}"
@@ -98,3 +106,22 @@ def build_message(intent: NotificationIntent, *, public_base_url: str) -> tuple[
         )
         return "text", content
     return "interactive", content
+
+
+def c1_message(intent: NotificationIntent) -> tuple[str, str]:
+    """C's explicit exercise intent only; never reinterpret an event as a C1 drill."""
+    if not (
+        intent.is_fixture
+        and intent.provenance == "fixture"
+        and intent.fixture_dataset == C1_DATASET
+        and intent.subject_type == "exercise"
+        and intent.kind == "exercise"
+        and intent.revision == 1
+        and intent.recipient_scope.is_test_recipient
+        and intent.title == C1_TITLE
+        and intent.body == C1_BODY
+        and not intent.evidence
+    ):
+        raise ServiceError(ErrorCode.INVALID_INPUT, "Intent is outside the fixed C1 exercise")
+    card = build_c1_card(test_id=intent.subject_id, created_at=intent.created_at)
+    return "interactive", json.dumps(card, ensure_ascii=False, separators=(",", ":"))
