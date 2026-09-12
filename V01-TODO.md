@@ -38,6 +38,42 @@ budget; never silently increase cost or hide degraded monitoring. Real source,
 model, platform acceptance, phone view and human confirmation require separate
 evidence; synthetic tests cannot replace any of them.
 
+### Single minimum live-integration intake
+
+Reused confirmations: existing stack and code, trial/fixture separation, ordinary
+news silence, exact test-recipient scope, no public activation or purchase, and
+separate real source/model/platform/phone/human evidence. Jin10 priority and the
+OpenAI implementation are candidates, not approved services. No new product
+authorization or secret was supplied. M consolidates I's inspected configuration
+mapping here; this is the only input sheet, not another task board.
+
+| User confirmation still required (nonsecret reference/alias only) | Agent-owned mapping from current code |
+| --- | --- |
+| Source license: provider/API docs, access/storage/redistribution rights, permitted fields/retention/deletion owner, validity, request/page/poll/retry caps | If Jin10 approved: one `OIL_SOURCE_PERMISSIONS` entry, `OIL_EXTERNAL_SOURCES_ENABLED`, `OIL_DAILY_SOURCE_REQUESTS`, explicit `OIL_JIN10_ARGUMENTS_JSON`, cursor parameter/type. Fixed endpoint `https://mcp.jin10.com/mcp`; initialize, initialized notification, each discovery/page and explicit retry consume reservations before transport. Existing factory polling 300 seconds, max_pages 2, max_items 500 need approval, not automatic quota increases. |
+| Model/data-processing approval: provider and exact model, validity, calls/input+output tokens/urgent reserves, currency/amount ceiling and stop owner | If OpenAI approved: `OIL_MODEL_PERMISSION`, `OIL_MODEL_CALLS_ENABLED`, daily model calls/tokens and urgent reserves. Fixed Responses endpoint; persistent reservations retain unknown usage. Currency spending is not enforced by `budget_ref`: require approved provider-side cap or operational control and pricing evidence before paid calls. |
+| Chinese first-report rubric: reviewer, facilities/events/impact, original publishers, timezone/freshness, severity, evidence standard and correction policy | Agent builds `OIL_APPROVED_RULES_JSON`; model/send `rules_ref` exactly equals `authorization_ref@version`. `OIL_FIRST_REPORT_POLICY` stays unset until `credible_single_source` or `independent_only` is approved. Contextual negation and midnight repair is R-16, not a request for per-message annotations. |
+| Feishu scope: tenant/app, one exact test-person mapping and phone/account/device/time window, operation caps, registered HTTPS URLs and bot send permission | Private identity subject `tenant_key:app_id:open_id`, actor/recipient/role map in `OIL_IDENTITY_PERMISSION`; exact subset in `OIL_TRIAL_SEND_PERMISSION`, `allow_reports=false`. `OIL_PUBLIC_ORIGIN`, web-return `OIL_FEISHU_REDIRECT_URI`, callback `/api/v1/callbacks/ack`, Secure cookies. Outbound stays dry_run until approved; fixture exercise requires separate exercise_dataset/exercise_ref and visible labels. Platform receipt, phone view and human acknowledgement remain separate. |
+| Runtime: exact approved host/owner, trial resources, constrained egress/DNS, HTTPS domain/certificate mechanism, private injection path, isolated DB/volume/backup and stop/resume owner | Shared factory, `OIL_DATA_PROVENANCE=trial`, `OIL_FIXTURE_DATASET=null`, internal PostgreSQL URL. E prepares opt-in deployment and I wires approved seams. Existing trial constructors perform no migrations, seeding or provider requests; C provisioning validates exact approved actors separately. No public activation or shared Docker restart is authorized. |
+
+Every permission uses an immutable approval_id, authorization_ref, UTC validity,
+budget_ref and max_requests; changed scope needs a new approval_id. Agent fills
+technical mappings after confirmation. Credential values must never enter chat,
+Git or logs: inject only project-scoped `OIL_JIN10_TOKEN`, `OIL_OPENAI_API_KEY`,
+`OIL_FEISHU_APP_SECRET`, `OIL_FEISHU_ENCRYPT_KEY`,
+`OIL_FEISHU_VERIFICATION_TOKEN`, database credentials and TLS key through the
+approved private mechanism. Public records contain aliases/references only.
+References do not implement automatic retention deletion or monetary billing.
+Actual product source/model/Feishu calls, tokens and paid product cost remain 0;
+development-agent and CI billing are not collected.
+
+First repair evidence: E `b9a241acfe0353ce425a7eef258111d72fcc253d` adds
+`test_contextual_guards.py` before AB modification: 8 failed, 28 passed, zero
+skipped against the accepted application code. Six failures show unrelated
+casualty negation vetoes at rule/guard/assessment boundaries; two show rejection
+after a 50-second midnight crossing inside an approved 60-minute age window.
+Existing denial and other negative assertions remain unchanged. I is authorized
+to integrate this evidence increment; it is deliberately not a passing candidate.
+
 ## Current phase: real integration v1.1 (2026-09-12)
 
 The user's current conversation is the v1.1 execution authority. The Downloads
