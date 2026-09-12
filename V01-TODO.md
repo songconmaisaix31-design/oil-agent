@@ -2,6 +2,64 @@
 
 ## Current phase: controlled real integration
 
+### Active C1: local preparation only, application not created
+
+The user has a Feishu account but has NOT created an enterprise custom app.
+Application state is **not created / not configured**, not an existing
+configuration awaiting disclosure. Newly chosen display name is
+`油品预警助手（测试）`; local alias is `oil-agent-feishu-trial`. These are labels,
+not platform identities. Actual app ID/secret, tenant and recipient remain blank.
+
+C1 covers one approved personal test recipient, platform acceptance and physical
+phone display only. Web login, interactive callback, real news/model and
+production acceptance are excluded. This turn explicitly authorizes local
+preparation, not messages or provider requests. No application creation or
+existing host/identity is inferred from the labels.
+
+C owns reuse/check of the existing project-private mechanism. If none exists,
+the user permits a new no-overwrite blank configuration under the resolved
+`C:\Users\DW\AppData\Local\oil-agent\private\feishu-c1` path, outside Git.
+Check Windows access controls; do not scan other projects or credentials, expose
+file contents, invent identifiers or modify global environment. Reuse structured
+loading; if missing, implement only a project-local helper in C runtime paths
+which parses data without executing it and injects allowlisted fields into the
+one intended process. Missing-field output contains field names and unconfigured
+status only. Blank readiness must say waiting for application creation.
+
+D prepares a local, non-sending preview using the approved Chinese text below,
+with system-generated test number/time and prominent exercise/non-real-market
+label. No login/confirmation buttons or inactive links. Reproduce any C1 blocker
+in the existing channel/runtime path, then return domain fixes to D/C and factory
+glue to I. Preserve exact authorization, durable delivery/deduplication/budgets;
+never add a raw-provider sender which bypasses the product path.
+
+> 【油品预警 Agent｜演练消息】
+> 本条消息用于验证飞书推送与手机显示，
+> 不代表真实市场事件，不构成采购或交易建议。
+> 测试编号和发送时间由系统生成。
+> 本阶段只验证消息到达。
+
+Future execution additionally requires local confirmation of the exact app,
+personal identity and existing test host, then the user's explicit
+`开始手机测试` trigger. Record that start; authorization ends after 30 minutes.
+First send is one message; at most three send attempts and twenty total Feishu
+API requests, including token/identity/send/query/retry, in that one window.
+New paid cost ceiling is zero; unknown coverage stops execution. UNKNOWN sends
+require investigation before any resend. No automatic next window, ongoing
+monitoring, source/model calls, reports, repeat alerts, purchases, public ingress,
+shared Docker restart or unknown-resource cleanup. Phone feedback is not a
+signed callback. Record actual version, aliases, counts, message ID/time and
+phone observation separately; login/interaction receipts remain NOT EXECUTED.
+
+This bounded preparation is owned by C (runtime/private setup), D (channel and
+preview), I (existing explicit assembly seams), and E (independent focused
+verification). C may create only the authorized private directory/files outside
+its normal repository paths; all other exclusive write paths are unchanged.
+AB has no current task. Preserve original long-lived sessions/worktrees. C/D old
+PTYs are positively reported exited by the execution host; resume their original
+provider sessions, preserving all code/history. No general audit or repeated full
+synthetic acceptance is part of C1 preparation.
+
 The user accepts `8af1c001b087c7a37973f2b5e4a8d545ec7d3027` as the code
 baseline for **bounded rule repairs and controlled trial preparation passed**.
 This is not actual deployment, live-service or production acceptance. Final
