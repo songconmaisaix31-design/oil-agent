@@ -15,6 +15,29 @@ The retained replacement I/E terminals are connected and writable. The retained
 AB terminal currently reports disconnected/unwritable with `stop_unverified`;
 recover its existing session through Orca evidence, never assume it exited.
 
+Recovery observation supersedes that initial AB status: exact `worker-show` and
+`worker-read` from the execution host positively reported the old AB PTY exited.
+Scoped session metadata and original Task/Dispatch/commit strings identified its
+existing Codex session `01a091b0-2d36-7212-aa19-9bcdc3a64743`; `codex resume`
+restored that same session in the same worktree, not a replacement conversation.
+Readiness was confirmed before dispatch; the rendered pending task was submitted
+once. Current AB Task `task_b670c01d251a` / `ctx_819451107da2` uses
+`term_1b57de41-ad0c-4d17-9961-9290a940af2e`. E uses `task_bd31802251e0` /
+`ctx_021961ba2ddd` in its retained replacement terminal, I uses
+`task_c01affff8c19` / `ctx_6d12690fe3ab` in its retained replacement terminal.
+C/D have no work this increment; old terminals are disconnected (C reports
+operator_close), and their worktrees/branches/evidence remain preserved.
+
+The first AB resume inherited the old workspace-write/on-request execution
+profile; even read-only commands hung and made no changes. M canceled the exact
+pending read, observed the interrupted turn, fenced/abandoned that dispatch and
+closed only its newly created external PTY (positive ptyKilled receipt). The
+same original session was resumed with the current workspace's explicit
+danger-full-access/never execution profile; no global hooks/configuration were
+changed. Same Task now retries as `ctx_915cc32ffee1` in
+`term_c862b0a8-b6ee-4fe0-84bb-f918f4c133ef`; its exact transcript confirms actual
+tools returned successfully. Original history/worktree/branch remain preserved.
+
 | Owner | This increment only | Completion evidence |
 | --- | --- | --- |
 | E then AB | E first commits minimal failing regressions for unrelated casualty negation and midnight freshness; preserve denial/planning/exercise/archive assertions. AB fixes only intelligence-owned paths after reproduction. | Original failures and unchanged assertions passing on I candidate |
@@ -37,6 +60,50 @@ discovery, pagination and every explicit retry count against the approved reques
 budget; never silently increase cost or hide degraded monitoring. Real source,
 model, platform acceptance, phone view and human confirmation require separate
 evidence; synthetic tests cannot replace any of them.
+
+### Single minimum live-integration intake
+
+Reused confirmations: existing stack and code, trial/fixture separation, ordinary
+news silence, exact test-recipient scope, no public activation or purchase, and
+separate real source/model/platform/phone/human evidence. Jin10 priority and the
+OpenAI implementation are candidates, not approved services. No new product
+authorization or secret was supplied. M consolidates I's inspected configuration
+mapping here; this is the only input sheet, not another task board.
+
+| User confirmation still required (nonsecret reference/alias only) | Agent-owned mapping from current code |
+| --- | --- |
+| Source license: provider/API docs, access/storage/redistribution rights, permitted fields/retention/deletion owner, validity, request/page/poll/retry caps | If Jin10 approved: one `OIL_SOURCE_PERMISSIONS` entry, `OIL_EXTERNAL_SOURCES_ENABLED`, `OIL_DAILY_SOURCE_REQUESTS`, explicit `OIL_JIN10_ARGUMENTS_JSON`, cursor parameter/type. Fixed endpoint `https://mcp.jin10.com/mcp`; initialize, initialized notification, each discovery/page and explicit retry consume reservations before transport. Existing factory polling 300 seconds, max_pages 2, max_items 500 need approval, not automatic quota increases. |
+| Model/data-processing approval: provider and exact model, validity, calls/input+output tokens/urgent reserves, currency/amount ceiling and stop owner | If OpenAI approved: `OIL_MODEL_PERMISSION`, `OIL_MODEL_CALLS_ENABLED`, daily model calls/tokens and urgent reserves. Fixed Responses endpoint; persistent reservations retain unknown usage. Currency spending is not enforced by `budget_ref`: require approved provider-side cap or operational control and pricing evidence before paid calls. |
+| Chinese first-report rubric: reviewer, facilities/events/impact, original publishers, timezone/freshness, severity, evidence standard and correction policy | Agent builds `OIL_APPROVED_RULES_JSON`; model/send `rules_ref` exactly equals `authorization_ref@version`. `OIL_FIRST_REPORT_POLICY` stays unset until `credible_single_source` or `independent_only` is approved. Contextual negation and midnight repair is R-16, not a request for per-message annotations. |
+| Feishu scope: tenant/app, one exact test-person mapping and phone/account/device/time window, operation caps, registered HTTPS URLs and bot send permission | Private identity subject `tenant_key:app_id:open_id`, actor/recipient/role map in `OIL_IDENTITY_PERMISSION`; exact subset in `OIL_TRIAL_SEND_PERMISSION`, `allow_reports=false`. `OIL_PUBLIC_ORIGIN`, web-return `OIL_FEISHU_REDIRECT_URI`, callback `/api/v1/callbacks/ack`, Secure cookies. Outbound stays dry_run until approved; fixture exercise requires separate exercise_dataset/exercise_ref and visible labels. Platform receipt, phone view and human acknowledgement remain separate. |
+| Runtime: exact approved host/owner, trial resources, constrained egress/DNS, HTTPS domain/certificate mechanism, private injection path, isolated DB/volume/backup and stop/resume owner | Shared factory, `OIL_DATA_PROVENANCE=trial`, `OIL_FIXTURE_DATASET=null`, internal PostgreSQL URL. E prepares opt-in deployment and I wires approved seams. Existing trial constructors perform no migrations, seeding or provider requests; C provisioning validates exact approved actors separately. No public activation or shared Docker restart is authorized. |
+
+Every permission uses an immutable approval_id, authorization_ref, UTC validity,
+budget_ref and max_requests; changed scope needs a new approval_id. Agent fills
+technical mappings after confirmation. Credential values must never enter chat,
+Git or logs: inject only project-scoped `OIL_JIN10_TOKEN`, `OIL_OPENAI_API_KEY`,
+`OIL_FEISHU_APP_SECRET`, `OIL_FEISHU_ENCRYPT_KEY`,
+`OIL_FEISHU_VERIFICATION_TOKEN`, database credentials and TLS key through the
+approved private mechanism. Public records contain aliases/references only.
+References do not implement automatic retention deletion or monetary billing.
+Actual product source/model/Feishu calls, tokens and paid product cost remain 0;
+development-agent and CI billing are not collected.
+
+First repair evidence: E `b9a241acfe0353ce425a7eef258111d72fcc253d` adds
+`test_contextual_guards.py` before AB modification: 8 failed, 28 passed, zero
+skipped against the accepted application code. Six failures show unrelated
+casualty negation vetoes at rule/guard/assessment boundaries; two show rejection
+after a 50-second midnight crossing inside an approved 60-minute age window.
+Existing denial and other negative assertions remain unchanged. I is authorized
+to integrate this evidence increment; it is deliberately not a passing candidate.
+
+I BEFORE candidate `0fa7d85c8e235403cb893f566828f4213131c34f` is pushed;
+E independently verified identical application code and unchanged regression
+assertions. CI 34668619029 confirms 343 core pass; integration 163 pass/8 fail,
+zero errors/skips. R-14 actual recheck: Docker Linux pipe remains unavailable and
+targeted inspection of the known E container failed for that reason. No daemon
+restart, deletion, resource stop or cross-track container inspection occurred;
+E final container/schema-cleanup state remains unverified.
 
 ## Current phase: real integration v1.1 (2026-09-12)
 
