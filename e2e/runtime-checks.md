@@ -2114,3 +2114,11 @@ or lock was edited. No new resource, image pull, migration, queue initialization
 recovery, SQL run, private credential access, provider call, send, phone window,
 full suite, build or CI job was performed. Verdict: **OFFLINE COMPOSE PREPARATION
 PASSED; C1 ACTIVATION, HOST ASSEMBLY AND PHONE/PRODUCTION ACCEPTANCE NOT EXECUTED**.
+
+After the initial preparation commit, M relayed C's exact required-password
+placeholder text. E aligned only that interpolation error message to
+`${OIL_C1_DB_PASSWORD:?Explicit C1 database password required}` and reran
+`uv run --offline --locked --no-sync pytest tests/integration/test_c1_database_deploy.py -q --tb=short`:
+**5 passed in 0.30 seconds**, exit **0**. The required-variable gate is unchanged;
+this checks actual rendering after interface alignment, not execution of C's
+still-uncommitted helper.
