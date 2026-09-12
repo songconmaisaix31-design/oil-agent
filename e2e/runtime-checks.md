@@ -4,6 +4,86 @@ Provider replies and market content in this report are synthetic. Actual local
 file/ACL observations are labeled separately. No source license, production
 account, model, Feishu recipient, phone receipt or deployed server is accepted.
 
+## Final C1 binding: bounded local code, tests and package members accepted
+
+On 2026-09-12, E independently accepted the bounded local scope of I delivery
+**`bfe0209f882f2ffb92fcfc4ab1f651e4541a36cd`**, with exact code/test/build source
+**`e98d4a69a2e317b8f573f1c868571dd66fccd1e3`**. E verified its clean retained
+branch at `723fbf2da4ee8da99ab8c24e27c57cda053e14c4` and ordinarily fast-forwarded
+to that delivery. The exact I remote matched. `git merge-base --is-ancestor`
+passed for the retained E checkpoint, source, C mapping
+`3dd8cb43c19fac00a6d1099baa4a8f28f3d63671`, E fixture
+`8fbea024aabd1ff6ae77c2f2514fee2f53f1662e`, I glue
+`d842b7b43c2f6ed91198a3e3695650db3b2a8cfe`, and M board
+`eeaf925c6169793f867e5f2a0391265f1fb8ac65`.
+
+`git diff --name-status` from source to delivery returned only
+`e2e/runtime-checks.md` and `config/integration-handoff.md`; the corresponding
+exclusion diff and `git diff --check` passed. C's five mapping paths match its
+exact commit, the entire E entry test file matches `8fbea024`, and bootstrap
+plus its factory test match `d842b7b`. From the prior E checkpoint, all changes
+are confined to the five C mapping paths, the sole board and I handoff; no
+nonallowlisted source drift or later I code change was found. Original positive
+and negative entry assertions remain intact; E changed no test or domain code.
+
+### Independent commands and results
+
+```powershell
+uv run --offline --locked --no-sync pytest tests/integration/test_c1_entry.py tests/integration/test_bootstrap_factory.py -k 'c1_entry or offline_factory' -q --tb=short
+uv run --offline --locked --no-sync pytest tests/unit/runtime/test_c1_tenant_binding.py -q --tb=short
+```
+
+Actual results: **65 passed, 13 deliberately deselected, 0.91 seconds, exit 0**;
+**19 passed, 0.46 seconds, exit 0**. The first selection retains the existing
+Starlette/AnyIO `BlockingPortal` deprecation warning. The 19 binding cases use
+Windows TEMP synthetic files and **mocked ACL verification**, with real local
+exclusive-handle/file operations; they do not verify the actual private file's
+ACL. No broader suite, dependency sync, build or SQL test was run.
+
+The bounded review and cases confirm strict internal selected-result validation,
+exact app/host/window/config revalidation in the parent, and explicit opt-in
+binding. The Windows handle is exclusive and opens an existing file without
+following a reparse point. A matching existing tenant is a no-op; a different
+nonempty tenant or changed configuration is preserved and rejected. Only an
+unset tenant value is changed, preserving other fields. Ordinary output stays
+redacted, default probe does not write, and local binding failure does not
+automatically query again. The internal selected-result mode rejects a terminal
+stdout. **In-place write failure is not crash-atomic:** the fsync-failure case
+returns binding-failed while proving bytes have already changed; a failure can
+leave changed or unconfirmed bytes and does not establish rollback or a receipt.
+
+### Existing package members, read in memory only
+
+Source paths and exact artifact paths were checked before archive access. I's
+single existing `uv build --offline` output at `e98d4a6` was read from:
+
+- `C:/Users/DW/AppData/Local/Temp/oil-agent-i-ctx-8394797ac280/dist/oil_agent-0.1.0-py3-none-any.whl` (185696 bytes).
+- `C:/Users/DW/AppData/Local/Temp/oil-agent-i-ctx-8394797ac280/dist/oil_agent-0.1.0.tar.gz` (782516 bytes).
+
+An inline Python command through `uv run --offline --no-sync --locked python -`
+used `zipfile`/`tarfile` in-memory member streams, a 262144-byte per-member bound,
+and `git show e98d4a69a2e317b8f573f1c868571dd66fccd1e3:src/oil_agent/<member>`.
+The selected relative members in each archive were `runtime/c1_execution.py`,
+`runtime/c1_private.py`, `runtime/c1_product.py`, `runtime/permissions.py`,
+`runtime/c1.py`, `channels/tenant.py`, `channels/tenant_token.py`, and
+`bootstrap.py`. Result: **16/16 LF-normalized matches, 0/16 raw Git-blob matches,
+exit 0**. Each package member contains Windows CRLF where the Git blob uses LF;
+normalizing CRLF to LF accounts for the complete difference. This is selected
+member source correspondence, not whole-archive byte equality or installed
+runtime evidence. Nothing was extracted to disk, installed, rebuilt or modified.
+
+No domain defect was reproduced in this scope. The 21 C1 SQL cases remain
+**NOT EXECUTED**, and the 13 factory PostgreSQL cases were deliberately unselected;
+the known unavailable-engine observation was not reprobed. Real app/tenant/self/
+host bindings, durable execution scope and approved database are not established
+by these synthetic checks. No actual private config/helper, credentials, API,
+database, container, host or shared resource was accessed. Actual product calls,
+model tokens, sends and added product cost are **0**; live API usage remains
+**unknown/null**. The explicit 2026-09-12 start `08:43:15.149Z` and fixed expiry
+`09:13:15.149Z` remain expired, with no inferred new permission. Acceptance is
+**LOCAL CODE/TEST/SELECTED PACKAGE EVIDENCE ONLY**; platform, phone, login,
+callback, deployment and production acceptance remain unexecuted.
+
 ## C-core and I factory: bounded local checks accepted, binding delta excluded
 
 After M explicitly extended this finite task to I's exact glue candidate,
