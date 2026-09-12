@@ -5,6 +5,7 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 
+from oil_agent.contracts.dto import TimeQuality
 from oil_agent.contracts.services import CallContext, ServiceError
 from oil_agent.ingestion.common import content_hash
 from oil_agent.intelligence import (
@@ -344,3 +345,123 @@ async def test_chinese_conditional_training_procedure_and_uncertainty_never_prom
     assert candidate.severity == "routine" and candidate.assertion_status != "occurred"
     assert suggest_notification(None, candidate, allow_first_report=True) is None
     assert guarded_status(item, "occurred", NOW) != "occurred"
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "今日合成松柏炼油厂已发生火灾，装置全面停运，但未造成人员伤亡。",
+        "今日合成松柏炼油厂已发生火灾，装置全面停运。并未造成人员伤亡。",
+        "没有人员伤亡。今日合成松柏炼油厂已发生火灾，装置全面停运。",
+        "今日合成松柏炼油厂已发生火灾，无人员伤亡，装置全面停运。",
+    ],
+)
+async def test_casualty_qualifier_does_not_negate_other_facts_or_rewrite_evidence(
+    source_record, text
+):
+    from oil_agent.intelligence.assessment import guarded_status
+    from oil_agent.intelligence.evidence import validate_reference
+
+    item = record(source_record, text=text, time_quality=TimeQuality.VALID)
+    snapshot = item.model_dump_json()
+    engine = service(chinese_rules())
+    candidate = (await engine.assess((item,), context=context()))[0]
+    assert candidate.assertion_status == "occurred" and candidate.severity == "urgent"
+    assert candidate.evidence_status == "credible_single_source"
+    assert suggest_notification(None, candidate, allow_first_report=True) is not None
+    assert guarded_status(item, "occurred", NOW) == "occurred"
+    assert validate_reference(candidate.evidence[0], {(item.record_id, item.revision): item})
+    if text.count("。") == 1:
+        assert candidate.evidence[0].excerpt == text  # Keep the negative qualifier verbatim.
+    assert item.model_dump_json() == snapshot and item.occurred_at is None
+    assert not engine.reviews and engine.model is None and engine.budgets["urgent"].calls == 0
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "今日合成松柏炼油厂未发生火灾，装置全面停运，无人员伤亡。",
+        "今日合成松柏炼油厂已发生火灾，装置并未全面停运，无人员伤亡。",
+        "今日合成松柏炼油厂没有已发生火灾，装置全面停运，无人员伤亡。",
+        "今日合成松柏炼油厂已发生火灾，装置没有全面停运，无人员伤亡。",
+        "今日合成松柏炼油厂已发生火灾，未造成人员伤亡及装置全面停运。",
+        "今日合成松柏炼油厂已发生火灾，装置全面停运，未造成人员伤亡的消息失实。",
+        "今日合成松柏炼油厂已发生火灾，装置全面停运。未造成人员伤亡。以上消息失实。",
+        "今日合成松柏炼油厂已发生火灾，装置全面停运。并非未造成人员伤亡。",
+        "如果今日合成松柏炼油厂已发生火灾，装置全面停运，无人员伤亡。",
+        "演练：今日合成松柏炼油厂已发生火灾，装置全面停运，无人员伤亡。",
+        "今日合成松柏炼油厂已发生火灾，装置全面停运。可能未造成人员伤亡。",
+        "今日合成松柏炼油厂已发生火灾，装置全面停运。未造成人员伤亡？",
+        "今日合成松柏炼油厂已发生火灾。另一厂装置全面停运，无人员伤亡。",
+    ],
+)
+async def test_casualty_words_never_exempt_event_impact_or_ambiguous_qualifiers(
+    source_record, text
+):
+    item = record(source_record, text=text)
+    config = chinese_rules()
+    assert config.match(item, NOW) is None
+    candidate = (await service(config).assess((item,), context=context()))[0]
+    assert candidate.severity == "routine"
+    assert suggest_notification(None, candidate, allow_first_report=True) is None
+
+
+def test_casualty_only_record_cannot_be_promoted_to_an_occurred_event(source_record):
+    from oil_agent.intelligence.assessment import guarded_status
+
+    item = record(source_record, text="未造成人员伤亡。")
+    assert guarded_status(item, "occurred", NOW) == "unknown"
+    assert chinese_rules().match(item, NOW) is None
+
+
+def test_negated_casualties_cannot_satisfy_configured_positive_impact(source_record):
+    config = chinese_rules()
+    casualties = rules(
+        rules=(config.rules[0].model_copy(update={"impact_terms": ("人员伤亡",)}),)
+    )
+    item = record(
+        source_record, text="今日合成松柏炼油厂已发生火灾，装置全面停运，未造成人员伤亡。"
+    )
+    assert casualties.match(item, NOW) is None
+
+
+@pytest.mark.parametrize("seconds,expected", [(50, True), (3600, True), (3601, False), (-1, False)])
+def test_midnight_uses_approved_elapsed_age_including_boundary(source_record, seconds, expected):
+    published = datetime.fromisoformat("2026-09-12T23:59:30+08:00").astimezone(UTC)
+    processed = published + timedelta(seconds=seconds)
+    config = chinese_rules().model_copy(
+        update={
+            "valid_from": published - timedelta(hours=1),
+            "expires_at": published + timedelta(hours=2),
+        }
+    )
+    item = record(
+        source_record,
+        text="今日合成松柏炼油厂已发生火灾，装置全面停运。",
+        published_at=published,
+        discovered_at=processed,
+    )
+    assert (config.match(item, processed) is not None) == expected
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        {"occurred_at": NOW - timedelta(minutes=61)},
+        {"occurred_at": NOW + timedelta(seconds=1)},
+        {"time_quality": "unknown"},
+        {"title": "历史报道"},
+        {"title": "Operator denies incident"},
+        {"source_id": "unapproved-source"},
+        {"origin_publisher": "Unapproved publisher"},
+        {"published_at": None},
+        {"discovered_at": NOW + timedelta(seconds=1)},
+    ],
+)
+def test_casualty_context_keeps_time_source_and_title_gates(source_record, change):
+    item = record(
+        source_record,
+        text="今日合成松柏炼油厂已发生火灾，装置全面停运，未造成人员伤亡。",
+        **change,
+    )
+    assert chinese_rules().match(item, NOW) is None
