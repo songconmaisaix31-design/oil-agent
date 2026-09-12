@@ -323,6 +323,28 @@ source/model endpoint, account, phone, deployed server or real rule approval was
 used. Full acceptance remains FAIL, with two new AB policy defects and three
 known sender-test migrations awaiting the C operational candidate.
 
+### Candidate 5: nonblank request reservation guard
+
+Exact I **`54b9c1d735ae6b341b25a445b0e947fdcf661f7e`**, including AB `412aded`, was
+normally merged after the candidate-4 regression commit `d4d772a`. This increment
+requires a nonblank reservation string before source HTTP proceeds. E added seven
+negative variants (None, false, true, number, empty/whitespace string and object)
+and verifies that neither the DNS resolver nor HTTP transport is called.
+
+```text
+uv run --locked pytest tests/unit/ingestion/test_jin10.py tests/integration/test_jin10_acceptance.py -k 'missing_token or invalid_reservation' -q --tb=short --junitxml=e2e/runtime-artifacts/v11-candidate5.xml
+```
+
+**11 passed, 46 explicitly deselected, 0 skipped, 0.20 seconds**, exit 0: four AB
+guard cases and seven new independent E cases. Ruff check/format and diff-check
+PASS. **LIMITED_LOCAL_PASS for this guard only**; no unchanged baseline, PostgreSQL,
+image or browser rerun was needed. E guard cases made zero DNS/HTTP requests;
+product source/model/Feishu calls/tokens and cost remain **0**. The earlier two
+Chinese policy regressions and three sender migrations remain unresolved in this
+candidate, so full acceptance is still FAIL. AB's corrective rule commit and C's
+operational implementation must arrive through exact later I candidates before E
+can change those results.
+
 ## Verified checkpoint, 2026-09-11 UTC
 
 - Dependencies: reviewed C `41a00ded1f949aee8099b549d5d419f0487dd0f9`,
