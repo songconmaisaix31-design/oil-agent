@@ -2815,3 +2815,121 @@ two approved cards to the sole authorized recipient, and provide separately
 platform IDs/timestamps, autonomous second timing, final accounting and the
 user's phone feedback. No real-source/model, SLA, continuous operation or
 production acceptance is claimed. I still integrates this E test/evidence commit.
+
+## One dated morning host launch preparation (not activated)
+
+E dispatch `ctx_b5c291c62027` read the new personal-status phase in the unique
+main board and preserved accepted I `56b49bb4df272d58b4ae3357ede4a5ac09b7dc83`
+by normal fast-forward. This increment prepares only the Windows launch for
+2026-09-13 08:00 Asia/Shanghai, with a 07:58 warmup and 08:15 final expiry.
+It does not expand the existing C1 exercise window or create another scheduler.
+
+### Actual host observations and bounded contract
+
+At `2026-09-12T17:02:24.3939957Z` (01:02:24 local), `Get-TimeZone` returned
+`China Standard Time`, the current identity was `LAPTOP-BS46UHBR\DW` in session
+1, and `Get-Service Schedule` returned Running. The exact root task name
+`OilAgent-StatusMorning-20260913` had **zero matches**; no unrelated task was
+enumerated. Existing project deployment files contained no Windows morning
+launch mechanism. E inspected neither the dedicated database nor any container
+or private configuration during this preparation.
+
+Read-only `powercfg /getactivescheme` and `/query SCHEME_CURRENT SUB_SLEEP`
+for `STANDBYIDLE`, `HIBERNATEIDLE` and `RTCWAKE` showed the Balanced plan,
+**7200-second AC/DC idle sleep** and **disabled AC/DC wake timers**. `/a`
+reported S0 low-power idle and hibernation support. A later direct, read-only
+`GetSystemPowerStatus` call confirmed **AC line status 1, battery 100%**;
+no execution-state request was acquired. Registration alone therefore cannot
+establish that an unattended sleeping machine will run this task.
+
+`w32tm /query /status` reported leap indicator 3, stratum 0 and last successful
+sync at 2026-09-12 20:25:33 local; this flag alone does not prove a wrong clock.
+A narrow independent-clock bracket observed host UTC
+`17:04:56.3548367Z`, clock-tool UTC `17:04:56Z`, then host UTC
+`17:04:57.8721488Z`. These agree at coarse second resolution; E did not measure
+a precision NTP offset or repair global time settings.
+
+E sent these constraints and the fixed entry contract to M in
+`msg_1ed4a60628c0`. M authorized only a process-local idle-sleep request for
+this specific date through 08:15 in `msg_ee895150adce`, requiring activation
+only after final integrated source checks. No power-plan, wake-timer, service,
+network or privilege setting was changed. The user must remain logged on and
+the host must retain mains power, Docker and network availability. Manual
+sleep, lid closure, shutdown or logoff can still prevent execution.
+Microsoft documents [InteractiveToken's logged-on-session requirement](https://learn.microsoft.com/en-us/windows/win32/taskschd/principal-logontype)
+and that [SetThreadExecutionState does not prevent user-requested sleep](https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-setthreadexecutionstate).
+
+### Narrow deployment implementation and executable checks
+
+`deploy/status-morning-task.ps1` uses the existing Windows Task Scheduler COM
+definition with one TIME trigger, no repetition, no catch-up/restart/manual
+Run, IgnoreNew overlap handling, least privilege and the current interactive
+user token. Its only action is the fixed retained I interpreter and cwd:
+
+```text
+C:\Users\DW\orca\workspaces\oil-agent\oil-v01-i\.venv\Scripts\python.exe -I -B -m oil_agent.runtime.status_local morning
+```
+
+The trigger is 07:58+08 with an 08:00 end boundary and a 17-minute OS execution
+limit. C must separately enforce the **absolute** 08:15 expiry and cleanup,
+because an OS duration limit starts at actual process launch. WakeToRun is set
+on this task definition; no global wake setting is changed. The action/XML
+contains no key, recipient identity, permission JSON or credential argument.
+`Render` only constructs an actual in-memory COM definition; `Check` requires
+the exact clean I branch/commit and an available entry before checking the
+single task name. `Register` uses TASK_CREATE, never overwrite or update, and
+reports any uncertain registration/readback as `STATUS_TASK_EFFECT_UNKNOWN`
+without retry or deleting evidence. `VerifyRegistered` reads only the exact
+task and compares its principal, trigger, action and settings.
+
+`deploy/status_morning_awake.py` is an optional finite helper for the accepted
+I interpreter/deployment path, with the verified final I SHA as its sole
+argument. It first requires the exact registered task and mains power, then
+requests only ES_CONTINUOUS|ES_SYSTEM_REQUIRED on its own thread. It does not
+request display/away mode, run a sender, schedule a job or read private state.
+Both the fixed 08:15 wall deadline and a nonextendable monotonic duration bound
+its lifetime. Interruption/mains loss clears the request in `finally`; the
+operational stop is termination of only its recorded process. No helper was
+started and no real power request or exit cleanup is claimed by this increment.
+
+The focused new regression initially failed because the task definition was
+absent: **1 setup error in 0.12 seconds, exit 1**. After implementation:
+
+```text
+uv run --offline --locked --no-sync python -B -m pytest tests/integration/test_status_morning_host.py -q --tb=short -p no:cacheprovider
+```
+
+returned **8 passed in 3.36 seconds, exit 0**. The Windows cases use actual
+in-memory Task Scheduler COM XML, verify the exact fixed action/date/principal
+and restrictive settings, preserve the exact task count through rendering,
+and reject an incorrect candidate for Check/Register before registration.
+Power cases use explicitly synthetic native callbacks and clocks, covering
+deadline, interruption, mains loss and refusal outside this one date; they
+are not actual power-management or wake-from-sleep evidence. Initial scoped
+Ruff line-length/format findings were fixed, and Ruff check/format passed.
+No C1/business suites, database tests, dependency installs or product build ran.
+
+At `2026-09-12T17:09:22.207131Z`, the actual fixed-source prerequisite command:
+
+```powershell
+powershell.exe -NoProfile -NonInteractive -File deploy/status-morning-task.ps1 -Mode Check -ExpectedCommit 56b49bb4df272d58b4ae3357ede4a5ac09b7dc83
+```
+
+returned **STATUS_ENTRY_UNAVAILABLE, exit 2, empty stderr**. This is the real
+current integration limit; a rendered future action is not an available entry.
+One actual isolated invocation using the I interpreter with the E helper path
+returned **STATUS_DEPLOYMENT_PATH_MISMATCH, exit 2, empty stderr**, before any
+task lookup or power request; activation must use the integrated I helper path.
+M's `msg_25ab6ea2733c` confirms I is integrating owners while C's runtime entry
+is still in progress. E has not imported or invoked that unfinished product
+entry, registered a task, launched keep-awake, written a private status scope,
+called a provider or observed a phone notification.
+
+**PASS for bounded deployment preparation; actual integrated status acceptance
+and activation remain pending.** After the final I source is accepted, a separate
+execution assignment must check/register/read back only this task, launch the
+finite helper hidden, verify its actual process/request, and observe the real
+onboarding and morning outcomes. Task acceptance does not prove platform or
+phone receipt, and a late/missed run must remain labeled as such. Product
+due-time/deduplication/UNKNOWN/budget/card behavior belongs to the forthcoming
+exact C/D/I status integration, not these deployment-only tests.
