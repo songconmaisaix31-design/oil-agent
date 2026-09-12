@@ -262,3 +262,80 @@ Only assessment.py and this handoff changed. No Docker or live calls were used.
 The coordinator's reported eight-browser/264-Python integration evidence applies
 to the base above, not this successor. Final I must adopt the copy-only successor
 and rerun integrated CI; that validation was not performed in this AB follow-up.
+
+## Real integration R1: Jin10 source increment
+
+Ordinarily merged accepted local-only I baseline `ed1de2e24634e8471e0979cfc168eebec4c12e4c`,
+governance `57e72ee`, and C dependency/history contract `aa7d638dbbb9041bf3c9465803b6b61bb939e5bd`
+in the original AB branch. No owner files were edited by AB during these adoptions.
+
+Construction (all constructors are network-free):
+
+```python
+from oil_agent.ingestion.http import HttpBounds, PinnedHttpClient
+from oil_agent.ingestion.jin10 import ENDPOINT, Jin10Settings, Jin10Source
+
+http = PinnedHttpClient(HttpBounds(ENDPOINT, ("mcp.jin10.com",), request_limit=approved_limit))
+source = Jin10Source(
+    Jin10Settings(
+        source_id=source_id, rights_ref=rights_ref, authorization_ref=approval_ref,
+        token=project_secret, network_authorized=explicitly_authorized,
+        provenance="trial", arguments_json=reviewed_arguments_json,
+        offset_parameter=reviewed_offset_parameter, offset_type=reviewed_offset_type,
+    ),
+    http=http, authorize_source_request=runtime.authorize_source_request,
+    latest_source_record=runtime.latest_source_record,
+)
+```
+
+`project_secret` is an injected SecretStr, never an environment search or public
+configuration value. Every HTTP POST (initialize, initialized notification, tool
+discovery, tool call) requires C's durable authorization callback. Local request
+limits are secondary lifetime caps, not replacements for durable daily/approval
+budgets. No retries, redirects, provider-selected tools, sampling or resource fetches
+are performed. HTTPS connects to a validated public address using the original
+TLS certificate/SNI name and Host; ambient proxies are disabled. Body, header,
+request, page, item, schema nesting and elapsed-time limits are finite.
+
+MCP negotiates supported Streamable HTTP versions, handles JSON/SSE and session
+headers, discovers `list_flash`, and checks configured arguments against its input
+schema. Only explicitly named discovered fields can be sent. The public guide does
+not document argument names: no default offset/filter/limit argument is invented.
+Initial empty arguments are possible only if the discovered schema accepts them;
+pagination requires a reviewed offset binding. Tool schemas are bounded and use
+Draft202012Validator with an empty Registry; references/patterns/unknown dialects
+are rejected. A changed schema invalidates resume until configuration review.
+
+The adapter retains provider item order and publication offsets, including late
+records; future publications are quarantined. Publication is not occurrence time
+or provider-availability time. Upstream origin is explicitly unverified, with all
+Jin10 items in one publisher group; mirror domains cannot establish independence.
+Content and article instructions are inert evidence. Committed duplicate evidence
+is returned exactly, including discovery time; changed payload/time/URL retains the
+stable record ID with revision+1. Conflicting duplicate items or committed identity/
+rights/provenance changes reject the batch. Only C commits records and checkpoint;
+retry after an uncommitted fetch uses committed history. A completed page walk does
+not claim complete retention or source coverage; that gap remains explicit.
+
+Local verification: `uv run --frozen pytest tests/unit/ingestion -q` passed 79 tests,
+including 37 new synthetic provider/HTTP cases. Scoped Ruff passed; frozen source
+distribution/wheel build passed in the external temporary directory. Tests cover
+initialization, discovery, SSE/JSON, sessions, cursor restart, revision 2 with stable
+ID, exact duplicate retention, stale/future evidence, schema/identity/argument
+failures, private DNS, HTTP/body limits, authorization, timeouts and no hidden retry.
+These are deterministic HTTP doubles, not a licensed Jin10 connection or deployed
+DNS/TLS acceptance. I must wire the callbacks; E independently accepts the exact SHA.
+
+Documentation consulted on 2026-09-12:
+- [Jin10 official guide](https://mcp.jin10.com/app/doc.html): endpoint, Bearer token,
+  tool names and flash response fields, but no input argument or retention contract.
+- [MCP lifecycle](https://modelcontextprotocol.io/specification/2025-11-25/basic/lifecycle),
+  [transport](https://modelcontextprotocol.io/specification/2025-11-25/basic/transports)
+  and [tools](https://modelcontextprotocol.io/specification/2025-11-25/server/tools).
+- [HTTPCore SNI extension](https://www.encode.io/httpcore/extensions/#sni_hostname).
+
+Gap classification: source transport/adapter implemented, awaiting I/E integration
+and authorized real testing; source license/token/argument scope/request budget is
+missing authorization; model client/rules are the next implementation increment.
+Product source/model/platform calls and product cost remain 0. Provider costs for
+future real requests are unknown until actual usage/billing evidence is supplied.
