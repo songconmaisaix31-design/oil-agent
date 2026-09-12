@@ -413,12 +413,12 @@ may have left changed persistent state. Do not retry blindly or infer rollback.
 Compose is not an atomic compare-and-create API: out-of-band Docker changes and
 partial starts require exact independent inspection, not automatic cleanup.
 
-Preparation evidence is bounded unit testing with synthetic subprocess/inspect
+The initial helper delivery used bounded unit testing with synthetic subprocess/inspect
 doubles, including allowed commands, isolated child environments, redaction,
 foreign/changed scopes, missing retained IDs, no-effect checks and preserved
-resources after failure. No real C1 Docker resource, password, database or phone
-window was used. E's Compose integration and actual Windows loopback reachability
-remain separate acceptance gates; internal-only networking must not be silently
+resources after failure. That delivery used no real C1 Docker resource, password,
+database or phone window. Compose integration and actual Windows loopback reachability
+were separate acceptance gates; internal-only networking must not be silently
 expanded to obtain a passing check.
 
 The exact E candidate `1ab32ce5fe774a434d3a63254124723fc77f02bc` was compared
@@ -485,3 +485,15 @@ Windows Docker startup; unrelated connection defaults stay at three seconds.
 Status/stop may use an active bridge only after checking the exact fixed user
 start/resume process as its port owner. No command replaces unknown listeners
 or adopts a different container.
+
+On 2026-09-12, the actual fixed I source
+`fd49c75b6f7c1f254a1ef265175f10287711a3a8` completed `db-prepare` with exit 0 and
+`C1_DB_READY` at 16:18:51 UTC: authenticated dedicated database/user identity,
+application migration head and the existing Procrastinate schema were ready.
+Only `database_container_id` changed in that operation; the retained password
+and other fields were preserved, with protected-path and strict readback checks.
+At 16:20:02 UTC, `db-status` returned `C1_DB_READY` and `status` returned
+`C1_NOT_STARTED`, both exit 0 with no stderr. The loopback listener and container
+`nc`/`timeout` counts were zero after exit. `tenant_key` and `exercise_start`
+remained absent. This is actual dedicated database readiness, without a Feishu
+request, user start, delivery, phone receipt or synthetic test-data relabeling.
