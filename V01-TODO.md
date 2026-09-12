@@ -77,6 +77,30 @@ Current bounded execution decisions and findings:
   still require their corresponding integration and real execution evidence.
   Platform requests, sends and new exercise windows remain zero at this checkpoint.
 
+**Actual local database preparation:** C ran the integrated fixed `c1_local
+db-prepare` at I `fd49c75b6f7c1f254a1ef265175f10287711a3a8`, with the relevant
+owner blobs equal to `2b3b8d54fd9abbeedd7babb9051a8f01d6d0ffbe`. It returned
+`C1_DB_READY`, empty missing fields, exit 0 and no stderr at
+2026-09-12T16:18:51.809322Z. Authenticated database/user identity, existing
+application migrations and real Procrastinate schema readiness passed. Only the
+previously empty protected `database_container_id` was bound to the observed
+resource; other fields and ACLs were preserved, and `exercise_start` stayed absent.
+Earlier actual failures were separately reproduced and repaired: internal-only
+Docker port publication, exact named-volume representation, and local Docker
+startup exceeding the old three-second connect budget. The C1-only connection
+budget is now 15 seconds with a 17-second queue acquisition budget; other defaults
+remain 3/5 seconds. This is C's actual local execution evidence, pending E's
+independent final-runtime check; it is not platform or phone acceptance.
+
+The autonomous C runner/local-control increment is pushed at
+`2b3b8d54fd9abbeedd7babb9051a8f01d6d0ffbe`; I is completing the fixed product-child
+and observer wiring. E's bounded timeout/streaming regression and evidence are
+pushed at `82cadafde1ff2c8191de557d8a4978854b8b5476`. Final queue execution,
+current connection cleanup and selected PostgreSQL concurrency still require
+independent acceptance. Actual external requests remain gated on the user's
+fresh local start. No platform message IDs, phone observations or identity
+interaction receipts exist for this two-message exercise yet.
+
 ## Previous phase: event business, daily analysis and operating usability
 
 **Verified business increment:** I source candidate
