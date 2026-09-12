@@ -15,6 +15,19 @@ The retained replacement I/E terminals are connected and writable. The retained
 AB terminal currently reports disconnected/unwritable with `stop_unverified`;
 recover its existing session through Orca evidence, never assume it exited.
 
+Recovery observation supersedes that initial AB status: exact `worker-show` and
+`worker-read` from the execution host positively reported the old AB PTY exited.
+Scoped session metadata and original Task/Dispatch/commit strings identified its
+existing Codex session `01a091b0-2d36-7212-aa19-9bcdc3a64743`; `codex resume`
+restored that same session in the same worktree, not a replacement conversation.
+Readiness was confirmed before dispatch; the rendered pending task was submitted
+once. Current AB Task `task_b670c01d251a` / `ctx_819451107da2` uses
+`term_1b57de41-ad0c-4d17-9961-9290a940af2e`. E uses `task_bd31802251e0` /
+`ctx_021961ba2ddd` in its retained replacement terminal, I uses
+`task_c01affff8c19` / `ctx_6d12690fe3ab` in its retained replacement terminal.
+C/D have no work this increment; old terminals are disconnected (C reports
+operator_close), and their worktrees/branches/evidence remain preserved.
+
 | Owner | This increment only | Completion evidence |
 | --- | --- | --- |
 | E then AB | E first commits minimal failing regressions for unrelated casualty negation and midnight freshness; preserve denial/planning/exercise/archive assertions. AB fixes only intelligence-owned paths after reproduction. | Original failures and unchanged assertions passing on I candidate |
