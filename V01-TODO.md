@@ -1,6 +1,47 @@
 # V01 delivery board
 
-## Current phase: event business, daily analysis and operating usability
+## Current phase: minimal autonomous Feishu notification exercise
+
+The user now prioritizes actual program execution and two real messages to the
+already confirmed sole personal Feishu recipient. Preserve delivery
+`6f70295768fa3eb98e92cf4cdfd1a6135ab99df8`. Stop new daily-report, event-correlation,
+production-factory, login and callback work; do not rebuild or roll back anything.
+
+After all local preparation succeeds, the user explicitly starts one exercise
+locally. That action opens the new bounded permission window; preparation does
+not start its clock and no expired window may be reused. The product sends the
+connection test immediately, then automatically triggers a different notification
+task after 120 seconds in the same product execution flow, and terminates the
+exercise. The development agent must not wait and issue the second send itself.
+Both cards retain the user's exact approved text and a prominent exercise label,
+with no login/confirmation actions or inactive links. Planned messages: two;
+total send attempts <=3; all Feishu requests <=20; added service fees zero.
+No news/model calls, additional recipients or continuing monitor is authorized.
+UNKNOWN outcomes remain durable and are not blindly retried; resume/retry keeps
+the same task identities and budget rather than opening another exercise.
+
+| Owner | Exclusive bounded work | Required result |
+| --- | --- | --- |
+| C | Existing C1 runtime/private/config/permission/storage modules and corresponding C tests; a minimal product exercise runner if needed. I-owned bootstrap/CLI/fixed-child glue remains with I. | Read existing project config without revealing values, finish the existing dedicated C1 database startup/migrations/connectivity, and supply the thin autonomous two-task flow plus actual local start/status/stop commands. Construct internal permissions from the explicit local start; do not make the user author JSON. |
+| D | Existing `channels/` and focused channel tests/notes only. | Reuse the current Feishu adapter and budget hooks for the two approved cards; preserve exact recipient, distinct task/idempotency identifiers, request accounting and UNKNOWN handling. Report only necessary platform steps and any narrow C/I contract request. |
+| I | Existing integration branch and only necessary fixed C1 entry/bootstrap/CLI assembly. | Merge exact C/D commits; wire the product runner without another sender or scheduler. Preserve all unrelated source and previously accepted work. |
+| E | Existing focused integration tests and runtime evidence; final real-run observation. | Verify only affected gates and actual dedicated-runtime readiness; after the user's local start, record platform IDs/times, autonomous trigger evidence, request/failure counts and separately the user's phone feedback. No full simulated acceptance or broad audit. |
+
+The user explicitly authorizes preparing and actually starting the existing
+dedicated C1 database scheme: project `oil-agent-feishu-trial`, database/user
+`oil_c1_trial`, original Compose/pinned image, internal backend network and sole
+loopback port 55436 on the already confirmed project host. Verify exact ownership
+before operations; preserve existing data, do not use E's synthetic test database
+for live sending, restart shared Docker or clean unknown resources. Reuse the
+protected `LocalAppData/oil-agent/private/feishu-c1` mechanism and completed
+app/person/host binding; output missing field names only, never credential values.
+Agent-side technical mapping and necessary local preparation are authorized;
+actual platform requests and the two sends wait for the user's explicit local
+start. No public web/HTTPS/login/callback or production factory is a prerequisite.
+M governs and dispatches; AB remains retained. Final outcome is actual delivery
+evidence or the precise live blocker, never preview/mock success as phone proof.
+
+## Previous phase: event business, daily analysis and operating usability
 
 **Verified business increment:** I source candidate
 `69a43a8cc9842ed5acbe9f5def7b93034f4049d9` passed E's independent bounded
