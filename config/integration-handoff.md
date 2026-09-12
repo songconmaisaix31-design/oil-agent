@@ -1,5 +1,49 @@
 # I integration handoff
 
+## Active C1 execution-entry continuation
+
+Retained baseline: `41cfed431d8c8ac882d4cee88267cc20299b3c83`. I ordinarily
+merged M `0a38be78b606e62f6de36a17a98a81d1ecbd4ebd`, original E RED
+`2ca3c87577b7b0283e69d475f7822a7623622923`, E's expanded regression
+`618e173cbb5549b55662349cbe9f9b29394e2f9e` and C repair
+`7167c63d61a9501c9a69e4a112d9c4a64e86911b`, preserving all assertions and
+history. Every new commit uses `[skip ci]`; no full acceptance rerun is authorized.
+
+The current configuration status comes only from M's board: the user reports app
+creation and local editing, while C's earlier redacted check found `CREATED`,
+`NOT_CONFIGURED`, missing `app_id`, `tenant_key`, `recipient_open_id` and
+`host_binding`, and `start_trigger=NOT_AUTHORIZED`. I did not access private files,
+run the real helper or repeat that observation in this continuation. Earlier
+NOT_CREATED/waiting receipts below describe their original checkpoints only.
+
+I reproduced the original E regression at
+`7305c9273cb46d81a2df7f1892b60088d4e7309d`: one failure, exit 1;
+`send-once` returned `INVALID_COMMAND` and made zero child calls instead of one.
+After the exact C/E merges, the expanded E entry tests reported 25 passed and
+one failure in `test_product_uses_fixed_factory_and_existing_runtime_order`.
+C's `main(argv=None)` selects preparation instead of E's supplied `sys.argv`, so
+the fixed factory is not reached. Product-denial passes through this preparation
+path do not independently prove active execution guards. I sent the mismatch to
+M for original C/E ownership; no independent assertion or domain code was edited.
+
+I extended only the existing offline factory tests to exercise C's actual fixed
+`build_c1_runtime` wrapper and verify that configured/ambient runtime factory
+overrides are ignored. `uv run --locked pytest tests/integration/test_bootstrap_factory.py
+-k offline_factory -q --tb=short` passed 12, with 13 existing PostgreSQL cases
+intentionally unselected and zero skips; all three original ordinary rules/OAuth/
+callback-key guards remain. C preparation/execution/runtime tests passed 47.
+Scoped Ruff and diff-check passed. The candidate is not yet independently
+accepted; the one package build awaits resolution of the entry regression.
+
+Only a separately supplied bounded, strict execution input can carry the existing
+`C1Permission` and explicit PostgreSQL URL to the fixed isolated product entry.
+No start, permission, identity or database connection is created by this local
+work. Platform acceptance exposes only the declared receipt fields; its
+`api_requests=null` is **UNKNOWN**, not zero or verified accounting. Actual source,
+model, Feishu, database and phone operations are **NOT EXECUTED**; product requests,
+model tokens, sends and paid product cost remain zero. PostgreSQL durability and
+the controlled tenant-query implementation remain separate outstanding gaps.
+
 ## Active C1: local preparation only
 
 The retained I baseline is `3a5591a9fd6f8d76a6a209e4ec9a780496a773ce`.

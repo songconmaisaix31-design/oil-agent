@@ -27,6 +27,7 @@ from oil_agent.contracts.services import ServiceError
 from oil_agent.ingestion import ReplaySource
 from oil_agent.ingestion.http import PinnedHttpClient
 from oil_agent.intelligence.rules import ApprovedRules, PublicationRule
+from oil_agent.runtime.c1_product import build_c1_runtime
 from oil_agent.runtime.cli import load_runtime
 from oil_agent.runtime.permissions import C1Permission, ModelPermission, SourcePermission
 from oil_agent.runtime.settings import Settings
@@ -130,7 +131,8 @@ def offline_c1_factory(monkeypatch):
 
 
 @pytest.mark.parametrize(
-    "factory", [bootstrap.build_runtime, bootstrap.build_trial_runtime, load_runtime]
+    "factory",
+    [bootstrap.build_runtime, bootstrap.build_trial_runtime, load_runtime, build_c1_runtime],
 )
 def test_offline_factory_c1_constructs_only_exact_guarded_display_channel(
     offline_c1_factory, monkeypatch, factory
@@ -165,6 +167,17 @@ def test_offline_factory_c1_constructs_only_exact_guarded_display_channel(
     assert not services.source_poll_seconds
     assert not services.assessment_uses_model and not services.reports_use_model
     engine.dispose.assert_not_called()
+
+
+def test_offline_factory_product_entry_ignores_runtime_override(offline_c1_factory, monkeypatch):
+    settings, _ = offline_c1_factory
+    monkeypatch.setenv("OIL_RUNTIME_FACTORY", "unapproved_module:unapproved_factory")
+    settings = settings.model_copy(
+        update={"runtime_factory": "unapproved_module:unapproved_factory"}
+    )
+    runtime = build_c1_runtime(settings)
+    assert isinstance(runtime.services.channels["feishu"], FeishuChannel)
+    assert runtime.services.channels["feishu"].authorize_request == runtime.authorize_c1_request
 
 
 def test_offline_factory_c1_does_not_fall_back_to_ordinary_app_secret(
