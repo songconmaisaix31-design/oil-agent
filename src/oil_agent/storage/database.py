@@ -11,11 +11,17 @@ SCHEMA_REVISION = "0003_trial"
 def create_db_engine(settings: Settings) -> Engine:
     if settings.database_url is None:
         raise RuntimeError("OIL_DATABASE_URL is required for database operations")
+    c1_pool = (
+        {"pool_size": 2, "max_overflow": 0}
+        if (settings.data_provenance == "fixture" and settings.fixture_dataset == "feishu-c1")
+        else {}
+    )
     return create_engine(
         settings.database_url.get_secret_value(),
         pool_pre_ping=True,
         connect_args={"connect_timeout": 3, "options": "-c timezone=UTC -c statement_timeout=5000"},
         hide_parameters=True,
+        **c1_pool,
     )
 
 
