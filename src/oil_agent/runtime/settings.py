@@ -17,6 +17,8 @@ from oil_agent.runtime.permissions import (
     IdentityPermission,
     ModelPermission,
     SourcePermission,
+    StatusAppPermission,
+    StatusPermission,
     TrialSendPermission,
 )
 
@@ -51,6 +53,10 @@ class Settings(BaseSettings):
     c1_app_request_permission: C1AppRequestPermission | None = None
     c1_permission: C1Permission | None = None
     c1_host_binding: StableId | None = None
+    trial_status_only: bool = False
+    status_app_permission: StatusAppPermission | None = None
+    status_permission: StatusPermission | None = None
+    status_host_binding: StableId | None = None
     trial_send_permission: TrialSendPermission | None = None
     quote_upload_rights_ref: NonEmpty | None = None
     quote_origin_publisher: NonEmpty | None = None
@@ -87,6 +93,35 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def safe_defaults(self):
+        if self.trial_status_only:
+            app = self.status_app_permission
+            if (
+                not app
+                or self.status_host_binding != app.host_binding
+                or self.data_provenance != Provenance.TRIAL
+                or self.fixture_dataset is not None
+                or self.outbound_mode != ("trial" if self.status_permission else "dry_run")
+                or self.c1_display_only
+                or self.c1_tenant_lookup_only
+                or self.c1_app_request_permission
+                or self.c1_permission
+                or self.c1_host_binding
+                or self.identity_enabled
+                or self.identity_permission
+                or self.trial_send_permission
+                or self.external_sources_enabled
+                or self.source_permissions
+                or self.model_calls_enabled
+                or self.model_permission
+                or self.reminders_enabled
+                or self.sms_enabled
+                or self.phone_enabled
+                or self.first_report_policy is not None
+                or (self.status_permission and not self.status_permission.matches_app_request(app))
+            ):
+                raise ValueError("Personal status requires its exact nonmarket app/person scope")
+        elif self.status_app_permission or self.status_permission or self.status_host_binding:
+            raise ValueError("Personal status bindings require the explicit status-only mode")
         if self.c1_display_only or self.c1_tenant_lookup_only:
             app = self.c1_app_request_permission
             if (
@@ -147,7 +182,11 @@ class Settings(BaseSettings):
             not self.cookie_secure or not self.public_origin.startswith("https://")
         ):
             raise ValueError("Real identities require HTTPS and Secure cookies")
-        if self.outbound_mode == "trial" and not self.c1_display_only:
+        if (
+            self.outbound_mode == "trial"
+            and not self.c1_display_only
+            and not self.trial_status_only
+        ):
             permission = self.trial_send_permission
             if not permission or not self.identity_permission or not self.identity_enabled:
                 raise ValueError("Trial sending requires send and identity permissions")

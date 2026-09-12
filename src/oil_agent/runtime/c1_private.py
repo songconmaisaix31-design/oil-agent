@@ -226,7 +226,13 @@ def _replace_blank_tenant(raw, tenant):
 
 
 def _replace_blank_member(raw, field, replacement):
-    if field not in {"tenant_key", "database_password", "database_container_id", "exercise_start"}:
+    if field not in {
+        "tenant_key",
+        "database_password",
+        "database_container_id",
+        "exercise_start",
+        "personal_status_scope",
+    }:
         raise PreparationError("INVALID_CONFIGURATION", ("configuration",))
     text = raw.decode("utf-8")
     decoder = json.JSONDecoder()
@@ -263,9 +269,18 @@ def _replace_blank_member(raw, field, replacement):
 
 
 def bind_local_field(config, field, value):
-    """Null-to-value maintenance of three fixed local fields, never credential reset."""
-    if field not in {"database_password", "database_container_id", "exercise_start"}:
+    """Null-to-value maintenance of fixed local fields, never credential reset."""
+    if field not in {
+        "database_password",
+        "database_container_id",
+        "exercise_start",
+        "personal_status_scope",
+    }:
         raise PreparationError("INVALID_CONFIGURATION", ("configuration",))
+    return _bind_private_field(config, field, value)
+
+
+def _bind_private_field(config, field, value, *, recheck=lambda current: None):
     verify_private_path()
     with _open_private_update() as stream:
         info = os.fstat(stream.fileno())
@@ -288,6 +303,7 @@ def bind_local_field(config, field, value):
         if parsed.model_dump(exclude={field}) != current.model_dump(exclude={field}):
             raise PreparationError("LOCAL_BINDING_CHANGED", (field,))
         verify_private_path()
+        recheck(current)
         try:
             stream.seek(0)
             if stream.write(updated) != len(updated):

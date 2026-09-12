@@ -242,7 +242,16 @@ class C1Repository:
                     )
             return results
 
-    def observe_c1_request(self, app, reservation_id, phase, *, http_status=None):
+    def observe_c1_request(
+        self,
+        app,
+        reservation_id,
+        phase,
+        *,
+        http_status=None,
+        _kind_prefix="c1_",
+        _audit_prefix="c1_request_",
+    ):
         """Sanitized wire observations reuse the existing audit log, not request allowance."""
         if (
             phase not in {"started", "responded", "transport_failure"}
@@ -256,22 +265,26 @@ class C1Repository:
         with self.sessions.begin() as session:
             lock_key(session, "c1-observation:" + reservation_id)
             row = session.get(ProviderCallRow, reservation_id)
-            if not row or row.approval_id != app.approval_id or not row.kind.startswith("c1_"):
+            if (
+                not row
+                or row.approval_id != app.approval_id
+                or not row.kind.startswith(_kind_prefix)
+            ):
                 reject(ErrorCode.FORBIDDEN, "C1 observation has no matching reservation")
             actions = set(
                 session.scalars(select(AuditRow.action).where(AuditRow.object_id == reservation_id))
             )
-            action = "c1_request_" + phase
+            action = _audit_prefix + phase
             if action in actions:
                 return
             if phase != "started" and (
-                "c1_request_started" not in actions
-                or actions & {"c1_request_responded", "c1_request_transport_failure"}
+                _audit_prefix + "started" not in actions
+                or actions & {_audit_prefix + "responded", _audit_prefix + "transport_failure"}
             ):
                 reject(ErrorCode.FORBIDDEN, "C1 request observation is out of order")
             self.audit(session, action, reservation_id, details={"http_status": http_status})
 
-    def c1_request_status(self, app):
+    def c1_request_status(self, app, *, _audit_prefix="c1_request_"):
         with self.sessions() as session:
             ids = set(
                 session.scalars(
@@ -282,7 +295,7 @@ class C1Repository:
             )
             observed = {phase: set() for phase in ("started", "responded", "transport_failure")}
             for row in session.scalars(select(AuditRow).where(AuditRow.object_id.in_(ids))):
-                phase = row.action.removeprefix("c1_request_")
+                phase = row.action.removeprefix(_audit_prefix)
                 if phase in observed:
                     observed[phase].add(row.object_id)
             permission = session.get(PermissionRow, app.approval_id)

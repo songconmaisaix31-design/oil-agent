@@ -14,9 +14,11 @@ from oil_agent.storage.ingestion import IngestionRepository
 from oil_agent.storage.operations import OperationsRepository
 from oil_agent.storage.permissions import PermissionRepository
 from oil_agent.storage.queries import QueryRepository
+from oil_agent.storage.status import StatusRepository
 
 
 class Repository(
+    StatusRepository,
     C1Repository,
     AuthRepository,
     IngestionRepository,

@@ -242,7 +242,7 @@ def prepare_database():
     return database_ready(config, install_queue=True)
 
 
-def existing_bridge_owned():
+def existing_bridge_owned(*, module="c1_local", actions=("start", "resume")):
     """Inspect only this fixed listening port's owner; do not adopt unknown listeners."""
     script = """$ErrorActionPreference='Stop'
 $c=@(Get-NetTCPConnection -LocalAddress 127.0.0.1 -LocalPort 55436 -State Listen)
@@ -265,8 +265,8 @@ $p=Get-CimInstance Win32_Process -Filter ('ProcessId='+$c[0].OwningProcess)
         result.returncode == 0
         and expected in line
         and any(
-            line.strip().endswith("-m oil_agent.runtime.c1_local " + action)
-            for action in ("start", "resume")
+            line.strip().endswith("-m oil_agent.runtime." + module + " " + action)
+            for action in actions
         )
         and "-i" in line
         and "-b" in line

@@ -497,3 +497,40 @@ At 16:20:02 UTC, `db-status` returned `C1_DB_READY` and `status` returned
 `nc`/`timeout` counts were zero after exit. `tenant_key` and `exercise_start`
 remained absent. This is actual dedicated database readiness, without a Feishu
 request, user start, delivery, phone receipt or synthetic test-data relabeling.
+
+## Separately authorized dated personal status
+
+The 2026-09-13 personal status operation uses the user's direct instruction,
+recorded as `origin=user_direct`, rather than the interactive C1 exercise start.
+It sends only the approved closed onboarding/status copy to the existing single
+test person. It neither changes `exercise_start` nor labels fixture market data
+as trial data. Source/model calls, login, callbacks and reminders remain disabled.
+
+After I integration, use the fixed interpreter with
+`-I -B -m oil_agent.runtime.status_local prepare`, then `onboarding`.
+Preparation appends only the null/absent `personal_status_scope` field in the
+existing protected configuration and registers its immutable scope in the
+existing permission ledger; repeated preparation preserves the original scope
+and timestamps. No user-authored permission JSON is needed. Missing tenant data
+is resolved only by the fixed product child using that same scope's request
+budget, with protected null-only binding and no blind lookup retry.
+
+The exact dated morning command is the same interpreter/module with `morning`.
+It may start at 07:58 Asia/Shanghai on 2026-09-13, lets the existing Procrastinate
+`normal` queue schedule the message for 08:00, and exits after the one result or
+the 08:15 expiry. Invocation earlier than the ten-minute warmup is refused;
+late invocation records a missed timestamp without sending. A single explicit
+Windows launch and bounded host availability are deployment concerns owned by E;
+this module installs no scheduler or overnight bridge. Both notifications share
+at most twenty Feishu wire requests and three send attempts, stable purpose IDs,
+the existing outbox and recipient checks. Any unknown outcome stops progression.
+
+`status` reads selected database receipts without a provider query; `stop` blocks
+this retained scope and wakes its finite worker. An already dispatched request
+may complete. Each command uses the existing short-lived dedicated database
+bridge; only status/stop can reuse the verified fixed status entry as port owner.
+The child modes are `status-onboarding` and `status-morning`, delegated by I to
+`execute_status(config, "onboarding" | "morning_status", build_runtime=...)`.
+Only validated `STATUS_ACCEPTED` is execution exit 0; it is platform acceptance,
+not proof of phone visibility. Fault/queue doubles and a package build prove no
+live delivery, real elapsed timing, or PostgreSQL concurrency.

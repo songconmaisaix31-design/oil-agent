@@ -10,6 +10,7 @@ from typing import Annotated, Literal
 from pydantic import BaseModel, ConfigDict, Field, SecretStr, ValidationError, model_validator
 
 from oil_agent.contracts.dto import UtcDatetime
+from oil_agent.runtime.permissions import StatusAppPermission
 
 FIELD_NAMES = ("app_id", "app_secret", "tenant_key", "recipient_open_id", "host_binding")
 ENV_FIELDS = {name: "OIL_C1_" + name.upper() for name in FIELD_NAMES}
@@ -60,6 +61,7 @@ class C1Preparation(C1Bindings):
     database_password: SecretStr | None = Field(default=None, repr=False)
     database_container_id: str | None = Field(default=None, pattern=r"^[a-f0-9]{64}$")
     exercise_start: C1LocalStart | None = None
+    personal_status_scope: StatusAppPermission | None = None
 
     @model_validator(mode="after")
     def bounded_database_password(self):
