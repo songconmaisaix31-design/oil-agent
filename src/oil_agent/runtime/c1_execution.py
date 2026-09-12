@@ -22,6 +22,9 @@ from oil_agent.runtime.settings import Settings
 MAX_EXECUTION_BYTES = 32768
 EXECUTION_EXITS = {
     "C1_TENANT_LOOKUP_COMPLETED": 0,
+    "C1_TENANT_BOUND": 0,
+    "C1_TENANT_ALREADY_BOUND": 0,
+    "C1_LOOKUP_COMPLETED_BINDING_FAILED": 2,
     "C1_ACCEPTED": 0,
     "C1_UNKNOWN": 3,
     "C1_NOT_AUTHORIZED": 2,
@@ -56,6 +59,16 @@ class C1TenantLookupInput(BaseModel):
 
 class C1ExecutionInput(C1TenantLookupInput):
     permission: C1Permission = Field(repr=False)
+
+
+class C1TenantLookupResult(BaseModel):
+    """Internal captured child result only; never forwarded to ordinary output."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True, hide_input_in_errors=True)
+    app_request_permission: C1AppRequestPermission = Field(repr=False)
+    tenant_key: str = Field(
+        repr=False, strict=True, min_length=1, max_length=128, pattern=r"^[A-Za-z0-9_-]+$"
+    )
 
 
 class C1Receipt(BaseModel):

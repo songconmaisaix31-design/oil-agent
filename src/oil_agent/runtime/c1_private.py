@@ -115,13 +115,16 @@ def inject_send_once(config, raw, execution):
     return _inject_execution(config, raw, execution, mode="send-once")
 
 
-def inject_tenant_lookup(config, raw, execution):
-    return _inject_execution(config, raw, execution, mode="tenant-lookup")
+def inject_tenant_lookup(config, raw, execution, *, bind_if_unset=False):
+    return _inject_execution(
+        config, raw, execution, mode="tenant-lookup", bind_if_unset=bind_if_unset
+    )
 
 
-def _inject_execution(config, raw, execution, *, mode):
+def _inject_execution(config, raw, execution, *, mode, bind_if_unset=False):
     """Explicit active start only; malformed/lost child results are UNKNOWN."""
     from oil_agent.runtime.c1_execution import (
+        C1TenantLookupResult,
         checked_outcome,
         execution_settings,
         outcome,
@@ -138,8 +141,13 @@ def _inject_execution(config, raw, execution, *, mode):
     }
     child_env.update(injection_fields(config))
     try:
+        command = [sys.executable, "-I", "-B", "-m", "oil_agent.runtime.c1_product", mode]
+        if bind_if_unset:
+            if mode != "tenant-lookup":
+                raise PreparationError("INVALID_COMMAND", ("command",))
+            command.append("--selected-result")
         result = subprocess.run(
-            [sys.executable, "-I", "-B", "-m", "oil_agent.runtime.c1_product", mode],
+            command,
             input=raw,
             env=child_env,
             capture_output=True,
@@ -147,7 +155,29 @@ def _inject_execution(config, raw, execution, *, mode):
             check=False,
             creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
         )
-        safe = checked_outcome(json.loads(result.stdout), result.returncode)
+        payload = json.loads(result.stdout)
+        if (
+            bind_if_unset
+            and isinstance(payload, dict)
+            and payload.get("status") == "C1_TENANT_LOOKUP_COMPLETED"
+        ):
+            if (
+                set(payload) != {"status", "fields", "selected_result"}
+                or payload["fields"] != []
+                or result.returncode != 0
+            ):
+                return outcome("C1_UNKNOWN")
+            selected = C1TenantLookupResult.model_validate(payload["selected_result"])
+            if selected.app_request_permission != execution.app_request_permission:
+                return outcome("C1_UNKNOWN")
+            return bind_selected_tenant(config, execution, selected)
+        safe = checked_outcome(payload, result.returncode)
+        if safe["status"] in {
+            "C1_TENANT_BOUND",
+            "C1_TENANT_ALREADY_BOUND",
+            "C1_LOOKUP_COMPLETED_BINDING_FAILED",
+        }:
+            return outcome("C1_UNKNOWN")  # Only this parent can attest local binding.
         if (mode == "tenant-lookup" and safe["status"] == "C1_ACCEPTED") or (
             mode == "send-once" and safe["status"] == "C1_TENANT_LOOKUP_COMPLETED"
         ):
@@ -157,6 +187,116 @@ def _inject_execution(config, raw, execution, *, mode):
         return outcome("C1_EXECUTION_FAILED")
     except Exception:
         return outcome("C1_UNKNOWN")
+
+
+def _open_private_update():
+    """Open the existing Windows file exclusively, without following a reparse point."""
+    if os.name != "nt":
+        raise PreparationError("PRIVATE_PATH_UNVERIFIED", ("windows_acl",))
+    import msvcrt
+    from ctypes import wintypes
+
+    kernel = ctypes.WinDLL("kernel32", use_last_error=True)
+    create = kernel.CreateFileW
+    create.argtypes = [
+        wintypes.LPCWSTR,
+        wintypes.DWORD,
+        wintypes.DWORD,
+        ctypes.c_void_p,
+        wintypes.DWORD,
+        wintypes.DWORD,
+        wintypes.HANDLE,
+    ]
+    create.restype = wintypes.HANDLE
+    handle = create(str(CONFIG_PATH), 0xC0000000, 0, None, 3, 0x00200000, None)
+    if handle == ctypes.c_void_p(-1).value:
+        raise PreparationError("PRIVATE_PATH_UNVERIFIED", ("configuration_file",))
+    try:
+        descriptor = msvcrt.open_osfhandle(handle, os.O_RDWR | os.O_BINARY)
+    except Exception:
+        kernel.CloseHandle.argtypes = [wintypes.HANDLE]
+        kernel.CloseHandle(handle)
+        raise PreparationError("PRIVATE_PATH_UNVERIFIED", ("configuration_file",)) from None
+    return os.fdopen(descriptor, "r+b")
+
+
+def _replace_blank_tenant(raw, tenant):
+    """Replace just the known JSON member, preserving all other bytes and whitespace."""
+    text = raw.decode("utf-8")
+    decoder = json.JSONDecoder()
+    cursor = text.index("{") + 1
+    while True:
+        while text[cursor].isspace():
+            cursor += 1
+        if text[cursor] == "}":
+            separator = "," if text[1:cursor].strip() else ""
+            return (
+                text[:cursor] + separator + '"tenant_key":' + json.dumps(tenant) + text[cursor:]
+            ).encode("utf-8")
+        key, cursor = decoder.raw_decode(text, cursor)
+        while text[cursor].isspace():
+            cursor += 1
+        cursor += 1  # Colon; the complete document has already passed strict parsing.
+        while text[cursor].isspace():
+            cursor += 1
+        start = cursor
+        value, cursor = decoder.raw_decode(text, cursor)
+        if key == "tenant_key":
+            if value is not None:
+                raise PreparationError("C1_LOOKUP_COMPLETED_BINDING_FAILED", ("tenant_key",))
+            return (text[:start] + json.dumps(tenant) + text[cursor:]).encode("utf-8")
+        while text[cursor].isspace():
+            cursor += 1
+        if text[cursor] == ",":
+            cursor += 1
+
+
+def bind_selected_tenant(config, execution, selected):
+    """Explicit opt-in only; a completed read with failed binding must not be requeried."""
+    from oil_agent.runtime.c1_execution import C1TenantLookupResult, outcome, tenant_lookup_settings
+
+    try:
+        selected = C1TenantLookupResult.model_validate(selected.model_dump(mode="python"))
+        if selected.app_request_permission != execution.app_request_permission:
+            raise PreparationError("C1_LOOKUP_COMPLETED_BINDING_FAILED", ("tenant_key",))
+        tenant_lookup_settings(config, execution)
+        verify_private_path()
+        with _open_private_update() as stream:
+            info = os.fstat(stream.fileno())
+            if (
+                not stat.S_ISREG(info.st_mode)
+                or info.st_nlink != 1
+                or getattr(info, "st_file_attributes", 0) & stat.FILE_ATTRIBUTE_REPARSE_POINT
+                or info.st_size > _MAX_BYTES
+            ):
+                raise PreparationError("PRIVATE_PATH_UNVERIFIED", ("configuration_file",))
+            raw = stream.read(_MAX_BYTES + 1)
+            current = parse_preparation(raw)
+            if current != config:
+                raise PreparationError("C1_LOOKUP_COMPLETED_BINDING_FAILED", ("tenant_key",))
+            verify_private_path()
+            tenant_lookup_settings(current, execution)  # Recheck app/host/window after file checks.
+            if current.tenant_key is not None:
+                if current.tenant_key != selected.tenant_key:
+                    raise PreparationError("C1_LOOKUP_COMPLETED_BINDING_FAILED", ("tenant_key",))
+                return outcome("C1_TENANT_ALREADY_BOUND")
+            updated = _replace_blank_tenant(raw, selected.tenant_key)
+            expected = current.model_copy(update={"tenant_key": selected.tenant_key})
+            if len(updated) > _MAX_BYTES or parse_preparation(updated) != expected:
+                raise PreparationError("C1_LOOKUP_COMPLETED_BINDING_FAILED", ("tenant_key",))
+            stream.seek(0)
+            if stream.write(updated) != len(updated):
+                raise OSError()
+            stream.truncate()
+            stream.flush()
+            os.fsync(stream.fileno())
+            stream.seek(0)
+            if stream.read(_MAX_BYTES + 1) != updated:
+                raise OSError()
+        verify_private_path()
+        return outcome("C1_TENANT_BOUND")
+    except Exception:
+        return {"status": "C1_LOOKUP_COMPLETED_BINDING_FAILED", "fields": ["tenant_key"]}
 
 
 def prepare_preview():
@@ -189,14 +329,19 @@ def main(argv=None):
             ["preview"],
             ["send-once"],
             ["tenant-lookup"],
+            ["tenant-lookup", "--bind-if-unset"],
         ):
             raise PreparationError("INVALID_COMMAND", ("command",))
-        if args in (["send-once"], ["tenant-lookup"]):
+        if args in (["send-once"], ["tenant-lookup"], ["tenant-lookup", "--bind-if-unset"]):
             from oil_agent.runtime.c1_execution import EXECUTION_EXITS, read_execution
 
             raw, execution = read_execution(sys.stdin, mode=args[0])
-            operation = inject_send_once if args[0] == "send-once" else inject_tenant_lookup
-            result = operation(load_private_config(), raw, execution)
+            config = load_private_config()
+            result = (
+                inject_send_once(config, raw, execution)
+                if args[0] == "send-once"
+                else inject_tenant_lookup(config, raw, execution, bind_if_unset=len(args) == 2)
+            )
             print(json.dumps(result))
             return EXECUTION_EXITS[result["status"]]
         if args == ["preview"]:

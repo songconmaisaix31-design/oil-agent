@@ -271,16 +271,64 @@ acceptance remains a separate E gate. I factory integration, E acceptance, appro
 real bindings and a new explicit unexpired start/read scope remain outstanding;
 the prior expired window is not reopened and production is not accepted.
 
-Result-to-private-binding is **NOT IMPLEMENTED** in this increment, rather than an
-external-authorization failure. The query probe discards the selected tenant after
-validation. The smallest separate follow-up would carry a strict internal selected
-result through the existing captured child/parent boundary, match its app scope,
-then perform only a separately authorized null-only `tenant_key` update using the
-existing private-file safeguards. That follow-up must preserve nonempty conflicts,
-never emit identifiers to ordinary output, and create no receipt/approval files.
-No such update, DTO or private write is performed here.
-
-Current local evidence: the four initial regression failures were repaired;
+Core increment evidence (`1a699c7713ea4c62b5cd81b4e47e1c6909064042`): the four initial regression failures were repaired;
 115 focused runtime/contract/preparation tests passed, scoped Ruff passed, and
 21 PostgreSQL cases were collected without execution. No full suite, dependency
 installation, database connection/start, container action or real request occurred.
+
+## Explicit selected-result binding
+
+The core read probe discarded its result and could not map a technical tenant
+field. The coordinator authorized this separate correction after a regression
+confirmed that the explicit binding command returned INVALID_COMMAND:
+
+```powershell
+.\.venv\Scripts\python.exe -B -m oil_agent.runtime.c1_private tenant-lookup --bind-if-unset
+```
+
+This opt-in uses the identical supplied C1TenantLookupInput and permission/budget
+gates. It grants no new API permission, does not create a start, and is not invoked
+against any real configuration during development. Without the flag, the original
+status-only lookup still makes no local binding change.
+
+Only the captured fixed child receives the internal `--selected-result` switch.
+`C1TenantLookupResult` carries the constrained `tenant_key` and original shared
+app request permission over that existing captured pipe. It is forbidden on a
+terminal stdout, rejected without the parent opt-in, and never forwarded to
+ordinary output. The parent validates the exact original app scope, known keys and
+success status before considering a local update; malformed/mismatched results
+remain UNKNOWN and cannot write anything.
+
+`bind_selected_tenant` revalidates the app/host/window against the initial private
+configuration, reruns the existing fixed ACL/path check, and opens only the existing
+config with an exclusive Windows handle and OPEN_REPARSE_POINT. Regular-file,
+single-link, reparse and 16KB guards apply. The current structured config must still
+equal the one loaded before the query; changed app, secret, host or binding fields
+fail closed. ACL and expiry checks repeat before writing. A matching existing tenant
+is a no-op; a conflicting nonempty tenant is preserved.
+
+Only the blank/missing tenant member is replaced/inserted; all other bytes and
+formatting are preserved. The resulting document is validated before writing,
+flushed and read back through the same handle, with a final ACL check. No backup,
+receipt, permission file, global environment mutation or secondary registry is
+created. Ordinary output is only fixed status and known field names:
+
+- C1_TENANT_BOUND / C1_TENANT_ALREADY_BOUND (exit 0): selected local mapping succeeded;
+  these are not recipient authentication, platform sending or phone observation.
+- C1_LOOKUP_COMPLETED_BINDING_FAILED (exit 2): the read completed but local binding
+  failed or is unconfirmed. Never blindly requery. Check the local file offline
+  first: an I/O or final-validation failure after writing does not prove unchanged
+  bytes. In-place writes without new files cannot guarantee crash-atomic replacement.
+- C1_UNKNOWN (exit 3): the child result cannot establish a trusted completed lookup.
+  No automatic retry or field update follows.
+
+Delta evidence: one initial binding regression failed then passed; 75 focused
+entry/preparation tests passed, including 19 Windows-only temporary synthetic-file
+binding cases. Tests cover exact field preservation, missing member, same-value
+no-op, changed config, nonempty conflict, scope mismatch, expiry, hardlinks, file
+size, exclusive access, I/O uncertainty, selected-result validation and no requery.
+The ACL verifier is doubled in those file tests: this is not real private ACL or
+credential/tenant acceptance. Scoped Ruff passes. Real private values were never
+read or changed and real product requests remain zero. I assembly, E independent
+acceptance, actual PostgreSQL tests and a new explicitly authorized real window
+remain required before any real use of this implemented path.
