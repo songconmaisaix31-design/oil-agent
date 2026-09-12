@@ -3045,3 +3045,93 @@ or power request. Actual self-notification, redacted platform-record readback,
 dated task registration/launch/keep-awake and phone feedback remain separately
 assigned live actions; none is inferred from this SQL PASS. No general suite,
 old C1/business replay or new architecture was introduced.
+
+## Host task registration attempt (2026-09-12/13 UTC)
+
+Against I source `b2c85b8fc1affdbcf50592f0b01cd6f15142e515`, the exact command
+`powershell.exe -NoProfile -NonInteractive -File deploy/status-morning-task.ps1
+-Mode Check -ExpectedCommit <sha>` returned `STATUS_TASK_PREREQUISITES_VERIFIED`
+with `registered=false`. The authorized single registration command then
+returned `STATUS_TASK_EFFECT_UNKNOWN`; E did not retry, overwrite, start or stop
+the task. A bounded exact-name readback of
+`OilAgent-StatusMorning-20260913` found the task present with the expected
+07:58+08:00 one-time trigger, exact I interpreter/module action, InteractiveToken
+principal, WakeToRun and PT17M limit, but `VerifyRegistered` returned
+`STATUS_TASK_MISMATCH` because COM-normalized XML omitted/null-normalized fields
+(`RunLevel`, `Enabled` and default settings) that the script currently compares
+byte-for-byte. This is a deployment verification defect, not evidence of a
+successful product launch; `status_morning_awake.py` was not started because its
+fail-closed readiness check correctly rejects the mismatch. Minimum repair is to
+compare normalized semantic/default values (or emit stable explicit XML) while
+retaining the exact task name, host-only action, trigger window, no recurrence,
+retry or catch-up behavior; no task or power state was changed by E.
+
+## Final status readback and bounded keep-awake activation (2026-09-13)
+
+Using the fixed I interpreter in `C:/Users/DW/orca/workspaces/oil-agent/oil-v01-i`,
+`python.exe -I -B -m oil_agent.runtime.status_local status` exited 0 with
+`STATUS_WAITING`; the persisted onboarding receipt remained accepted (attempt 1,
+four reserved/started/responded requests, zero uncertain/transport failures) and
+the morning task remained waiting for `2026-09-13T00:00:00Z` through
+`00:15:00Z`. The process-only bridge exited cleanly; the exact E PostgreSQL
+container remained running/healthy with its existing loopback binding.
+
+After the semantic verifier returned `STATUS_TASK_DEFINITION_VERIFIED`, the
+existing `OilAgent-StatusMorning-20260913` task was left untouched. Its action is
+the exact I interpreter with `-I -B -m oil_agent.runtime.status_local morning`,
+one trigger at `07:58+08:00` ending `08:00+08:00`, current interactive token,
+WakeToRun and PT17M limit; no recurrence, manual run, retry or catch-up is
+configured. E then started one hidden process using the exact I interpreter and
+`deploy/status_morning_awake.py ffa93a7047599fabd6b6465fb6f80f348af5a372` from
+the I worktree. PID **61216** was alive and responsive at `2026-09-12T17:51:38Z`
+(local `2026-09-13 01:51:38 +08:00`); it is bounded by the helper's
+`08:15+08:00` deadline and must not be stopped before then. `powercfg /requests`
+was unavailable without elevation, so native power-request state could not be
+independently read; process liveness and source/task checks are the available
+evidence. No Feishu request was made by E (request count remains four), and no
+morning send, phone receipt, or production acceptance is inferred.
+
+## Follow-up helper ownership check (2026-09-13)
+
+The previously started PID **61216** was rechecked by exact process identity:
+its executable is the I worktree interpreter
+`C:/Users/DW/orca/workspaces/oil-agent/oil-v01-i/.venv/Scripts/python.exe`,
+arguments are `-I -B .../oil-v01-i/deploy/status_morning_awake.py
+ffa93a7047599fabd6b6465fb6f80f348af5a372`, and its recorded start was
+`2026-09-12T17:51:38.8817605+08:00` (parent PID 60940 had already exited).
+The process remained alive and responsive; no child process was present. No
+stdout/stderr redirection was established for that original launch, so a
+`STATUS_AWAKE_ACTIVE` startup line or resolved log path cannot be recovered
+without terminating the approved finite helper. E therefore did not restart it
+or create a second helper; native `SetThreadExecutionState` success is not
+independently observable from this process-only check, and `powercfg /requests`
+still requires elevation. The helper remains bounded by its fixed `08:15+08:00`
+deadline and must not be stopped before then; future activation should capture
+stdout/stderr at launch under an explicit non-private runtime path.
+
+This process evidence concerns the dedicated C1 status resource only; it does
+not assert the prior E synthetic PostgreSQL metadata as product-status state.
+
+## Controlled helper restart with startup capture (2026-09-13)
+
+Under explicit maintenance authorization, E revalidated PID **61216** (exact I
+interpreter/helper path, expected source SHA, owner `DW`, and original creation
+time), then stopped only that process and bounded-waited until it exited. No task
+registration, scheduled run, container or other process was touched. A new
+project-scoped runtime directory was created at
+`C:/Users/DW/AppData/Local/oil-agent/runtime/status-morning-20260913` outside
+Git and the private Feishu directory, with unique nonsecret stdout/stderr paths:
+`awake-20260912T175556165Z.out.log` and `.err.log`.
+
+The same fixed I interpreter launched one helper chain with
+`-I -B .../deploy/status_morning_awake.py
+ffa93a7047599fabd6b6465fb6f80f348af5a372`; wrapper PID **63088** spawned the
+actual Python PID **62064**. At UTC `2026-09-12T17:55:56.1798459Z`, both were
+alive/responsive with the expected command and user. Captured stdout contains
+`{"status": "STATUS_AWAKE_ACTIVE", "pid": 62064, "until":
+"2026-09-13T00:15:00+00:00"}` and stderr is empty (zero bytes), proving the
+helper reached its native `SetThreadExecutionState` call before entering the
+bounded hold. The process chain remains running until the fixed 08:15+08:00
+deadline and must not be stopped as a test; `powercfg /requests` was not used
+because it requires elevation. This is process-level keep-awake evidence only:
+no E Feishu request was made, and no phone or production acceptance is claimed.
