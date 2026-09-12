@@ -88,6 +88,16 @@ The current daily builder is fixture-only. Reminders are opt-in through audited 
 config, snapshotted per revision, and limited to one after 30 minutes; acknowledgement,
 revocation, a newer revision or disabling reminders suppresses them. SMS/phone remain off.
 
+Daily runtime failure handling now records `report=degraded` with a stable error code
+after a reservation fails, including timeouts and exhausted normal/model quota. Unexpected
+exceptions become safe `invalid_output` errors without persisting their text. The existing
+90-second lease remains in place; a busy/already-committed reservation is a no-op and does
+not clear failure health or charge processing budget. Successful commit restores `ok`;
+the existing status API exposes `degraded` and `stale` without promoting them to healthy.
+Focused offline fault tests cover these runtime responses and current-business-day/UTC
+cutoff selection; lease expiry, commit fencing and outbox uniqueness require E's independent
+PostgreSQL checks. No storage transaction, scheduler, send gate or budget reserve changed.
+
 Daily UTC request ledgers survive process restart: source buckets, processing calls,
 model calls and production delivery units. Normal work cannot spend the urgent reserve.
 Empty/no-op ticks do not charge processing/model budgets. If the optional history pass
