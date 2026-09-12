@@ -105,6 +105,17 @@ C; C must not edit them concurrently. No package upgrades, additional libraries
 or general dependency cleanup are authorized. I must preserve the existing
 resolved third-party package versions/artifacts and validate the metadata/build.
 
+The SQL-evidence increment is integrated and independently accepted at I
+`37046e8f310f3be8cad161d70e1c0ba57fd843f1`. E verified the exact M/E document
+blobs, unchanged executable inputs, clean tree and independently matching remote
+SHA without replaying SQL. E's separate deployment preparation commits are
+`ec117b2b307d1bcba8944707bfe75f80938098fe` and
+`1ab32ce5fe774a434d3a63254124723fc77f02bc`; the latter only aligns the required
+password placeholder with C's interface. Five dedicated Compose checks passed,
+with the two existing general-trial gate regressions also passing. This is
+offline configuration evidence; C's helper integration and E's final candidate
+review remain separate from any live database activation.
+
 ### Bounded increment: C1 PostgreSQL test adapter
 
 The user's new multi-agent development instruction resumes the existing C/E/I
