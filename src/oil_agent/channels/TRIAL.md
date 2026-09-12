@@ -5,6 +5,9 @@ This is a preparation procedure, not approval to call Feishu. The accepted
 R3 code `cfda44473a0c260b51f9762624166a6b419a6ce0` reuses the existing adapters.
 No source, model, Feishu login/token/message API call or paid product usage was
 made during this increment. Public documentation and Git operations are separate.
+C operational commit `ce3a66673afc15eef20337ac7acf300bacab36d3` is now normally
+merged on D; generated web status adaptation is
+`7e575c293a2a7ad19f0c08f6c2575db90577fe4f`. I/E integration remains a separate gate.
 
 ## Minimal operator inputs
 
@@ -103,16 +106,22 @@ npm run format:check
 
 These tests inject `httpx.MockTransport`/browser fetch doubles and synthetic
 identities. They do not contact Feishu or establish trial readiness. R3 results:
-98 Python tests (70 channel + 28 contract), 18 web tests, all checks above passed.
+98 Python tests (70 channel + 28 contract), 23 web tests after adopting C's
+operational schema, all checks above passed.
 No development/browser/Compose service was started for R3's first increment.
 
 ## Authorized live procedure (not executed)
 
 1. I integrates C's approved permission/configuration implementation and this D
-   increment; E verifies that exact candidate. Use C/I's supplied provisioning
-   and factory commands after their handoff, never a replacement script or raw
-   SQL to create authenticated sessions. Until these are integrated, classify
-   missing assembly as implementation work, separately from missing user inputs.
+   increment; E verifies that exact candidate. C's delivered provisioning CLI is
+   `python -m oil_agent.runtime.provision --actor-id APPROVED_LOCAL_ACTOR_ID`:
+   without `--apply` it validates only the explicitly injected approval, and with
+   `--apply` it creates the exact approved binding without creating a session or
+   contacting a provider. Replace the argument with the actual approved local ID
+   only after approval and project injection; do not run it against guessed
+   settings. Use I's factory commands, never a replacement session script or raw
+   SQL. Until assembled and independently checked, keep integration acceptance
+   pending, separately from missing user inputs.
 2. Configure only the approved project instance with the table above. Keep
    production sending disabled; initially keep trial sending disabled too.
    Provision exactly the approved C identities (no sessions). Confirm permission
@@ -159,8 +168,10 @@ No development/browser/Compose service was started for R3's first increment.
 
 ## Remaining gate classification
 
-- Implementation pending integration: C permission/provisioning/status changes,
-  I factory injection and D regeneration from C's authoritative updated OpenAPI.
+- Implemented pending integration/acceptance: C permission/provisioning/status
+  changes and D's generated OpenAPI/status UI are delivered; I assembly and E's
+  independent candidate checks remain separate evidence. No D schema generation
+  or provisioning-code implementation is still missing.
 - Missing authorization: approved app/tenant/recipient/public URLs/project secret
   injection, source/model rules/budget and the optional distinct exercise scope.
 - Implemented awaiting real test: Feishu HTTP acceptance, OAuth login, signed
