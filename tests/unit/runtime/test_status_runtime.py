@@ -4,6 +4,7 @@ import json
 from contextlib import nullcontext
 from datetime import timedelta
 from types import SimpleNamespace
+from unittest.mock import Mock
 
 import pytest
 from pydantic import ValidationError
@@ -370,6 +371,10 @@ def test_private_scope_and_tenant_preserve_original_bytes_and_c1_start(config):
     assert parse_preparation(tenant).exercise_start is None
 
 
-def test_exact_integrated_source_gate_prevents_local_scope_mutation():
+def test_exact_integrated_source_gate_prevents_local_scope_mutation(monkeypatch, tmp_path):
+    monkeypatch.setattr(status_local, "__file__", str(tmp_path / "status_local.py"))
+    preparation = Mock(side_effect=AssertionError("Private preparation must not run"))
+    monkeypatch.setattr(status_local.c1_local, "prepared_config", preparation)
     with pytest.raises(PreparationError, match="STATUS_SOURCE_MISMATCH"):
         status_local.prepare_scope()
+    preparation.assert_not_called()
