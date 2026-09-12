@@ -28,6 +28,44 @@ task exists; preserve all original sessions and ownership. No full-suite replay,
 production factory expansion, source/model call, message, new phone window,
 service purchase or public network opening is authorized by this increment.
 
+E task `task_fbae471e7c81` / `ctx_58cfd161bf0b` confirmed the original E
+PostgreSQL container is already running and healthy after the user's Docker
+startup. Its full ID, project/service, E deployment paths, pinned image, retained
+volume and loopback `127.0.0.1:55434` mapping match the recorded E scope. No
+container start/stop occurred. The E-only existing synthetic database password
+may be read once from only that container's `POSTGRES_PASSWORD` into process
+memory and injected only into the test child; no full environment dump, secret
+output/file, credential search or password change is authorized.
+
+C completed `task_fac942c8c794` / `ctx_393ca3e4ccd4` with no code changes.
+The existing C1 structured stdin maps `database_url` directly to the fixed
+isolated child; both lookup and send need the same persistent approved database.
+Existing migration-only CLI is sufficient and no generic user/session setup is
+needed. C reproduced a deployment mismatch offline: general controlled-trial
+Compose publishes no PostgreSQL host port, its validator rejects adding one,
+and its wrapper requires TLS plus unrelated services/queue/recovery startup.
+These restrictions must remain intact. There is no reproduced C runtime defect.
+
+For the reproduced deployment blocker, C owns a minimal project-local runtime
+helper under `src/oil_agent/runtime/` and corresponding unit tests/config notes;
+E owns the separate database-only Compose definition under `deploy/`, focused
+integration checks and existing runtime evidence after its SQL task. The fixed
+candidate resource contract is Compose project `oil-agent-feishu-trial`, service
+`postgres`, database/user `oil_c1_trial`, named volume `c1-data`, internal backend
+network and only `127.0.0.1:55436:5432`. These are proposed local resource names,
+not created or approved live resource identities. Compose accepts only the
+process-injected `OIL_C1_DB_PASSWORD`; no real value is stored in repository files.
+Reuse the fixed C1 process and existing migration-only CLI, with bounded
+structured input and process-only injection, without a new approval registry.
+Do not write a generic Docker manager or change global environment. The candidate
+must use an explicitly scoped loopback endpoint, independent database/user/volume,
+safe disabled capabilities and preserved fixture exercise labeling. No general
+trial gate, existing E resources, provenance or production marker may be relaxed.
+Prepare and verify this concrete deployment result before requesting any missing
+new database activation scope; do not create the future C1 database, enable
+outbound access or start a phone window as part of code preparation. I integrates
+each verified increment; E reviews the final candidate independently.
+
 ### Bounded increment: C1 PostgreSQL test adapter
 
 The user's new multi-agent development instruction resumes the existing C/E/I
