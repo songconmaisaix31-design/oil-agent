@@ -1984,3 +1984,141 @@ for those original assertions; this grants no live C1 database permission.
 No private configuration, clipboard/browser, provider/model call, send, new phone
 window, dependency installation, full-suite replay or build was performed.
 Platform, phone, login, callback and production acceptance remain unexecuted.
+
+## C1 actual PostgreSQL: 21 original cases passed after Docker resumed
+
+On 2026-09-12, E normally merged accepted I
+`4ec6c480dc971d44d176c3539bcbcade4ee7f802` and M governance
+`3ad12a67c0b5518d2c10451099b61ececc363c72`, preserving history at tested source
+**`c725a56a803c77b94efec54956e30a97fea437fd`**. The documentation conflicts were
+resolved to the exact accepted I and then M board blobs. Product sources, locks,
+the adapter, all original C assertions and both database fixtures remained
+identical to accepted I. No test or product fix was needed.
+
+Fresh selected Docker metadata verified the original resource before database
+access; the user-started engine supersedes the earlier missing-pipe observation.
+
+| Verified field | Actual value |
+| --- | --- |
+| Endpoint | `npipe:////./pipe/dockerDesktopLinuxEngine` |
+| Container | `oil-agent-e-postgres-1` |
+| Full container ID | `b3c3a345428590922eb8e628a996dd634cb3333e5f0c86f588eede8fb7101cab` |
+| Compose project / service | `oil-agent-e` / `postgres` |
+| Compose working directory | `C:/Users/DW/orca/workspaces/oil-agent/oil-v01-e/deploy` |
+| Exact configuration files | The above directory's `compose.yaml` and `compose.e-test.yaml` |
+| Image reference | `postgres:16-alpine@sha256:e013e867e712fec275706a6c51c966f0bb0c93cfa8f51000f85a15f9865a28cb` |
+| Image ID | `sha256:e013e867e712fec275706a6c51c966f0bb0c93cfa8f51000f85a15f9865a28cb` |
+| Volume | `oil-agent-e_postgres-data`, local driver, mounted at `/var/lib/postgresql/data` |
+| Volume ownership labels | Project `oil-agent-e`, volume `postgres-data` |
+| Configured and active host binding | Only `127.0.0.1:55434` to container `5432/tcp` |
+| Actual database / user | `oil_e_test` / `oil_e_test` |
+| Actual server | PostgreSQL **16.14**, UTC, server port 5432 |
+| Original and final container state | Already running and healthy; E neither started nor stopped it |
+
+An initial metadata assertion incorrectly expected the repository root as the
+Compose directory. The corrected read-only check matched the actual E `deploy`
+directory and both exact configuration paths; no resource was changed. Neither
+E test credential variable was inherited. M explicitly authorized one bounded
+read of only this container's existing synthetic password into Python memory.
+E validated it, built the exact scoped URL structurally, and injected it only
+into the intended test child. No password, DSN or full environment was emitted
+or written, and no unrelated credential or C1 private configuration was read.
+
+```text
+uv run --offline --locked --no-sync pytest tests/integration/test_postgres_c1.py -q --tb=short
+```
+
+This command ran **once**, from **12:36:26.871108 UTC** to
+**12:36:42.254355 UTC**: **21 passed, 0 failed, 0 skipped, 13.26 seconds,
+pytest exit 0**. It used actual PostgreSQL migrations and the unchanged E
+fixture's fresh disposable schemas. The original concurrent preparation,
+transaction rollback, shared-budget races, authorization/expiry checks and
+UNKNOWN fencing assertions ran against real PostgreSQL; their approvals and
+provider-result inputs remain explicitly synthetic. No SQLite or fake database
+substituted for this execution.
+
+Bounded, repeatable-read, read-only snapshots of this database were taken before
+the run at **12:36:26.871033 UTC** and checked after it by
+**12:36:43.767653 UTC**. The only original user schema was `public`, with
+**73 relation identities**, **29 data objects** and **823 row/sequence-state
+records**. Schema and relation identities, complete bounded table-row multisets
+and sequence values matched before/after; **no new schema remained**. Container
+and volume metadata, image, mount, ports, running state and start/restart fields
+also matched. Only fixture-created UUID schemas were created/dropped; no old
+schema, data or resource was cleaned up. The verification wrapper exited **0**.
+These are logical database snapshots, not physical-volume byte identity or a
+production backup/restore claim.
+
+Verdict: **THE 21 C1 POSTGRESQL CASES PASSED ON THE VERIFIED E SYNTHETIC DATABASE**.
+This supersedes their prior NOT EXECUTED result only. No full suite, build,
+dependency installation, daemon restart, resource recreation, provider/source/
+model/Feishu call, send, new phone window or UI/private-file action occurred.
+The E test database is not approved as the future live C1 database; platform,
+phone, login, callback, deployment and production acceptance remain unexecuted.
+
+## Dedicated C1 database: offline deployment preparation
+
+On 2026-09-12, E continued from pushed SQL evidence
+`87065fea2e5ccfddad918dabf6db4a39df3d51d1` and normally merged exact M governance
+`d38af512d295e6f237936a71d4bee6f4f1a3dd31` at
+`d52790701e5b299fa09cd1f3173bb8b31b9c3637`; no conflict or history replacement
+occurred. The accepted **21 real E PostgreSQL passes were not rerun** and their
+container, volume, database and credentials were not accessed in this task.
+
+The new standalone `deploy/compose.c1-db.yaml` renders only `postgres` under
+project `oil-agent-feishu-trial`, with database/user `oil_c1_trial`, volume
+`oil-agent-feishu-trial_c1-data`, sole internal IPv4 backend network and requested
+loopback `127.0.0.1:55436:5432`. It reuses the accepted pinned PostgreSQL 16 image,
+requires only process-injected `OIL_C1_DB_PASSWORD`, retains fixture/`feishu-c1`
+labels, disables automatic restart and bounds resources/logs. These names are
+proposed resources, not existing or activated identities.
+
+Red/green evidence:
+
+- Before the Compose file existed,
+  `uv run --offline --locked --no-sync pytest tests/integration/test_c1_database_deploy.py::test_standalone_database_has_no_application_or_activation_services -q --tb=short`
+  exited **1** with **one setup error**: the standalone database definition was
+  missing. No daemon was contacted.
+- The first render run had **4 passed, 1 failed** because Compose serialized
+  `mem_limit` as a string. The assertion now compares its numeric value to the
+  same 128 MiB bound; no configuration limit was weakened.
+- Final command:
+  `uv run --offline --locked --no-sync pytest tests/integration/test_c1_database_deploy.py tests/integration/test_controlled_trial_deploy.py::test_trial_rejects_unsafe_resolved_configuration[db-port] tests/integration/test_controlled_trial_deploy.py::test_trial_refuses_invalid_tls_prerequisites[http] -q --tb=short`
+  exited **0**, **7 passed in 0.61 seconds**, none skipped. The five new cases
+  cover actual Compose rendering, exact service/network/port/volume boundaries,
+  fixture labels/resource bounds and refusal of missing/empty process passwords.
+  The two unchanged general-trial cases still reject a database port and HTTP.
+- `uv run --offline --locked --no-sync ruff check tests/integration/test_c1_database_deploy.py`
+  and the corresponding `ruff format --check` both exited **0**.
+- Actual `docker-compose version --short` returned **5.1.4**. Tests invoked its
+  `--env-file deploy/compose.env --file deploy/compose.c1-db.yaml config --format json`
+  with an isolated child environment and synthetic in-memory password. Resolved
+  output was captured; passwords were compared then removed before assertions.
+  No full rendered environment or credential was emitted or stored.
+
+**WINDOWS HOST DATABASE ACCESS IS NOT ESTABLISHED.** The bounded primary-source
+review used Docker's [internal network contract](https://docs.docker.com/reference/cli/docker/network/create/#internal)
+and [Desktop networking limits](https://docs.docker.com/desktop/features/networking/networking-how-tos/#known-limitations).
+Internal mode still permits Docker-host communication; those documents do not
+prove that localhost publication always fails. The old E second-network
+workaround is historical evidence, not a current C1 packet test. No ordinary
+external bridge was added. The exact later finite activation/mapping/read-only
+identity probe and stop-on-failure boundary are recorded in the existing
+`deploy/controlled-trial.md`; rendering does not settle live network behavior.
+
+M instructed E to finish this preparation without waiting for C's owner commit.
+The resource/label contract was handed to M for C; exact committed helper
+integration and its fail-closed runtime mapping checks remain pending owner
+handoff. No C helper, original test/fixture, general trial gate, product source
+or lock was edited. No new resource, image pull, migration, queue initialization,
+recovery, SQL run, private credential access, provider call, send, phone window,
+full suite, build or CI job was performed. Verdict: **OFFLINE COMPOSE PREPARATION
+PASSED; C1 ACTIVATION, HOST ASSEMBLY AND PHONE/PRODUCTION ACCEPTANCE NOT EXECUTED**.
+
+After the initial preparation commit, M relayed C's exact required-password
+placeholder text. E aligned only that interpolation error message to
+`${OIL_C1_DB_PASSWORD:?Explicit C1 database password required}` and reran
+`uv run --offline --locked --no-sync pytest tests/integration/test_c1_database_deploy.py -q --tb=short`:
+**5 passed in 0.30 seconds**, exit **0**. The required-variable gate is unchanged;
+this checks actual rendering after interface alignment, not execution of C's
+still-uncommitted helper.
