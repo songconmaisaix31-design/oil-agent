@@ -2,6 +2,7 @@
 
 Only C1 allowlisted process fields are consumed. Send-once and tenant-lookup
 require separately supplied existing permissions; preparation creates none.
+Exercise delegates to C's runner under the retained explicit local user start.
 It calls the integrated product factory once, never a private-selected factory.
 """
 
@@ -106,6 +107,7 @@ def main(argv=None):
             ["send-once"],
             ["tenant-lookup"],
             ["tenant-lookup", "--selected-result"],
+            ["exercise"],
         ):
             raise PreparationError("INVALID_COMMAND", ("command",))
         selected = args == ["tenant-lookup", "--selected-result"]
@@ -119,16 +121,22 @@ def main(argv=None):
         if args:
             from oil_agent.runtime.c1_execution import EXECUTION_EXITS, read_execution
 
-            _, execution = read_execution(sys.stdin, mode=args[0])
-            operation = (
-                execute_once(config, execution)
-                if args[0] == "send-once"
-                else execute_tenant_lookup(config, execution, selected_result=selected)
-            )
+            mode = "tenant-lookup" if args[0] == "exercise" else args[0]
+            _, execution = read_execution(sys.stdin, mode=mode)
+            if args[0] == "exercise":
+                from oil_agent.runtime.c1_runner import execute_exercise
+
+                operation = execute_exercise(config, execution, build_runtime=build_c1_runtime)
+            elif args[0] == "send-once":
+                operation = execute_once(config, execution)
+            else:
+                operation = execute_tenant_lookup(config, execution, selected_result=selected)
             loop_factory = asyncio.SelectorEventLoop if sys.platform == "win32" else None
             with asyncio.Runner(loop_factory=loop_factory) as runner:
                 result = runner.run(operation)
             print(json.dumps(result))
+            if args[0] == "exercise":
+                return 0 if result["status"] == "C1_COMPLETED" else 2
             return EXECUTION_EXITS[result["status"]]
         print(json.dumps(preparation_status(config)))
         return 2  # Preparation never claims a configured, authorized live sender.
