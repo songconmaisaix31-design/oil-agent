@@ -1984,3 +1984,74 @@ for those original assertions; this grants no live C1 database permission.
 No private configuration, clipboard/browser, provider/model call, send, new phone
 window, dependency installation, full-suite replay or build was performed.
 Platform, phone, login, callback and production acceptance remain unexecuted.
+
+## C1 actual PostgreSQL: 21 original cases passed after Docker resumed
+
+On 2026-09-12, E normally merged accepted I
+`4ec6c480dc971d44d176c3539bcbcade4ee7f802` and M governance
+`3ad12a67c0b5518d2c10451099b61ececc363c72`, preserving history at tested source
+**`c725a56a803c77b94efec54956e30a97fea437fd`**. The documentation conflicts were
+resolved to the exact accepted I and then M board blobs. Product sources, locks,
+the adapter, all original C assertions and both database fixtures remained
+identical to accepted I. No test or product fix was needed.
+
+Fresh selected Docker metadata verified the original resource before database
+access; the user-started engine supersedes the earlier missing-pipe observation.
+
+| Verified field | Actual value |
+| --- | --- |
+| Endpoint | `npipe:////./pipe/dockerDesktopLinuxEngine` |
+| Container | `oil-agent-e-postgres-1` |
+| Full container ID | `b3c3a345428590922eb8e628a996dd634cb3333e5f0c86f588eede8fb7101cab` |
+| Compose project / service | `oil-agent-e` / `postgres` |
+| Compose working directory | `C:/Users/DW/orca/workspaces/oil-agent/oil-v01-e/deploy` |
+| Exact configuration files | The above directory's `compose.yaml` and `compose.e-test.yaml` |
+| Image reference | `postgres:16-alpine@sha256:e013e867e712fec275706a6c51c966f0bb0c93cfa8f51000f85a15f9865a28cb` |
+| Image ID | `sha256:e013e867e712fec275706a6c51c966f0bb0c93cfa8f51000f85a15f9865a28cb` |
+| Volume | `oil-agent-e_postgres-data`, local driver, mounted at `/var/lib/postgresql/data` |
+| Volume ownership labels | Project `oil-agent-e`, volume `postgres-data` |
+| Configured and active host binding | Only `127.0.0.1:55434` to container `5432/tcp` |
+| Actual database / user | `oil_e_test` / `oil_e_test` |
+| Actual server | PostgreSQL **16.14**, UTC, server port 5432 |
+| Original and final container state | Already running and healthy; E neither started nor stopped it |
+
+An initial metadata assertion incorrectly expected the repository root as the
+Compose directory. The corrected read-only check matched the actual E `deploy`
+directory and both exact configuration paths; no resource was changed. Neither
+E test credential variable was inherited. M explicitly authorized one bounded
+read of only this container's existing synthetic password into Python memory.
+E validated it, built the exact scoped URL structurally, and injected it only
+into the intended test child. No password, DSN or full environment was emitted
+or written, and no unrelated credential or C1 private configuration was read.
+
+```text
+uv run --offline --locked --no-sync pytest tests/integration/test_postgres_c1.py -q --tb=short
+```
+
+This command ran **once**, from **12:36:26.871108 UTC** to
+**12:36:42.254355 UTC**: **21 passed, 0 failed, 0 skipped, 13.26 seconds,
+pytest exit 0**. It used actual PostgreSQL migrations and the unchanged E
+fixture's fresh disposable schemas. The original concurrent preparation,
+transaction rollback, shared-budget races, authorization/expiry checks and
+UNKNOWN fencing assertions ran against real PostgreSQL; their approvals and
+provider-result inputs remain explicitly synthetic. No SQLite or fake database
+substituted for this execution.
+
+Bounded, repeatable-read, read-only snapshots of this database were taken before
+the run at **12:36:26.871033 UTC** and checked after it by
+**12:36:43.767653 UTC**. The only original user schema was `public`, with
+**73 relation identities**, **29 data objects** and **823 row/sequence-state
+records**. Schema and relation identities, complete bounded table-row multisets
+and sequence values matched before/after; **no new schema remained**. Container
+and volume metadata, image, mount, ports, running state and start/restart fields
+also matched. Only fixture-created UUID schemas were created/dropped; no old
+schema, data or resource was cleaned up. The verification wrapper exited **0**.
+These are logical database snapshots, not physical-volume byte identity or a
+production backup/restore claim.
+
+Verdict: **THE 21 C1 POSTGRESQL CASES PASSED ON THE VERIFIED E SYNTHETIC DATABASE**.
+This supersedes their prior NOT EXECUTED result only. No full suite, build,
+dependency installation, daemon restart, resource recreation, provider/source/
+model/Feishu call, send, new phone window or UI/private-file action occurred.
+The E test database is not approved as the future live C1 database; platform,
+phone, login, callback, deployment and production acceptance remain unexecuted.
