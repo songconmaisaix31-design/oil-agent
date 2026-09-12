@@ -2,13 +2,20 @@
 
 ## Current phase: controlled real integration
 
-### Active C1: local preparation only, application not created
+### Active C1: local preparation, configuration incomplete
 
-The user has a Feishu account but has NOT created an enterprise custom app.
-Application state is **not created / not configured**, not an existing
-configuration awaiting disclosure. Newly chosen display name is
-`油品预警助手（测试）`; local alias is `oil-agent-feishu-trial`. These are labels,
-not platform identities. Actual app ID/secret, tenant and recipient remain blank.
+The user reports having obtained application credentials and has edited the
+project-private configuration locally. C's latest read-only check on
+2026-09-12 at 08:22 UTC, against integrated
+`41cfed431d8c8ac882d4cee88267cc20299b3c83`, passed JSON/schema, path/ACL and actual
+isolated process injection checks. Its redacted state is `CREATED`,
+`NOT_CONFIGURED`, missing `app_id`, `tenant_key`, `recipient_open_id` and
+`host_binding`, with start `NOT_AUTHORIZED`. Both helper commands returned exit 2
+as designed for incomplete preparation. This proves local loading only, not
+platform authentication, credential rotation, application ownership or binding.
+No private value is recorded here. The display name remains
+`油品预警助手（测试）`; local alias remains `oil-agent-feishu-trial`. These are
+labels, not platform identities. Unconfirmed bindings must not be inferred.
 
 C1 covers one approved personal test recipient, platform acceptance and physical
 phone display only. Web login, interactive callback, real news/model and
@@ -60,6 +67,49 @@ PTYs are positively reported exited by the execution host; resume their original
 provider sessions, preserving all code/history. No general audit or repeated full
 synthetic acceptance is part of C1 preparation.
 
+### Current bounded continuation: connect the C1 execution entry
+
+The user's instruction to continue development does not start the phone window
+or authorize provider requests. M observed that the accepted
+`runtime/c1_product.py` entry only validates preparation and always exits 2;
+its docstring explicitly excludes runtime, database and sender construction.
+C task `task_f247480eca18`, dispatch `ctx_87833307d171`, reused the original C
+session/worktree and reproduced the missing command on the accepted integrated
+code. M approved only a `send-once` mode in the existing private/product entries:
+bounded structured stdin carries the existing `C1Permission` and an explicitly
+approved PostgreSQL URL; exact private bindings and an active explicit start are
+checked before the fixed isolated child/factory uses the existing prepare/send
+methods. No start time is inferred. I retains factory/CLI glue ownership.
+E task `task_a9d4ed2324dd`, dispatch `ctx_5e19c46c0907`, independently owns the
+new focused regression in `tests/integration/test_c1_entry.py` and its evidence
+in `e2e/runtime-checks.md`. Preparation checks retain their existing meaning.
+No direct provider sender, parallel approval registry, background loop, fabricated
+identity/start record or new product feature is authorized. Private files remain
+untouched; local tests use explicitly synthetic inputs. Production, real
+PostgreSQL acceptance, platform receipt and phone display remain separate gaps.
+
+The retained D session completed a read-only official-document mapping without
+changing its clean `5355446d00e23dc64b1cd133ec191cfa0467bad8` branch. The next
+console action is to add the bot capability, request only
+`im:message:send_as_bot` for sending, and publish with availability restricted to
+the one intended person. The official API explorer offers an app-specific
+"quick copy open_id" selection; select only oneself and do not execute its send
+debugger. The helper's internal requests were not observed and are not claimed
+to be offline. `recipient_open_id` must not be substituted with employee ID,
+User ID, union ID or another app's open ID.
+
+D could not substantiate a console-only `tenant_key` source. The official tenant
+query distinguishes `tenant_key` from `display_id`; its documented API requires
+the additional `tenant:tenant:readonly` scope. A cold-token lookup needs at least
+two future counted product requests (token plus tenant query), excluding any
+failure/retry. Existing C1 hooks only implement token/send operations and do not
+yet implement a controlled tenant-query path. No such permission change or call
+was performed. Record this code gap separately from permission/API approval;
+do not guess the value or use a raw lookup script. References:
+[user identity](https://open.feishu.cn/document/home/user-identity-introduction/open-id),
+[tenant query](https://open.feishu.cn/document/uAjLw4CM/ukTMukTMukTM/tenant-v2/tenant/query),
+[bot capability](https://open.feishu.cn/document/uAjLw4CM/ugTN1YjL4UTN24CO1UjN/trouble-shooting/how-to-enable-bot-ability).
+
 ### C1 completed local preparation: independently accepted, no live sending
 
 The project-private configuration now exists at
@@ -68,7 +118,8 @@ C created it without overwriting an existing file. M independently checked path
 and ACL metadata without printing contents: no reparse point, current-user owner,
 protected directory ACL with only the current Windows user and SYSTEM; the file
 inherits those same two entries. No platform IDs, host approval or start time
-were fabricated. Application remains NOT_CREATED / NOT_CONFIGURED.
+were fabricated. At that initial blank-file acceptance the application was
+NOT_CREATED / NOT_CONFIGURED; the later local status is recorded above.
 
 The user edits this JSON locally after actual application creation: change
 `application_state` to `CREATED`, enter `app_id` and `app_secret`, and leave
@@ -144,9 +195,10 @@ I owns conditional factory assembly. No fake event, callback or approval is used
   formal delivery; it is not a C1 prerequisite. The reproduced C1 coupling and
   helper preview defects now have integrated owner repairs; acceptance remains
   limited to the explicitly recorded local checks.
-- EXTERNAL AUTHORIZATION MISSING: the app has not been created; exact tenant,
-  personal open ID and existing test host are not bound, entitlement coverage is
-  not confirmed, and the user has not triggered the 30-minute window.
+- EXTERNAL CONFIGURATION / AUTHORIZATION MISSING: the latest local schema is
+  valid but `app_id`, exact tenant, personal open ID and existing test host are
+  not configured. Platform ownership/permissions and entitlement coverage remain
+  unverified; the user has not triggered the 30-minute window.
 - IMPLEMENTED, VERIFICATION NOT EXECUTED: C's 11 PostgreSQL storage tests were
   collected only, without an approved injected database. No database was started
   and no SQLite result substitutes for PostgreSQL transactions/concurrency.
