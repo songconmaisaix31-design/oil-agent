@@ -98,6 +98,33 @@ class TrialSendPermission(RequestPermission):
         return self
 
 
+class C1AppRequestPermission(RequestPermission):
+    """One immutable application/window budget shared by lookup and later sending.
+
+    A tenant_read_ref explicitly permits the fixed read operations, not sending.
+    A full recipient permission remains mandatory for every delivery operation.
+    """
+
+    start_trigger: Literal["开始手机测试"]
+    provider: Literal["feishu"] = "feishu"
+    app_id: NonEmpty
+    credentials_ref: NonEmpty
+    host_binding: StableId
+    tenant_read_ref: NonEmpty | None = None
+    max_requests: Annotated[int, Field(strict=True, ge=1, le=20)] = 20
+    max_new_fee: Literal[0] = 0
+
+    @model_validator(mode="after")
+    def bounded_app_window(self):
+        import re
+
+        if self.expires_at - self.valid_from > timedelta(minutes=30):
+            raise ValueError("C1 authorization exceeds thirty minutes")
+        if not re.fullmatch(r"[A-Za-z0-9_-]{1,128}", self.app_id):
+            raise ValueError("C1 app binding is invalid")
+        return self
+
+
 class C1Permission(RequestPermission):
     """Future real user-start scope in the existing ledger; never made by prepare.
 
@@ -106,6 +133,7 @@ class C1Permission(RequestPermission):
     """
 
     start_trigger: Literal["开始手机测试"]
+    app_request_approval_id: StableId
     provider: Literal["feishu"] = "feishu"
     app_id: NonEmpty
     tenant_key: NonEmpty
@@ -139,3 +167,26 @@ class C1Permission(RequestPermission):
         ):
             raise ValueError("C1 app and tenant binding are invalid")
         return self
+
+    def matches_app_request(self, app):
+        """No omitted owner, changed window or independent send budget fallback."""
+        return bool(
+            isinstance(app, C1AppRequestPermission)
+            and self.approval_id != app.approval_id
+            and self.app_request_approval_id == app.approval_id
+            and all(
+                getattr(self, field) == getattr(app, field)
+                for field in (
+                    "provider",
+                    "app_id",
+                    "host_binding",
+                    "credentials_ref",
+                    "valid_from",
+                    "expires_at",
+                    "start_trigger",
+                    "budget_ref",
+                    "max_requests",
+                    "max_new_fee",
+                )
+            )
+        )

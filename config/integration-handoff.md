@@ -1,6 +1,126 @@
 # I integration handoff
 
-## Active C1 execution-entry continuation
+## Current C1 bounded integration and single build
+
+Code/test/build source: `e98d4a69a2e317b8f573f1c868571dd66fccd1e3` on the retained
+`songconmaisaix31-design/oil-v01-i` branch. The clean baseline was
+`d842b7b43c2f6ed91198a3e3695650db3b2a8cfe`. Ordinary `[skip ci]` merges adopted:
+
+- C binding: `3dd8cb43c19fac00a6d1099baa4a8f28f3d63671` (five owner paths).
+- E fixtures: `8fbea024aabd1ff6ae77c2f2514fee2f53f1662e` (entry tests and evidence).
+- M board: `eeaf925c6169793f867e5f2a0391265f1fb8ac65` (only V01-TODO.md).
+
+Each exact owner remote and already-integrated parent was verified before merge;
+merged C/E file contents match their supplied commits. I made no further code or
+test edits. The existing query-only factory consumes C's shared app permission
+and D's mandatory request hook. C's explicit `tenant-lookup --bind-if-unset` now
+carries a selected result through the captured fixed child boundary and updates
+only an unset tenant binding after the documented checks. The default probe does
+not write. Full sending still needs the complete linked recipient permission and
+the same shared app-window budget; lookup never supplies send authorization.
+
+Actual checks at the code/build source, using existing local dependencies:
+
+| Command | Result |
+| --- | --- |
+| `uv run --offline --locked --no-sync pytest tests/integration/test_c1_entry.py tests/integration/test_bootstrap_factory.py -k 'c1_entry or offline_factory' -q --tb=short` | 65 passed, 13 PostgreSQL cases deliberately deselected, zero skips, 1.08 seconds |
+| `uv run --offline --locked --no-sync pytest tests/unit/runtime/test_c1_tenant_binding.py -q --tb=short` | 19 passed on Windows, zero skips, 0.51 seconds |
+| `uv run --offline --locked --no-sync ruff check src/oil_agent/bootstrap.py src/oil_agent/runtime/c1_execution.py src/oil_agent/runtime/c1_private.py src/oil_agent/runtime/c1_product.py tests/integration/test_c1_entry.py tests/integration/test_bootstrap_factory.py tests/unit/runtime/test_c1_tenant_binding.py` | Passed |
+| `git diff --check` and exact owner-content/ancestry checks | Passed |
+
+There were no failures in this combined selection. One existing Starlette/AnyIO
+BlockingPortal deprecation warning remains. The binding cases use temporary
+synthetic Windows files and mocked ACL verification; they do not verify the real
+protected configuration or its ACL. No unchanged D selection or full suite was
+rerun. C's 21 SQL cases remain collected-only owner evidence, not executed here.
+
+One build, from the exact clean source above:
+
+```text
+uv build --offline --out-dir C:/Users/DW/AppData/Local/Temp/oil-agent-i-ctx-8394797ac280/dist
+```
+
+The previously absent output directory contains newly produced artifacts:
+
+- `C:/Users/DW/AppData/Local/Temp/oil-agent-i-ctx-8394797ac280/dist/oil_agent-0.1.0-py3-none-any.whl` (185696 bytes).
+- `C:/Users/DW/AppData/Local/Temp/oil-agent-i-ctx-8394797ac280/dist/oil_agent-0.1.0.tar.gz` (782516 bytes).
+
+The offline build completed successfully without a build warning; the source
+remained clean and unchanged. No wheel was installed or deployed, and no previous
+artifact was reused. E's later evidence
+`723fbf2da4ee8da99ab8c24e27c57cda053e14c4` was ordinarily merged as
+`c5b52c7b04fcf85b856e907083423caf1f9fe077`; its previously integrated merge parents
+and I glue bytes were verified. Only e2e/runtime-checks.md changed relative to the
+build source. This handoff update also changes documentation only; the final
+delivery SHA is reported separately through Orca, without another build.
+
+E independently accepted the earlier app-owner core/factory selection, not this
+final binding/package combination. E's final bounded review remains pending. The
+binding implementation is now present but awaits real testing and authorization.
+An I/O or final-validation error after an in-place write yields
+`C1_LOOKUP_COMPLETED_BINDING_FAILED`; it does not prove unchanged file bytes or
+crash-atomic replacement. No automatic requery follows that uncertain outcome.
+
+No real protected file was read or written, and no database, container, service,
+source/model/Feishu request or send was executed. Product calls, model tokens and
+new paid cost remain zero; live API totals remain null/UNKNOWN. The earlier phone
+window expired at 2026-09-12T09:13:15.149Z and was not renewed. Actual tenant/person/
+host bindings, tenant-read permission, approved PostgreSQL and a new explicit
+active window remain external prerequisites. PostgreSQL transaction/concurrency,
+phone display, login/callback and production acceptance are not established.
+
+## Historical C1 tenant lookup assembly
+
+Transport candidate `d4414f9a3b24dc104e2f622ee0391f4ac811811a` was independently
+accepted by E. I ordinarily merged C core
+`1a699c7713ea4c62b5cd81b4e47e1c6909064042` and E evidence
+`5aa4219fd09473e7ab6f645289e00de0fde3ec85`, producing pushed intermediate
+`775308f7ded755da410044f8634b2e5f11a6ff23` for E's separate entry-fixture work.
+Only the authorized owner paths changed in those merges; no owner code was edited
+by I. All incremental commits use `[skip ci]` and preserve the existing branch.
+
+I's factory now recognizes explicit `c1_tenant_lookup_only` after the production
+rejection and before ordinary fixture dispatch. It revalidates C Settings, creates
+an empty RuntimeServices, and injects only D's exported FeishuTenantLookup with
+the mandatory `runtime.authorize_c1_app_request` callback. App ID comes from the
+immutable C1AppRequestPermission and the only credential field read is the fixed
+`OIL_C1_APP_SECRET` allowlist entry. Tenant/person, sender, identity, callback,
+source, assessment and reporting services are absent. Construction makes no
+database connection, provider request, provisioning or permission record; failure
+disposes the engine. C installs repository permission providers internally.
+
+The fixed private/product entry still calls bootstrap.build_runtime without an
+arbitrary factory override. C calls D with keyword-only `lookup(context=...)`.
+Full sending retains complete C1Permission and its required
+`app_request_approval_id` link to the same app owner, plus the existing per-delivery
+claim/grant checks. This glue adds no independent request budget or send path.
+
+I first reproduced a focused factory failure: explicit lookup fell into ordinary
+fixture services. After repair, `uv run --offline --locked --no-sync pytest
+tests/integration/test_bootstrap_factory.py -k offline_factory -q --tb=short`
+passed **20**, with **13 PostgreSQL cases deliberately unselected**. The eight
+new cases check guarded construction through the fixed/shared factories, missing
+owner/read approval, host mismatch, production rejection, secret isolation and
+cleanup. Existing assertions remain; synthetic send fixtures add C's required app
+owner. Scoped Ruff check/format and diff-check pass after one long-line/line-ending
+format correction. The existing Starlette/AnyIO deprecation warning remains.
+
+This is intermediate local assembly evidence. E's entry fixture update and C's
+separately owned result-to-private-binding delta need exact authorized commits
+before combined acceptance; the latter is missing implementation at this source.
+No final combined build has been performed yet. C's 115 focused passes and 21
+collected PostgreSQL cases are owner evidence, not new I execution or SQL success.
+The exact E PostgreSQL engine pipe is unavailable; no database was started.
+
+M's current redacted observation says app_id matches, with tenant_key,
+recipient_open_id and host_binding still missing. I read no private configuration.
+Tenant-read scope, test host/database and a new explicit active window remain
+unapproved. The prior phone window expired at 2026-09-12T09:13:15.149Z and was not
+renewed. Actual product calls, model tokens, sends and new paid cost remain zero;
+live API totals remain null/UNKNOWN. Historical sections below retain their
+original source/evidence boundaries and do not establish current live readiness.
+
+## Historical C1 execution-entry continuation
 
 Retained baseline: `41cfed431d8c8ac882d4cee88267cc20299b3c83`. I ordinarily
 merged M `0a38be78b606e62f6de36a17a98a81d1ecbd4ebd`, original E RED

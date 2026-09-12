@@ -159,3 +159,46 @@ and [network DNS/custom-host behavior](https://docs.docker.com/engine/network/).
 Compose `!override` requires 2.24.4 or newer; this workspace parsed with 5.1.4.
 The checker handles Compose v2's false-bool omission and v5's explicit false
 representation separately; explicit `create_host_path: true` stays rejected.
+
+## Dedicated C1 database preparation (Windows host access unresolved)
+
+`compose.c1-db.yaml` is a standalone database-only definition, not an overlay for
+the general trial stack above. Its proposed project is `oil-agent-feishu-trial`,
+with only `postgres`, database/user `oil_c1_trial`, project volume
+`oil-agent-feishu-trial_c1-data` and internal IPv4 network
+`oil-agent-feishu-trial_backend`. The only requested host binding is
+`127.0.0.1:55436:5432`; the PostgreSQL 16 image is pinned to the accepted digest.
+Fixture/`feishu-c1` labels remain explicit. No API, init, worker, source, model,
+identity or callback service exists in this definition; automatic restart is off.
+
+Only `OIL_C1_DB_PASSWORD` supplies the database password to the Compose child.
+Use the explicit empty `deploy/compose.env` to suppress ambient `.env` discovery,
+and capture `config --format json` in memory; never display rendered environment
+or persist a password/DSN. The integration checks generate synthetic credentials
+in memory and compare/remove them before emitting assertions. They render the
+actual file without contacting a daemon or creating resources.
+
+The general trial's HTTPS, multiple-service and unpublished-database checks stay
+unchanged. Do not use a port/provenance override with `controlled_trial.py` or
+`trial-start.sh` to activate C1. Future migration uses C's fixed helper and only
+the existing `oil_agent.runtime.cli migrate` command with a process-scoped DSN;
+it must not initialize queues, recover deliveries or open a phone window.
+
+**Configuration preparation is not a usable Windows database acceptance.**
+Docker documents [internal network routing limits](https://docs.docker.com/reference/cli/docker/network/create/#internal)
+and [the inaccessible Linux bridge on Docker Desktop](https://docs.docker.com/desktop/features/networking/networking-how-tos/#known-limitations).
+The internal-network documentation also permits host-to-container communication;
+these documents do not prove that internal-only publication universally fails.
+The existing E test overlay records a host-publication workaround using a second
+network; this C1 definition deliberately retains its sole internal network.
+An ordinary external bridge would expand outbound access and is not an accepted
+correction. Compose rendering cannot settle the actual Desktop port-forwarding
+behavior. The previous E Engine 29.5.3 / Compose 5.1.4 evidence is historical;
+the current daemon was not reprobed in this preparation.
+
+Before host assembly can be accepted, separately scoped activation must verify
+the new exact container/network/volume ownership, actual loopback mapping and a
+single bounded read-only database identity connection through that mapping.
+Missing mapping or connection failure stops the attempt; it does not authorize
+another network, public binding, image pull or retry. No proposed C1 resources,
+activation, migration, firewall behavior or phone receipt have been verified here.

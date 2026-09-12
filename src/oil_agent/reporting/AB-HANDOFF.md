@@ -491,3 +491,148 @@ to verify durable correction delivery remains limited to original authorized
 recipients. AB did not restart Docker or substitute SQLite for that acceptance.
 This is a bounded code repair; real source/model/Feishu calls remain unauthorized
 and unexecuted, and product usage/cost remains 0.
+
+## Business daily analysis: dispatch ctx_be1ebcef01c4
+
+Original AB HEAD `dea13fa81825f1160ef44187885a98c569375edb` was clean. Normal
+fast-forward adoption of I `78e5363d7c7da5d6bb76c3be6296b1f6e4010d87`, then
+normal merge of exact M `c4e41982fd1128c513d3b89750e7586eb23abb30`, produced
+baseline `9cb7d710ceee6af4636fde4f7022c61be50684dd`. No reset, checkout, history
+rewrite or new worker was used. Existing branch remains
+`songconmaisaix31-design/oil-v01-ab`. The delivery SHA is supplied in the terminal
+handoff so this note need not contain its own circular commit identifier.
+
+Owned changes: `reporting/service.py`, this existing note,
+`tests/unit/reporting/test_business_analysis.py` and the added business-sequence
+case in `tests/unit/intelligence/test_assessment.py`. No intelligence production
+code, approved rule, R16 guard, shared contract, C/D/E file or UI was edited.
+
+The report now produces deterministic Chinese conditional supply/transport
+analysis, next verification items, quote-basis interpretation and period-specific
+background interpretation from its supplied snapshot. It never reads event
+`title`, `impact_path` or `unknowns` as trusted analysis. Energy context and an
+explicit interruption must coexist in a cited clause; the existing full-record
+`guarded_status` and credible occurred assessment gate still apply. Fires,
+attacks, geography, arbitrary impact strings or a keyword alone cannot imply a
+disruption, market-wide price direction or trading recommendation.
+
+Source families select the latest known revision before validity filtering;
+events select the highest revision assessed by cutoff before checking references.
+An unusable current revision does not revive earlier facts or implications.
+Future-discovered/assessed revisions do not change an earlier cutoff. Denied,
+planned, unknown, withdrawn, corrected and conflicting event states carry a
+verification item, without reusing an earlier occurred impact. Complete evidence
+excerpts survive fact-display truncation. Original quote values, comparison basis,
+statistical geography/period/release and fixture/trial/production labels persist.
+
+### Existing-field reference convention accepted by M
+
+- Facts retain `SupportedFact.evidence`; metrics retain `ComputedMetric.evidence`.
+- Event impact/watch/specific-gap lines end in
+  `[event=<event_id>@<revision>; evidence=#<n>]`. The one-based `n` resolves to the
+  full existing `Report.evidence[n-1]` record ID, revision, field and excerpt.
+  Multiple supporting references repeat that exact annotation separately.
+- Quote/background interpretation uses `[evidence=#<n>]` (multiple references
+  separated by semicolons). General missing-input gaps describe absence and have
+  no invented evidence reference. The schema and frontend are unchanged.
+- Original English metric labels and diagnostic substrings are retained for
+  compatibility; added business prose and missing-data explanations are Chinese.
+
+### Actual local checks
+
+- Before code changes:
+  `uv run --offline --frozen pytest tests/unit/intelligence tests/unit/reporting tests/integration/test_contextual_guards.py tests/integration/test_rules_acceptance.py -q --tb=short`
+  returned **164 passed**.
+- The initial new `test_business_analysis.py` invocation first had a test-helper
+  import collection error; correcting only the test import allowed the actual
+  unchanged-baseline run: **12 failed, 11 passed**. Failures reproduced empty
+  analysis, missing revision/reference watch items, stale source-revision facts,
+  absent Chinese unknown-price explanations and missing quote interpretation.
+- Added valid occurred Chinese `装卸已暂停` energy-transport stimulus reproduced
+  **1 failed, 23 passed** before adding that one literal presentation wording.
+  It does not change event recognition, source approval or confidence rules.
+- Final focused intelligence/reporting/contextual/rules command above:
+  **191 passed**, zero failures/skips. All original test-function assertions were
+  retained. The event sequence exercises routine silence, same-origin repetition,
+  independent corroboration, substantive follow-up, denial and withdrawal;
+  these checks are advisory service behavior, not PostgreSQL/outbox acceptance.
+- `uv run --offline --frozen ruff check src/oil_agent/reporting tests/unit/reporting tests/unit/intelligence/test_assessment.py`: passed.
+- `uv build --offline --no-build-isolation --out-dir "$env:TEMP/oil-ab-business-ctx-be1ebcef01c4"`
+  failed because hatchling is absent from the application environment. The normal
+  declared isolated build, `uv build --offline --out-dir "$env:TEMP/oil-ab-business-ctx-be1ebcef01c4"`,
+  passed using the existing offline cache, producing wheel and sdist without any
+  dependency/lock change. No frontend source changed or UI build was needed.
+
+E's first `test_business_reports.py` positive fixture independently returned
+**1 failed, 2 passed**, both on E's baseline and on this implementation. The
+read-only diagnostic showed its actual event was `unknown/routine/unverified`:
+its original title/body explicitly described an exercise and uncertainty. This
+is preserved guard behavior, not a supported occurred positive. M returned the
+NEW positive setup to E for correction while retaining the original exercise
+negative and all assertions. AB did not edit E evidence or weaken the guards.
+
+E then froze corrected positive/negative scenarios in
+`83774440004fdf3969f2d3f0d283134e98bd8a87`: E reports the qualified pre-fix
+baseline as **2 failed, 5 passed** (empty analysis and superseded source fact).
+AB independently checked the test blob
+`ebaa20463b82b761b166528a0a5e16a1a9059b80` and fixture blob
+`188dc53e7a97d8107c5d8fb3ed396d0899459e24` against that commit. This exact
+read-only command passed **7 tests in 0.42s**, zero failures/skips:
+
+```powershell
+uv run --offline --frozen python -B -m pytest -p no:cacheprovider --confcutdir C:/Users/DW/orca/workspaces/oil-agent/oil-v01-e/tests/integration C:/Users/DW/orca/workspaces/oil-agent/oil-v01-e/tests/integration/test_business_reports.py -q --tb=short
+```
+
+The test now establishes occurred/credible-single-source/urgent preconditions
+before testing the positive report, preserves the exercise negative, and checks
+latest denial, invalid latest evidence and superseded source references. This
+is AB's local execution of frozen E cases, not E acceptance of the I candidate.
+AST comparison also confirmed all 12 original assessment test functions unchanged;
+the original reporting and R16/rules integration test files were not edited.
+
+### Chinese synthetic example from the actual test helpers
+
+**合成测试，非真实市场信息。** Cutoff `2026-09-12T04:00:00+00:00`, report
+`report-test`, provenance `fixture`, dataset `ab-report-v1`. The following is the
+actual business-text excerpt; repeated machine reference tails are consolidated
+as reference 1 below for readability.
+
+| Section | Generated Chinese result |
+| --- | --- |
+| Fact | 来源陈述：来源报告已发生 (occurred; credible_single_source): 测试杉木炼油厂今日因设备故障暂停装船，未造成人员伤亡。 |
+| Conditional impact | 条件性影响：若原文所述装运或运输中断持续，相关油品运输及到货节奏可能延后；实际受影响批次及替代运输能力尚不能确定。 |
+| Watch | 待观察：核验装运恢复时间、受影响批次及替代运输安排。 |
+| Evidence caution | 待核验：现有证据仅属单一原始出版方；同源转载不等于独立佐证。 |
+| Gap | 数据缺口：上述影响的持续时间、实际规模及本地关联未知，不能据此确定油价方向或涨跌幅。 |
+| Missing prices | 数据缺口：有效报价和背景数据缺失，当日市场变化未知，不能视为持平。 |
+
+Reference 1: event
+`event-candidate:257218a8bdcdb45b06176c8dc97f12f9e8b1007fc18fb598aa82a34b97658fd2@1`,
+`Report.evidence[0] = (fixture-record-1, 1, content_excerpt, 测试杉木炼油厂今日因设备故障暂停装船，未造成人员伤亡。)`.
+The returned report retains the complete annotation on each analytical line.
+
+Reproduce locally in PowerShell, using only existing synthetic test helpers:
+
+```powershell
+@'
+import asyncio, runpy, sys
+sys.path.insert(0, 'tests/unit/reporting')
+t = runpy.run_path('tests/unit/reporting/test_business_analysis.py')
+base = runpy.run_path('tests/conftest.py')['source_record'].__wrapped__()
+async def main():
+    r = t['news'](base, t['TRANSPORT'])
+    e = await t['assessed'](r)
+    report = await t['build']((r,), (e,))
+    print(report.model_dump_json(indent=2))
+asyncio.run(main())
+'@ | uv run --offline --frozen python -B -
+```
+
+Limits: literal clause interpretation is intentionally finite, not general Chinese
+causal understanding or verified real-market coverage. Unknown duration, scale,
+customer geography, independent sources and actual quotes remain explicit.
+I must integrate and E independently accept the delivered commit; C owns report
+failure/recovery and urgent isolation. No live source/model/platform request,
+credential access, real message, polling, Docker change, production change,
+paid service or fourteen-day operation was performed. Product calls and tokens
+remain zero for this increment; development-agent billing is unavailable.

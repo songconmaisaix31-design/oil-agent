@@ -5,13 +5,16 @@ import json
 from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
 
+import httpx
 import pytest
 
 from oil_agent import bootstrap
+from oil_agent.channels import FeishuSettings, FeishuTenantLookup
 from oil_agent.contracts.dto import Delivery
 from oil_agent.runtime import c1_private, c1_product
 from oil_agent.runtime.c1_config import C1Preparation, injection_fields
-from oil_agent.runtime.permissions import C1Permission
+from oil_agent.runtime.permissions import C1AppRequestPermission, C1Permission
+from oil_agent.runtime.service import Runtime, RuntimeServices
 
 
 @pytest.fixture
@@ -28,6 +31,7 @@ def entry_scope(monkeypatch):
     )
     permission = C1Permission(
         approval_id="synthetic-entry-start",
+        app_request_approval_id="synthetic-entry-app-window",
         authorization_ref="synthetic:entry-test-only",
         budget_ref="synthetic:zero-fee-test-only",
         valid_from=now - timedelta(seconds=1),
@@ -43,7 +47,21 @@ def entry_scope(monkeypatch):
             subject=f"{config.tenant_key}:{config.app_id}:{config.recipient_open_id}",
         ),
     )
+    app_permission = C1AppRequestPermission(
+        approval_id=permission.app_request_approval_id,
+        authorization_ref="synthetic:entry-app-scope-only",
+        budget_ref=permission.budget_ref,
+        valid_from=permission.valid_from,
+        expires_at=permission.expires_at,
+        start_trigger=permission.start_trigger,
+        app_id=permission.app_id,
+        credentials_ref=permission.credentials_ref,
+        host_binding=permission.host_binding,
+        max_requests=permission.max_requests,
+        max_new_fee=permission.max_new_fee,
+    )
     request = {
+        "app_request_permission": app_permission.model_dump(mode="json"),
         "permission": permission.model_dump(mode="json"),
         "database_url": (
             "postgresql+psycopg://synthetic_entry:SYNTHETIC_DB_CANARY"
@@ -279,3 +297,161 @@ def test_private_entry_rejects_non_strict_input_before_child(
     output = capsys.readouterr()
     assert "CANARY" not in output.out + output.err
     assert "receipt" not in json.loads(output.out)
+
+
+@pytest.mark.parametrize("entry", ["private", "product"])
+@pytest.mark.parametrize("change", ["absent", "unlinked", "owner", "window", "budget"])
+def test_shared_app_owner_rejected_before_entry_effects(
+    entry_scope, monkeypatch, capsys, entry, change
+):
+    config, request = entry_scope
+    app = request["app_request_permission"]
+    if change == "absent":
+        del request["app_request_permission"]
+    elif change == "unlinked":
+        del request["permission"]["app_request_approval_id"]
+    elif change == "owner":
+        app["approval_id"] = "synthetic-replaced-owner"
+    elif change == "budget":
+        app["max_requests"] = 19
+    else:
+        # Each window remains active and bounded; exact owner/window equality must fail.
+        for field in ("valid_from", "expires_at"):
+            app[field] = (datetime.fromisoformat(app[field]) - timedelta(seconds=1)).isoformat()
+
+    def forbidden(*args, **kwargs):
+        pytest.fail("Missing or changed shared owner reached a child or factory")
+
+    monkeypatch.setattr(c1_private.subprocess, "run", forbidden)
+    monkeypatch.setattr(c1_product, "build_c1_runtime", forbidden)
+    if entry == "private":
+        stdin_request(monkeypatch, request)
+        result = c1_private.main(["send-once"])
+    else:
+        product_input(monkeypatch, config, request)
+        result = c1_product.main(["send-once"])
+    assert result == 2
+    output = capsys.readouterr()
+    assert "CANARY" not in output.out + output.err
+    response = json.loads(output.out)
+    assert response["status"] in {"C1_INVALID_EXECUTION", "C1_BINDING_MISMATCH"}
+    assert "receipt" not in response
+
+
+def tenant_scope(entry_scope, monkeypatch):
+    config, request = entry_scope
+    config = config.model_copy(update={"tenant_key": None, "recipient_open_id": None})
+    request = {key: value for key, value in request.items() if key != "permission"}
+    request["app_request_permission"]["tenant_read_ref"] = "synthetic:explicit-tenant-read"
+    monkeypatch.setattr(c1_private, "load_private_config", lambda: config)
+    for name in ("OIL_C1_TENANT_KEY", "OIL_C1_RECIPIENT_OPEN_ID"):
+        monkeypatch.delenv(name, raising=False)
+    return config, request
+
+
+@pytest.mark.parametrize("entry", ["private", "product"])
+@pytest.mark.parametrize("denial", ["read_ref", "expired", "future", "send_scope"])
+def test_query_requires_its_explicit_read_window_and_no_send_scope(
+    entry_scope, monkeypatch, capsys, entry, denial
+):
+    send_permission = entry_scope[1]["permission"]
+    config, request = tenant_scope(entry_scope, monkeypatch)
+    app = request["app_request_permission"]
+    if denial == "read_ref":
+        del app["tenant_read_ref"]
+    elif denial == "send_scope":
+        request["permission"] = send_permission
+    else:
+        shift = timedelta(hours=-1 if denial == "expired" else 1)
+        for field in ("valid_from", "expires_at"):
+            app[field] = (datetime.fromisoformat(app[field]) + shift).isoformat()
+
+    def forbidden(*args, **kwargs):
+        pytest.fail("Unauthorized query reached a child or runtime factory")
+
+    monkeypatch.setattr(c1_private.subprocess, "run", forbidden)
+    monkeypatch.setattr(c1_product, "build_c1_runtime", forbidden)
+    if entry == "private":
+        stdin_request(monkeypatch, request)
+        result = c1_private.main(["tenant-lookup"])
+    else:
+        product_input(monkeypatch, config, request)
+        result = c1_product.main(["tenant-lookup"])
+    assert result == 2
+    output = capsys.readouterr()
+    assert "CANARY" not in output.out + output.err
+    response = json.loads(output.out)
+    assert response["status"] in {"C1_NOT_AUTHORIZED", "C1_INVALID_EXECUTION"}
+    assert "receipt" not in response
+
+
+def test_query_entry_uses_shared_owner_without_send_authority(entry_scope, monkeypatch, capsys):
+    config, request = tenant_scope(entry_scope, monkeypatch)
+    product_input(monkeypatch, config, request)
+    app = C1AppRequestPermission.model_validate(request["app_request_permission"])
+    calls = []
+
+    def reserve(permission, operation):
+        assert permission == app
+        assert operation in {"tenant_token", "tenant_query"}
+        calls.append("reserve:" + operation)
+        return "synthetic-entry-app-reservation"
+
+    def wire(request):
+        assert request.url.host == "open.feishu.cn"
+        operation = "tenant_token" if request.url.path.endswith("internal") else "tenant_query"
+        assert calls[-1] == "reserve:" + operation
+        calls.append("wire:" + operation)
+        if operation == "tenant_token":
+            return httpx.Response(
+                200, json={"code": 0, "tenant_access_token": "SYNTHETIC-TOKEN", "expire": 7200}
+            )
+        return httpx.Response(
+            200, json={"code": 0, "data": {"tenant": {"tenant_key": "SYNTHETIC_TENANT_CANARY"}}}
+        )
+
+    def forbidden(*args, **kwargs):
+        pytest.fail("Query mode attempted recipient preparation or sending")
+
+    def fixed_factory(settings):
+        calls.append("factory")
+        assert settings.c1_app_request_permission == app
+        assert settings.c1_permission is None and not settings.c1_display_only
+        assert settings.c1_tenant_lookup_only and settings.outbound_mode == "dry_run"
+        assert settings.fixture_dataset == "feishu-c1" and settings.runtime_factory is None
+        assert not settings.identity_enabled and not settings.external_sources_enabled
+        assert not settings.model_calls_enabled and settings.trial_send_permission is None
+        repository = SimpleNamespace(
+            clock=lambda: datetime.now(UTC),
+            engine=SimpleNamespace(dispose=lambda: calls.append("dispose")),
+            reserve_c1_app_request=reserve,
+        )
+        runtime = Runtime(repository, settings=settings)
+        assert not repository.local_provisioning_allowed()
+        assert repository.c1_permission_provider() is None
+        runtime.prepare_c1_exercise = forbidden
+        runtime.send_c1_once = forbidden
+        runtime.send_pending = forbidden
+        runtime.services = RuntimeServices(
+            c1_tenant_lookup=FeishuTenantLookup(
+                FeishuSettings(enabled=True, app_id=config.app_id, app_secret=config.app_secret),
+                authorize_request=runtime.authorize_c1_app_request,
+                transport=httpx.MockTransport(wire),
+            )
+        )
+        assert not runtime.services.channels and runtime.services.identity is None
+        return runtime
+
+    monkeypatch.setattr(bootstrap, "build_runtime", fixed_factory)
+    assert c1_product.main(["tenant-lookup"]) == 0
+    assert calls == [
+        "factory",
+        "reserve:tenant_token",
+        "wire:tenant_token",
+        "reserve:tenant_query",
+        "wire:tenant_query",
+        "dispose",
+    ]
+    output = capsys.readouterr()
+    assert "CANARY" not in output.out + output.err
+    assert json.loads(output.out) == {"status": "C1_TENANT_LOOKUP_COMPLETED", "fields": []}

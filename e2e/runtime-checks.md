@@ -4,6 +4,457 @@ Provider replies and market content in this report are synthetic. Actual local
 file/ACL observations are labeled separately. No source license, production
 account, model, Feishu recipient, phone receipt or deployed server is accepted.
 
+## Actual local host binding: independent read-only post-state verified
+
+On 2026-09-12, E verified its retained branch clean at
+`d4d1225811fd44f6fc7c39259beaabc85ab0e144`, then ordinarily fast-forwarded to
+**`e690b61358e4216dfca574a6d58b9c9251edaf0d`**. The only difference was
+`V01-TODO.md`; accepted runtime code was unchanged. This task verifies only the
+user-confirmed current test-host binding, explicitly without sending or a new
+phone-test start. The scoped C transcript corroborated the source, helper checks
+and missing fields. M attributed C's maintenance claims to handoff
+`msg_91a73a5fc9da` at 10:14:56 UTC and successful completion
+`msg_5120f422dca4`. The null-only update and preservation of other pre-update
+bytes are **C-reported maintenance**, not an E observation of that earlier state.
+
+E inspected only the approved configuration and its required protected-path
+metadata through the accepted helpers:
+`C:/Users/DW/AppData/Local/oil-agent/private/feishu-c1/config.json`.
+All comparisons remained in memory; output contained only field names, booleans
+and fixed check status/exit values. The actual file is a bounded, single-link
+regular file without a reparse point, owned by the current Windows user, with
+exactly the current user and SYSTEM allowed FullControl. The private directory
+has ACL inheritance disabled; the file itself inherits its restricted ACL, so E
+does **not** claim the file's inheritance flag is disabled. The accepted path/ACL
+verifier passed without repair, and the strict configuration schema was valid.
+The configured `host_binding` exactly matched the actual machine name, which
+matched the user's explicitly approved current host; no host identifier is copied
+here. No configuration value or credential was printed or written.
+
+An inline `uv run --offline --locked --no-sync python -` command loaded the actual
+configuration with `load_private_config`, compared the host against Windows
+`GetComputerNameW` in memory, and invoked each existing CLI command **once** using
+the locked environment's `sys.executable`:
+
+```text
+python -B -m oil_agent.runtime.c1_private check
+python -B -m oil_agent.runtime.c1_private inject-check
+```
+
+Both returned **exit 2**, `NOT_CONFIGURED`, `start_trigger=NOT_AUTHORIZED`, and
+exactly `tenant_key`, `recipient_open_id` as missing fields; stderr was empty.
+The surrounding verification exited 0. `inject-check` exercised the real fixed
+isolated `python -I -m oil_agent.runtime.c1_product` child and compared its exact
+redacted response; no child, ACL or configuration double was used. E compared
+bounded bytes before and after these checks in memory: unchanged. This supports
+read-only E verification and the observed post-state, not reconstruction of C's
+earlier write or a claim of crash-atomic maintenance.
+
+Verdict: **ACTUAL LOCAL HOST-BINDING / LOADING / ISOLATED INJECTION VERIFIED**.
+Tenant and personal recipient remain missing, and this creates no executable
+provider permission. The previous phone window remains expired with no new
+start trigger. Product API calls, model tokens, sends and added product cost are
+**0**; live receipt API usage remains unknown/null. No private write, broader test,
+build, SQL, Docker, host service or provider operation occurred. Platform, phone,
+login, callback, deployment and production acceptance remain outside this result.
+
+## Final C1 binding: bounded local code, tests and package members accepted
+
+On 2026-09-12, E independently accepted the bounded local scope of I delivery
+**`bfe0209f882f2ffb92fcfc4ab1f651e4541a36cd`**, with exact code/test/build source
+**`e98d4a69a2e317b8f573f1c868571dd66fccd1e3`**. E verified its clean retained
+branch at `723fbf2da4ee8da99ab8c24e27c57cda053e14c4` and ordinarily fast-forwarded
+to that delivery. The exact I remote matched. `git merge-base --is-ancestor`
+passed for the retained E checkpoint, source, C mapping
+`3dd8cb43c19fac00a6d1099baa4a8f28f3d63671`, E fixture
+`8fbea024aabd1ff6ae77c2f2514fee2f53f1662e`, I glue
+`d842b7b43c2f6ed91198a3e3695650db3b2a8cfe`, and M board
+`eeaf925c6169793f867e5f2a0391265f1fb8ac65`.
+
+`git diff --name-status` from source to delivery returned only
+`e2e/runtime-checks.md` and `config/integration-handoff.md`; the corresponding
+exclusion diff and `git diff --check` passed. C's five mapping paths match its
+exact commit, the entire E entry test file matches `8fbea024`, and bootstrap
+plus its factory test match `d842b7b`. From the prior E checkpoint, all changes
+are confined to the five C mapping paths, the sole board and I handoff; no
+nonallowlisted source drift or later I code change was found. Original positive
+and negative entry assertions remain intact; E changed no test or domain code.
+
+### Independent commands and results
+
+```powershell
+uv run --offline --locked --no-sync pytest tests/integration/test_c1_entry.py tests/integration/test_bootstrap_factory.py -k 'c1_entry or offline_factory' -q --tb=short
+uv run --offline --locked --no-sync pytest tests/unit/runtime/test_c1_tenant_binding.py -q --tb=short
+```
+
+Actual results: **65 passed, 13 deliberately deselected, 0.91 seconds, exit 0**;
+**19 passed, 0.46 seconds, exit 0**. The first selection retains the existing
+Starlette/AnyIO `BlockingPortal` deprecation warning. The 19 binding cases use
+Windows TEMP synthetic files and **mocked ACL verification**, with real local
+exclusive-handle/file operations; they do not verify the actual private file's
+ACL. No broader suite, dependency sync, build or SQL test was run.
+
+The bounded review and cases confirm strict internal selected-result validation,
+exact app/host/window/config revalidation in the parent, and explicit opt-in
+binding. The Windows handle is exclusive and opens an existing file without
+following a reparse point. A matching existing tenant is a no-op; a different
+nonempty tenant or changed configuration is preserved and rejected. Only an
+unset tenant value is changed, preserving other fields. Ordinary output stays
+redacted, default probe does not write, and local binding failure does not
+automatically query again. The internal selected-result mode rejects a terminal
+stdout. **In-place write failure is not crash-atomic:** the fsync-failure case
+returns binding-failed while proving bytes have already changed; a failure can
+leave changed or unconfirmed bytes and does not establish rollback or a receipt.
+
+### Existing package members, read in memory only
+
+Source paths and exact artifact paths were checked before archive access. I's
+single existing `uv build --offline` output at `e98d4a6` was read from:
+
+- `C:/Users/DW/AppData/Local/Temp/oil-agent-i-ctx-8394797ac280/dist/oil_agent-0.1.0-py3-none-any.whl` (185696 bytes).
+- `C:/Users/DW/AppData/Local/Temp/oil-agent-i-ctx-8394797ac280/dist/oil_agent-0.1.0.tar.gz` (782516 bytes).
+
+An inline Python command through `uv run --offline --no-sync --locked python -`
+used `zipfile`/`tarfile` in-memory member streams, a 262144-byte per-member bound,
+and `git show e98d4a69a2e317b8f573f1c868571dd66fccd1e3:src/oil_agent/<member>`.
+The selected relative members in each archive were `runtime/c1_execution.py`,
+`runtime/c1_private.py`, `runtime/c1_product.py`, `runtime/permissions.py`,
+`runtime/c1.py`, `channels/tenant.py`, `channels/tenant_token.py`, and
+`bootstrap.py`. Result: **16/16 LF-normalized matches, 0/16 raw Git-blob matches,
+exit 0**. Each package member contains Windows CRLF where the Git blob uses LF;
+normalizing CRLF to LF accounts for the complete difference. This is selected
+member source correspondence, not whole-archive byte equality or installed
+runtime evidence. Nothing was extracted to disk, installed, rebuilt or modified.
+
+No domain defect was reproduced in this scope. The 21 C1 SQL cases remain
+**NOT EXECUTED**, and the 13 factory PostgreSQL cases were deliberately unselected;
+the known unavailable-engine observation was not reprobed. Real app/tenant/self/
+host bindings, durable execution scope and approved database are not established
+by these synthetic checks. No actual private config/helper, credentials, API,
+database, container, host or shared resource was accessed. Actual product calls,
+model tokens, sends and added product cost are **0**; live API usage remains
+**unknown/null**. The explicit 2026-09-12 start `08:43:15.149Z` and fixed expiry
+`09:13:15.149Z` remain expired, with no inferred new permission. Acceptance is
+**LOCAL CODE/TEST/SELECTED PACKAGE EVIDENCE ONLY**; platform, phone, login,
+callback, deployment and production acceptance remain unexecuted.
+
+## C-core and I factory: bounded local checks accepted, binding delta excluded
+
+After M explicitly extended this finite task to I's exact glue candidate,
+E accepts the tested local C-core/factory scope at I
+**`d842b7b43c2f6ed91198a3e3695650db3b2a8cfe`**, with C core
+`1a699c7713ea4c62b5cd81b4e47e1c6909064042` and E fixture/regression source
+`8fbea024aabd1ff6ae77c2f2514fee2f53f1662e`. E first committed and pushed its
+fixture changes, verified the exact E remote, and ordinarily merged the exact
+I glue into merge checkpoint `c57a06970843912e2c57b23cd1b5c717d1fe29a4`.
+The I remote independently returned the full `d842b7b` SHA. This is not final
+combined C1 acceptance or package/build evidence.
+
+The I delta is confined to `src/oil_agent/bootstrap.py`, its owned factory test
+and `config/integration-handoff.md`. Its new lookup factory revalidates Settings,
+constructs only the C Runtime and D tenant-read adapter, binds the adapter to
+the current app reservation callback, reads only the explicit C1 application
+secret, and disposes on construction failure. It does not install send, OAuth,
+source, report or fixture-provisioning services. C runtime/storage bytes remain
+equal to exact `1a699c`; E's complete entry test file remains equal to `8fbea024`.
+A read-only AST comparison preserved all 16 original factory test functions and
+parameterizations. E authored no factory or C-domain change.
+
+The independent command on merge checkpoint `c57a069` was:
+
+```powershell
+uv run --offline --no-sync --locked pytest tests/integration/test_c1_entry.py tests/integration/test_bootstrap_factory.py -k 'c1_entry or offline_factory' -q --tb=short --junitxml=e2e/runtime-artifacts/c1-shared-owner-factory.xml
+```
+
+Result: **65 passed, 13 deliberately deselected**, zero failures/skips, 0.86
+seconds, exit 0: all 45 E entry cases plus 20 offline factory cases. The existing
+Starlette/AnyIO `BlockingPortal` alias deprecation warning remains. The 32 C
+app-scope cases previously passed once in the 77-case intermediate selection;
+they were not rerun for factory-only changes. These selections overlap and must
+not be summed as a final suite total. Final evidence `git diff --check` passed.
+
+No domain failure was reproduced in these bounded checks. C's separately
+delivered bind-if-unset delta `3dd8cb43c19fac00a6d1099baa4a8f28f3d63671` was not
+adopted or inspected, as directed by M. Its parent write behavior, failure states,
+final combined integration and build require an authorized candidate and separate
+review. The 21 C1 PostgreSQL cases and 13 factory PostgreSQL cases remain
+**NOT EXECUTED**; no SQL guard or unknown engine state was bypassed. All inputs
+and HTTP effects here were synthetic; actual product calls/sends/model tokens/
+added product cost are **0**, live usage remains unknown/null, and the expired
+phone window is unchanged. No real private file or platform was accessed.
+
+## C shared app owner: intermediate review and E fixture adaptation
+
+E ordinarily adopted exact I intermediate
+`775308f7ded755da410044f8634b2e5f11a6ff23` from its clean retained
+`5aa4219fd09473e7ab6f645289e00de0fde3ec85` branch on 2026-09-12. The exact I
+remote matched, and ancestor checks confirmed E `5aa4219` and C source
+`1a699c7713ea4c62b5cd81b4e47e1c6909064042`. This checkpoint precedes I factory
+glue and is **not final factory or combined-candidate acceptance**.
+
+Before editing any fixture, the unchanged 26 entry cases produced **26 setup
+errors**, 5.44 seconds, pytest exit 1: constructing `C1Permission` failed because
+the new required `app_request_approval_id` was absent. No entry, runtime, database
+or transport effect occurred. This reproduces an intentional required contract
+change, not a domain failure or missing real credentials.
+
+E changed only the existing synthetic `entry_scope` fixture to supply a distinct,
+stable application-window approval, its explicit reference from the full send
+permission, and `app_request_permission` in the stdin envelope. Application,
+host, credential reference, exact start/expiry, budget reference, twenty-request
+limit and zero-fee bound match the same full permission. A lookup read scope is
+added only by the explicit synthetic query fixture; a send permission alone does
+not implicitly grant tenant read. The original 26 tests then passed unchanged.
+
+Nineteen bounded E cases were added in the same existing entry test file:
+
+- Ten parent/product boundary cases reject an absent app permission, absent
+  owner link, replaced owner, differing active window or differing budget before
+  child/factory effects. Invalid input and binding-mismatch results remain redacted.
+- Eight parent/product query cases require explicit tenant-read permission and
+  an active window, and reject a supplied full send permission in query mode.
+- One public product query case connects the actual C Runtime and D transport
+  through a patched fixed bootstrap target and mocked HTTP/repository reservation.
+  Both token/query operations reserve under the same app owner before their two
+  synthetic wires; no sender, recipient provisioning, OAuth, source or model
+  service is available. The response has no tenant/receipt/usage disclosure and
+  disposal runs once. This tests call flow, not durable SQL accounting or I glue.
+
+Bounded source inspection confirmed full permissions require exact app/window/
+budget matching, runtime checks compare constructed scopes, lookup/send
+reservations reuse the app approval in the existing ledger, and first-exercise
+identity is keyed by app approval rather than a replaceable full-send approval.
+The transactional budget and first-subject claims still require PostgreSQL.
+
+### Actual intermediate commands and results
+
+All commands used the existing environment with offline/no-sync flags:
+
+```powershell
+uv run --offline --no-sync --locked pytest tests/integration/test_c1_entry.py -q --tb=short --junitxml=e2e/runtime-artifacts/c1-shared-owner-entry-red.xml
+uv run --offline --no-sync --locked pytest tests/integration/test_c1_entry.py -q --tb=short --junitxml=e2e/runtime-artifacts/c1-shared-owner-fixture-green.xml
+uv run --offline --no-sync --locked pytest tests/integration/test_c1_entry.py tests/unit/runtime/test_c1_app_scope.py -q --tb=short --junitxml=e2e/runtime-artifacts/c1-shared-owner-intermediate.xml
+```
+
+Results: **26 setup errors / 5.44 seconds / exit 1** before changes; **26 passed /
+0.73 seconds / exit 0** after the fixture-only update; **77 passed / 0.81 seconds /
+exit 0** after the focused additions (45 E entry cases plus 32 C app-scope cases).
+The final selection had zero failures, skips, deselections or warnings. One
+initial Ruff import-order finding was corrected; final `uv run --offline
+--no-sync --locked ruff check tests/integration/test_c1_entry.py`, `ruff format
+--check` with the same prefix, and `git diff --check` passed. A read-only Python
+AST comparison against `5aa4219` confirmed all seven original non-fixture
+functions, including every original test and parameterization, remain unchanged.
+
+C's reported 115 owner checks were not rerun; 21 PostgreSQL cases remain
+**collected only / NOT EXECUTED**, with no new collection or Docker probe by E.
+No private data, real child, database, provider, phone or host operation ran.
+Product calls, sends, model tokens and added product cost remain **0**; live
+usage stays unknown/null and the expired phone window is not renewed. C's
+separate bind-if-unset delta is excluded and requires an authorized candidate.
+
+M subsequently authorized exact I factory glue
+`d842b7b43c2f6ed91198a3e3695650db3b2a8cfe` for ordinary adoption after E commits
+this fixture increment. Its bounded acceptance is recorded above; this
+intermediate result alone accepts no factory.
+
+## D tenant transport accepted: isolated transport scope only
+
+On 2026-09-12, E independently accepts the D transport increment in exact I
+candidate **`d4414f9a3b24dc104e2f622ee0391f4ac811811a`**, containing D source
+**`da65fb1f2f80a455c058e3107a3df3964c22fbd5`**. This is source/isolated transport
+test evidence only. C is still implementing the shared app-window budget and
+runtime entry; neither that implementation nor a combined C/I candidate is
+accepted by these results. No real tenant identity, API permission, platform
+receipt, phone display or production behavior is established.
+
+E verified its clean retained branch at
+`a9264158e5ec64983f700d8c0a68373fff7f5be8` and ordinarily fast-forwarded to the
+exact I candidate. `git merge-base --is-ancestor` passed for accepted baseline
+`fe4b76c2f8b1f17130bd442812cbc046eed1f325`, D `da65fb1`, M
+`b6dd9c43cce97a6c621ef1cf7f8f6ad14aa33924` and E `a926415`. The independent
+`gh api repos/songconmaisaix31-design/oil-agent/git/ref/heads/songconmaisaix31-design/oil-v01-i --jq '.object.sha'`
+query returned the exact full candidate SHA.
+
+### Ownership and bounded source review
+
+The baseline diff contains only M's `V01-TODO.md`, E's existing evidence and D's
+six paths: `channels/C1.md`, `channels/__init__.py`, `channels/feishu.py`, new
+`channels/tenant.py`, new `channels/tenant_token.py` (under `src/oil_agent/`), and
+new `tests/unit/channels/test_tenant_lookup.py`. An exclusion-based
+`git diff --exit-code` proved every other tracked path unchanged. Separate
+zero-diff checks matched integrated channel code/new tests to D `da65fb1`, the
+board to M `b6dd9c43`, and prior E evidence to `a926415`. The complete original
+`test_channels.py` and `test_c1.py` files and common channel guards are byte-equal
+to accepted `fe4b76c`: no original assertion was edited or removed.
+
+Inspection of the bounded diff and the unchanged `ProviderHTTP` confirmed:
+
+- `FeishuTenantLookup` requires a callable request-authorization hook. Before
+  each token POST and tenant GET, it awaits a nonempty string reservation or
+  fails before that request. This is a transport contract; the tests use a
+  synthetic hook and do not prove C's durable ledger implementation.
+- Both routes use fixed `https://open.feishu.cn/open-apis`: token acquisition at
+  `/auth/v3/tenant_access_token/internal`, lookup at `/tenant/v2/tenant/query`.
+  There is no endpoint parameter or send method. Existing HTTP behavior disables
+  redirects and environment proxies, bounds connect time/connections/body size,
+  and has no retry loop. The outer deadline also bounds authorization waits.
+- Only validated `data.tenant.tenant_key` is returned: 1-160 ASCII identifier
+  characters, strict integer success code, and the expected nested objects.
+  Display IDs, configured fallbacks and raw responses do not become identity.
+  No private configuration or recipient authorization is written or inferred.
+- Token acquisition/cache/expiry handling moved from `FeishuChannel` into
+  `FeishuTenantToken`, reused by sending and lookup. A warm lookup reserves only
+  its actual GET; token invalidation permits refresh on a later explicit call,
+  without an automatic retry. Ordinary `require_app`, send authorization,
+  recipient/revocation, fixture isolation and UNKNOWN handling remain guarded.
+- Lookup errors retain classified service codes with fixed redacted messages.
+  Reservation failure, response loss, invalid data and redirects cannot expose
+  provider messages or synthetic secret canaries through the reported error.
+
+### Actual independent commands and results
+
+The documented selections ran with `--offline --no-sync --locked` against the
+existing environment. No dependency resolution/download or environment sync was
+requested; HTTP transports and credentials in these tests are explicit doubles.
+
+```powershell
+uv run --offline --no-sync --locked pytest tests/unit/channels/test_tenant_lookup.py -q --junitxml=e2e/runtime-artifacts/tenant-transport-new.xml
+uv run --offline --no-sync --locked pytest tests/unit/channels/test_channels.py tests/unit/channels/test_c1.py -q -k 'default_off or acceptance_has or transport_loss or classified_provider or revocation or fixture_requires or expired_token or trial_recipient or malformed_recipient or c1_http or c1_exhausted or c1_authorization_revoked or c1_request_gate or c1_token_expiry' --junitxml=e2e/runtime-artifacts/tenant-transport-original.xml
+```
+
+Results respectively: **34 passed**, 0.27 seconds, exit 0; **36 passed,
+56 deliberately deselected**, 0.32 seconds, exit 0. Both had zero failures,
+skips and warnings. These are two bounded selections, not a full-suite result.
+`git diff --check` also passed. E authored no test or domain changes.
+
+No reproduced transport defect remains within this scope. C's immutable common
+budget, reservation persistence and runtime/private entry integration require
+their own exact integrated candidate and independent acceptance. No claim is
+made that this lookup transport alone supplies a complete executable permission.
+
+The existing missing-Docker-pipe observation below stands without another probe;
+the eleven C1 PostgreSQL cases remain **NOT EXECUTED**. This task ran no build,
+full suite, PostgreSQL, Docker, private helper, host operation or real HTTP call.
+The expired phone window is not renewed; the board's later App ID comparison is
+C/M-reported configuration evidence, not a fresh E private-file observation.
+Actual product source/model/Feishu calls, sends, model tokens and added product
+cost are **0**. The live API usage metric remains **unknown/null**; synthetic
+per-test call counts are not live usage or platform/phone evidence.
+
+## E PostgreSQL resource preflight: unavailable engine, no startup
+
+On 2026-09-12, E verified the retained repository
+`C:/Users/DW/orca/workspaces/oil-agent/oil-v01-e`, branch
+`songconmaisaix31-design/oil-v01-e`, clean worktree and accepted delivery
+`fe4b76c2f8b1f17130bd442812cbc046eed1f325`. This finite task inspected ownership
+and the narrow SQL test prerequisites; it did not start or test a database.
+
+### Resource identity and actual read-only observation
+
+The existing board, `deploy/compose.yaml`, `deploy/compose.e-test.yaml` and prior
+E evidence consistently identify the retained development test resource:
+
+| Field | Recorded E scope; current engine state is not verified |
+| --- | --- |
+| Compose project / service | `oil-agent-e` / `postgres` |
+| Container name | `oil-agent-e-postgres-1` |
+| Exact container ID | `b3c3a345428590922eb8e628a996dd634cb3333e5f0c86f588eede8fb7101cab` |
+| Retained volume | `oil-agent-e_postgres-data` mounted at `/var/lib/postgresql/data` |
+| Compose files | This E worktree's `deploy/compose.yaml` and `deploy/compose.e-test.yaml` |
+| Local port / database / user | `127.0.0.1:55434` / `oil_e_test` / `oil_e_test` |
+| Image | `postgres:16-alpine@sha256:e013e867e712fec275706a6c51c966f0bb0c93cfa8f51000f85a15f9865a28cb` |
+| Resource limits in Compose | 128 MiB, 0.5 CPU, 64 PIDs, 64 MiB shared memory |
+
+Historical evidence says the exact container was running when the engine pipe
+disappeared; its last interrupted UUID-schema cleanup remained unverified.
+Historical stopped states must not be substituted for that later unknown state.
+
+The actual bounded commands ran through `uv run --locked python -`, with
+`subprocess.run(..., capture_output=True, timeout=15)` for each Docker command:
+
+1. `docker context inspect desktop-linux --format '{{json .Endpoints.docker.Host}}'`
+   returned exit **0**, confirming only the configured local endpoint
+   `npipe:////./pipe/dockerDesktopLinuxEngine`.
+2. `docker --host npipe:////./pipe/dockerDesktopLinuxEngine container inspect
+   --format <selected nonsecret fields> b3c3a345428590922eb8e628a996dd634cb3333e5f0c86f588eede8fb7101cab`
+   returned exit **1**: `open //./pipe/dockerDesktopLinuxEngine: The system cannot
+   find the file specified`. Selected fields were ID/name/image, four Compose
+   ownership labels, state/exit/OOM, named mounts and port bindings; environment
+   values were excluded. The Python wrapper exited 0 after reporting that actual
+   Docker failure; it was not a successful container verification.
+
+No retry, volume inspection through the unavailable engine, global enumeration,
+daemon restart, container start/stop, removal or cleanup followed. Current
+container labels/state, retained volume and interrupted-schema cleanup remain
+**UNVERIFIED**. Ownership above is historical/configuration evidence, not fresh
+engine proof. M received this result and the proposal before any startup.
+
+### Exact SQL scope and fixture prerequisite
+
+The existing target is `tests/unit/storage/test_c1_storage.py`: five single
+cases plus six authorization-change variants, totaling the previously collected
+**11**. They cover concurrent atomic outbox preparation, rollback, shared
+twenty-request/three-send caps, user/permission/grant/host/expiry/person changes,
+UNKNOWN recovery/fencing and accepted-send/callback separation. No cases were
+collected again or executed in this preflight.
+
+The exact existing test command is:
+
+```powershell
+uv run --locked pytest tests/unit/storage/test_c1_storage.py -q --tb=short --junitxml=e2e/runtime-artifacts/c1-postgres.xml
+```
+
+This command is **NOT READY FOR E EXECUTION**: its existing `repository` fixture
+in `tests/unit/storage/conftest.py` requires `OIL_TEST_DATABASE_URL` bound to
+`127.0.0.1:55431/oil_c_test`, user `oil_c_test`, and rejects the E database.
+An absent URL skips; skips are not SQL evidence. E will not inject an E URL into
+that C-only guard, weaken the guard, or inspect/start/use C's resource.
+
+The narrow E-resource proposal is an E-owned integration adapter that reuses
+the unchanged eleven C test assertions and `c1` fixture, binding `repository`
+to the existing `e_repository` fixture. That fixture requires
+`OIL_E_TEST_DATABASE_URL` with driver `postgresql+psycopg`, exact E local scope
+`127.0.0.1:55434/oil_e_test` and user `oil_e_test`; it creates only a fresh
+`e_acceptance_<UUID>` schema, applies real migrations, bounds connection setup
+to five seconds and statements to five seconds, and removes only that test's
+new schema. An E adapter is **not yet implemented**. This is a test-harness
+preparation gap, separate from the unavailable engine and live authorization.
+
+### Proposed next resource actions, not executed
+
+After the operator/M makes the existing local engine available, recheck the
+same exact container's ID/project/service/worktree/config labels, mount/image,
+port and state. Inspect only the named volume with:
+
+```powershell
+docker --host npipe:////./pipe/dockerDesktopLinuxEngine volume inspect oil-agent-e_postgres-data --format '{{.Name}} {{.Driver}} {{json .Labels}}'
+```
+
+Confirm `127.0.0.1:55434` belongs to the same E resource (or is free if stopped),
+retain all old data/schema evidence, and require the explicitly supplied E
+development test credential without printing or harvesting environment values.
+If and only if the verified container is stopped, the proposed narrow startup
+is:
+
+```powershell
+docker --host npipe:////./pipe/dockerDesktopLinuxEngine start b3c3a345428590922eb8e628a996dd634cb3333e5f0c86f588eede8fb7101cab
+```
+
+There is no full Compose startup, recreation, migration of retained business
+schemas, new volume or trial host in this proposal. Only after resource proof
+and the E test-fixture adapter exist can the eleven assertions run against fresh
+E test schemas; report actual results and inspect exact resource state before
+any bounded owner stop. Existing interrupted schemas and volumes must remain
+untouched. Ordinary synthetic development tests do not require a live phone
+window, but they cannot establish a real trial host or execution permission.
+
+The phone window has expired and is not renewed. Product source/model/Feishu
+requests, sends, model tokens and added product cost remain **0**; PostgreSQL
+C1 verification, platform/phone receipt and production remain **NOT EXECUTED**.
+Only this existing E evidence file changed; no business code, test guard,
+credential, Docker resource or unique board was modified.
+
 ## C1 final candidate accepted: bounded code and local package evidence only
 
 E independently accepts I candidate and reported single-build source
@@ -1415,3 +1866,484 @@ Test names identify cases and variants; the corpus itself remains frozen.
 | T26 | Actual queue heartbeat/restart; API failure canary not exported | Off-host detection, maintenance notification and full operational-log audit NOT EXECUTED |
 | T27 | Stored fixture lineage, test-only grants, dry-run states and UI labels; D mock sender verifies fixture label | No real recipient or production fixture sending |
 | T28 | Evidence-linked deterministic reports, durable budgets/reserve/UTC reset and distinct runtime delivery counters | >=7-day comparison, >=14-day operation, real cost/coverage/receipt BLOCKED_EXTERNAL |
+
+## Actual local recipient binding: independent post-state verified
+
+On 2026-09-12, E observed the real post-state from **11:34:07.928930 UTC**
+through **11:34:49.156070 UTC**, using clean E source
+`d35a7fc192db05fb134a1459ce13d6748732f3c6`. `git diff --exit-code` confirmed
+`src/`, `pyproject.toml` and `uv.lock` identical to accepted I delivery
+`3c7ee50383235587063fe938fc7d27fe50d90783`; loaded helper paths resolved to E.
+Only the approved configuration was read, with its protected-path metadata:
+`C:/Users/DW/AppData/Local/oil-agent/private/feishu-c1/config.json`.
+
+The accepted path/ACL verifier passed without repair. The actual file is a
+bounded (at most 16384 bytes), single-link, regular, non-reparse file with valid
+UTF-8, duplicate-key rejection and strict schema validation. Directory and file
+are owned by the current user; their two allowed FullControl principals are
+exactly that user and SYSTEM. Directory ACL inheritance is disabled; the file
+inherits its restricted ACL. The configured host matched both the actual Windows
+machine name and the approved host; application fields were nonempty. The exact
+recipient comparison against M's supplied expected identity passed in memory.
+No private value or comparison digest was printed or recorded in this artifact.
+
+An inline `.venv/Scripts/python.exe -I -B -` verification invoked each existing
+helper mode once, with the same environment's absolute interpreter:
+
+```text
+python -B -m oil_agent.runtime.c1_private check
+python -B -m oil_agent.runtime.c1_private inject-check
+```
+
+`check` started at **11:34:23.507771 UTC** and `inject-check` at
+**11:34:34.182944 UTC**. Both returned **exit 2**, empty stderr, `CREATED`,
+`NOT_CONFIGURED`, missing exactly `tenant_key`, `start_trigger=NOT_AUTHORIZED`
+and `product_requests=0`. The real fixed isolated `python -I -m
+oil_agent.runtime.c1_product` child returned the expected redacted response;
+no child, configuration or ACL mock was used. Bounded in-memory comparisons
+after each mode and at completion verified unchanged configuration bytes and
+file identity. The surrounding verification exited **0**.
+
+C's null-only recipient update at **11:29:39.786335 UTC**, including preservation
+of all other bytes, formatting and owner/group/DACL, remains **C-reported** via M's
+handoff for `ctx_9c7a6e43d0e0`; E did not observe C's pre-update state. This new
+observation supersedes the earlier locally missing-recipient result only.
+Verdict: **ACTUAL LOCAL RECIPIENT CONFIGURATION / LOADING / ISOLATED INJECTION
+VERIFIED**. Tenant binding is still missing and no executable permission or new
+phone window was created. E performed no private write, clipboard/UI operation,
+token/tenant lookup, source/model/platform call, send, login, callback, database,
+Docker, test suite, build or dependency installation. Product calls/sends and
+added product cost are zero for these local checks; earlier browser background
+request counts remain UNKNOWN. Source/model/platform/phone/login/callback and
+production acceptance remain unexecuted.
+
+## C1 PostgreSQL adapter: routing verified, SQL not executed
+
+On 2026-09-12, E normally merged accepted I
+`f04f64f55cc12e7fea4cfa5d56ee768816bad561` and M governance
+`0341190eab575e4711fde607762c65257ecb8ec8` from its clean retained branch.
+The pre-edit merge checkpoint is `365007b1a429c4ff10a4ca701b50f15d5d759ca2`.
+The only new harness file is `tests/integration/test_postgres_c1.py`.
+
+Before implementation, an inline `.venv/Scripts/python.exe -B -` probe supplied
+a synthetic E-shaped URL to C's original first C1 case and trapped SQLAlchemy
+engine construction. The original C fixture failed with **1 setup error**,
+`Refusing a database outside C test scope`, pytest **exit 1**, 0.34 seconds;
+engine constructions were **0**. The probe's expected-failure validation exited
+0. C's guard was not changed or bypassed.
+
+The adapter imports the original C module using pytest's existing test-root
+import path, exports its original 12 callable objects, `c1` fixture and postgres
+mark, and binds only this module's `repository` fixture to `e_repository`.
+There are no copied assertions, wrapper test bodies or global fixture overrides.
+The original parametrizations still expand to **21 cases**. E's migration 0001
+already seeds the default BusinessConfig singleton; no extra insert or actors
+fixture is added. The original `c1` captures and freezes E's assignable clock.
+One function-scoped repository/engine is shared with `c1`; its ordinary sessions,
+parallel connections and disposable-schema cleanup remain unchanged. C's
+read-only contract handoff `msg_a2e4ba1e5310`, relayed by M, confirmed these seams.
+
+```text
+uv run --offline --locked --no-sync pytest tests/integration/test_postgres_c1.py --collect-only -q -p no:cacheprovider
+uv run --offline --locked --no-sync ruff check tests/integration/test_postgres_c1.py
+uv run --offline --locked --no-sync ruff format --check tests/integration/test_postgres_c1.py
+```
+
+Final collection: **21 collected**, exit 0, 0.04 seconds; both Ruff checks passed.
+The initial `tests.unit` import failed under the console pytest entry; using
+pytest's existing `unit.storage` namespace resolved that observed import error.
+An inline collection audit compared original and adapted case names/parameters,
+original callable/fixture/mark identity, and effective fixture definitions for
+all 21 cases: **PASS**, exit 0, no engine construction. C still resolves its own
+guarded fixture; E resolves the existing function-scoped migrated fixture and
+never requests `e_actors`. Original C1 source, C fixture and E fixture content
+and AST were unchanged against accepted I; product sources and locks were also
+unchanged.
+
+Focused adapter guard probes used engine-construction traps, not fake SQL
+repositories. With no E URL: **21 skipped**, zero test bodies executed, pytest
+exit 0, 0.03 seconds, each citing E's explicit `NOT EXECUTED` reason. With a
+synthetic C-shaped URL supplied to E: the first case had **1 expected setup
+error**, pytest exit 1, 0.17 seconds, `Refusing database outside the explicit E
+local/CI synthetic scope`. Both probes validated the expected outcomes with
+outer exit 0 and **0 engine constructions**. These are harness checks, not
+passed SQL assertions.
+
+The one authorized resource observation used `docker --host
+npipe:////./pipe/dockerDesktopLinuxEngine inspect --type container` against exact
+previous E container `b3c3a345428590922eb8e628a996dd634cb3333e5f0c86f588eede8fb7101cab`,
+requesting only identity/state/labels/mount/port metadata. It exited **1** because
+the named pipe was missing. No current ownership, running state or database
+binding was proven. No retry, enumeration, start, restart, cleanup or SQL/schema
+operation followed; old E resources were untouched.
+
+Verdict: **ADAPTER IMPLEMENTED; COLLECTION / ROUTING / GUARDS VERIFIED;
+21 POSTGRESQL CASES NOT EXECUTED**. No domain failure was observed because SQL
+test bodies did not run. A confirmed E-owned PostgreSQL scope is still needed
+for those original assertions; this grants no live C1 database permission.
+No private configuration, clipboard/browser, provider/model call, send, new phone
+window, dependency installation, full-suite replay or build was performed.
+Platform, phone, login, callback and production acceptance remain unexecuted.
+
+## C1 actual PostgreSQL: 21 original cases passed after Docker resumed
+
+On 2026-09-12, E normally merged accepted I
+`4ec6c480dc971d44d176c3539bcbcade4ee7f802` and M governance
+`3ad12a67c0b5518d2c10451099b61ececc363c72`, preserving history at tested source
+**`c725a56a803c77b94efec54956e30a97fea437fd`**. The documentation conflicts were
+resolved to the exact accepted I and then M board blobs. Product sources, locks,
+the adapter, all original C assertions and both database fixtures remained
+identical to accepted I. No test or product fix was needed.
+
+Fresh selected Docker metadata verified the original resource before database
+access; the user-started engine supersedes the earlier missing-pipe observation.
+
+| Verified field | Actual value |
+| --- | --- |
+| Endpoint | `npipe:////./pipe/dockerDesktopLinuxEngine` |
+| Container | `oil-agent-e-postgres-1` |
+| Full container ID | `b3c3a345428590922eb8e628a996dd634cb3333e5f0c86f588eede8fb7101cab` |
+| Compose project / service | `oil-agent-e` / `postgres` |
+| Compose working directory | `C:/Users/DW/orca/workspaces/oil-agent/oil-v01-e/deploy` |
+| Exact configuration files | The above directory's `compose.yaml` and `compose.e-test.yaml` |
+| Image reference | `postgres:16-alpine@sha256:e013e867e712fec275706a6c51c966f0bb0c93cfa8f51000f85a15f9865a28cb` |
+| Image ID | `sha256:e013e867e712fec275706a6c51c966f0bb0c93cfa8f51000f85a15f9865a28cb` |
+| Volume | `oil-agent-e_postgres-data`, local driver, mounted at `/var/lib/postgresql/data` |
+| Volume ownership labels | Project `oil-agent-e`, volume `postgres-data` |
+| Configured and active host binding | Only `127.0.0.1:55434` to container `5432/tcp` |
+| Actual database / user | `oil_e_test` / `oil_e_test` |
+| Actual server | PostgreSQL **16.14**, UTC, server port 5432 |
+| Original and final container state | Already running and healthy; E neither started nor stopped it |
+
+An initial metadata assertion incorrectly expected the repository root as the
+Compose directory. The corrected read-only check matched the actual E `deploy`
+directory and both exact configuration paths; no resource was changed. Neither
+E test credential variable was inherited. M explicitly authorized one bounded
+read of only this container's existing synthetic password into Python memory.
+E validated it, built the exact scoped URL structurally, and injected it only
+into the intended test child. No password, DSN or full environment was emitted
+or written, and no unrelated credential or C1 private configuration was read.
+
+```text
+uv run --offline --locked --no-sync pytest tests/integration/test_postgres_c1.py -q --tb=short
+```
+
+This command ran **once**, from **12:36:26.871108 UTC** to
+**12:36:42.254355 UTC**: **21 passed, 0 failed, 0 skipped, 13.26 seconds,
+pytest exit 0**. It used actual PostgreSQL migrations and the unchanged E
+fixture's fresh disposable schemas. The original concurrent preparation,
+transaction rollback, shared-budget races, authorization/expiry checks and
+UNKNOWN fencing assertions ran against real PostgreSQL; their approvals and
+provider-result inputs remain explicitly synthetic. No SQLite or fake database
+substituted for this execution.
+
+Bounded, repeatable-read, read-only snapshots of this database were taken before
+the run at **12:36:26.871033 UTC** and checked after it by
+**12:36:43.767653 UTC**. The only original user schema was `public`, with
+**73 relation identities**, **29 data objects** and **823 row/sequence-state
+records**. Schema and relation identities, complete bounded table-row multisets
+and sequence values matched before/after; **no new schema remained**. Container
+and volume metadata, image, mount, ports, running state and start/restart fields
+also matched. Only fixture-created UUID schemas were created/dropped; no old
+schema, data or resource was cleaned up. The verification wrapper exited **0**.
+These are logical database snapshots, not physical-volume byte identity or a
+production backup/restore claim.
+
+Verdict: **THE 21 C1 POSTGRESQL CASES PASSED ON THE VERIFIED E SYNTHETIC DATABASE**.
+This supersedes their prior NOT EXECUTED result only. No full suite, build,
+dependency installation, daemon restart, resource recreation, provider/source/
+model/Feishu call, send, new phone window or UI/private-file action occurred.
+The E test database is not approved as the future live C1 database; platform,
+phone, login, callback, deployment and production acceptance remain unexecuted.
+
+## Dedicated C1 database: offline deployment preparation
+
+On 2026-09-12, E continued from pushed SQL evidence
+`87065fea2e5ccfddad918dabf6db4a39df3d51d1` and normally merged exact M governance
+`d38af512d295e6f237936a71d4bee6f4f1a3dd31` at
+`d52790701e5b299fa09cd1f3173bb8b31b9c3637`; no conflict or history replacement
+occurred. The accepted **21 real E PostgreSQL passes were not rerun** and their
+container, volume, database and credentials were not accessed in this task.
+
+The new standalone `deploy/compose.c1-db.yaml` renders only `postgres` under
+project `oil-agent-feishu-trial`, with database/user `oil_c1_trial`, volume
+`oil-agent-feishu-trial_c1-data`, sole internal IPv4 backend network and requested
+loopback `127.0.0.1:55436:5432`. It reuses the accepted pinned PostgreSQL 16 image,
+requires only process-injected `OIL_C1_DB_PASSWORD`, retains fixture/`feishu-c1`
+labels, disables automatic restart and bounds resources/logs. These names are
+proposed resources, not existing or activated identities.
+
+Red/green evidence:
+
+- Before the Compose file existed,
+  `uv run --offline --locked --no-sync pytest tests/integration/test_c1_database_deploy.py::test_standalone_database_has_no_application_or_activation_services -q --tb=short`
+  exited **1** with **one setup error**: the standalone database definition was
+  missing. No daemon was contacted.
+- The first render run had **4 passed, 1 failed** because Compose serialized
+  `mem_limit` as a string. The assertion now compares its numeric value to the
+  same 128 MiB bound; no configuration limit was weakened.
+- Final command:
+  `uv run --offline --locked --no-sync pytest tests/integration/test_c1_database_deploy.py tests/integration/test_controlled_trial_deploy.py::test_trial_rejects_unsafe_resolved_configuration[db-port] tests/integration/test_controlled_trial_deploy.py::test_trial_refuses_invalid_tls_prerequisites[http] -q --tb=short`
+  exited **0**, **7 passed in 0.61 seconds**, none skipped. The five new cases
+  cover actual Compose rendering, exact service/network/port/volume boundaries,
+  fixture labels/resource bounds and refusal of missing/empty process passwords.
+  The two unchanged general-trial cases still reject a database port and HTTP.
+- `uv run --offline --locked --no-sync ruff check tests/integration/test_c1_database_deploy.py`
+  and the corresponding `ruff format --check` both exited **0**.
+- Actual `docker-compose version --short` returned **5.1.4**. Tests invoked its
+  `--env-file deploy/compose.env --file deploy/compose.c1-db.yaml config --format json`
+  with an isolated child environment and synthetic in-memory password. Resolved
+  output was captured; passwords were compared then removed before assertions.
+  No full rendered environment or credential was emitted or stored.
+
+**WINDOWS HOST DATABASE ACCESS IS NOT ESTABLISHED.** The bounded primary-source
+review used Docker's [internal network contract](https://docs.docker.com/reference/cli/docker/network/create/#internal)
+and [Desktop networking limits](https://docs.docker.com/desktop/features/networking/networking-how-tos/#known-limitations).
+Internal mode still permits Docker-host communication; those documents do not
+prove that localhost publication always fails. The old E second-network
+workaround is historical evidence, not a current C1 packet test. No ordinary
+external bridge was added. The exact later finite activation/mapping/read-only
+identity probe and stop-on-failure boundary are recorded in the existing
+`deploy/controlled-trial.md`; rendering does not settle live network behavior.
+
+M instructed E to finish this preparation without waiting for C's owner commit.
+The resource/label contract was handed to M for C; exact committed helper
+integration and its fail-closed runtime mapping checks remain pending owner
+handoff. No C helper, original test/fixture, general trial gate, product source
+or lock was edited. No new resource, image pull, migration, queue initialization,
+recovery, SQL run, private credential access, provider call, send, phone window,
+full suite, build or CI job was performed. Verdict: **OFFLINE COMPOSE PREPARATION
+PASSED; C1 ACTIVATION, HOST ASSEMBLY AND PHONE/PRODUCTION ACCEPTANCE NOT EXECUTED**.
+
+After the initial preparation commit, M relayed C's exact required-password
+placeholder text. E aligned only that interpolation error message to
+`${OIL_C1_DB_PASSWORD:?Explicit C1 database password required}` and reran
+`uv run --offline --locked --no-sync pytest tests/integration/test_c1_database_deploy.py -q --tb=short`:
+**5 passed in 0.30 seconds**, exit **0**. The required-variable gate is unchanged;
+this checks actual rendering after interface alignment, not execution of C's
+still-uncommitted helper.
+
+## Business baseline: events, daily analysis and finite recovery
+
+On 2026-09-12 E normally merged accepted I
+`78e5363d7c7da5d6bb76c3be6296b1f6e4010d87` and M phase-switch governance
+`c4e41982fd1128c513d3b89750e7586eb23abb30`, producing baseline
+`a3c1a8ac3cedf204519cebeb81cb600004581e0b`. The V01-only conflict was resolved
+to the exact M blob; no history was replaced. Frozen E expectations were
+committed/pushed as `08db6fc8c6d4ca373c9705dc4779972b3003735c`, then qualified
+by `83774440004fdf3969f2d3f0d283134e98bd8a87` before adopting any owner fix.
+Product source, original unit/integration assertions, E/C fixtures, R16 guards,
+the original v01 scenario corpus and dependency inputs remain unchanged.
+
+The new `business-days.json` is explicitly synthetic/fixture provenance. The
+bounded expectations cover ordinary silence; reuse original same-origin,
+independent follow-up, correction-recipient and R16 cases; require cutoff-valid
+Chinese conditional analysis with resolvable event/revision/evidence citations;
+exclude superseded evidence; preserve missing-price uncertainty; and exercise
+three report failure/recovery dates with durable daily uniqueness.
+
+**Correction to the initial E baseline interpretation:** the first positive
+body contained exercise/uncertainty language, so the real assessment correctly
+classified it unknown/routine/unverified. Its empty analysis was not proof of
+a missing supported-event analysis. That exact content is retained as a new
+negative. The corrected separate positive remains explicitly labeled in fixture
+metadata, uses a port loading/transport interruption predicate, and asserts
+occurred/credible-single-source/urgent before checking report output. No guard
+was relaxed. An earlier missing required `observations` test argument was also
+an E setup error, not a product failure.
+
+At corrected source `8377444`, this no-database command exited **1**:
+
+```text
+uv run --offline --locked --no-sync pytest tests/integration/test_business_reports.py -q --tb=short -p no:cacheprovider
+```
+
+Result: **2 failed, 5 passed in 0.64 seconds**, no skips. With qualified positive
+preconditions, `impact_analysis=()` still fails. A newer source revision also
+leaves the superseded revision in current report facts. Exercise protection,
+cutoff exclusion, absent-quote unknown/no-flat behavior, latest denial and invalid
+latest reference without fallback pass. AB received both exact reproductions;
+these red expectations remain frozen for integration, not weakened to match
+the baseline. Chinese analysis and watch lines use the owner-agreed existing
+field format `[event=<id>@<revision>; evidence=#<1-based index>]`; tests resolve
+the index to the full in-cutoff evidence reference rather than matching prose.
+
+The real SQL baseline ran once at source `08db6fc` from
+**14:37:04.448007 UTC to 14:37:14.036587 UTC**. The exact scoped E identity was
+reconfirmed before connecting:
+
+- Endpoint: `npipe:////./pipe/dockerDesktopLinuxEngine`.
+- Container: `b3c3a345428590922eb8e628a996dd634cb3333e5f0c86f588eede8fb7101cab`,
+  `/oil-agent-e-postgres-1`; project `oil-agent-e`, service `postgres`.
+- Compose directory: `C:\Users\DW\orca\workspaces\oil-agent\oil-v01-e\deploy`;
+  config labels reference exactly its `compose.yaml` and `compose.e-test.yaml`.
+- Image reference: `postgres:16-alpine@sha256:e013e867e712fec275706a6c51c966f0bb0c93cfa8f51000f85a15f9865a28cb`;
+  container image ID matches that digest.
+- Sole volume: `oil-agent-e_postgres-data`, local driver, project/volume labels
+  `oil-agent-e` / `postgres-data`, mounted at `/var/lib/postgresql/data`.
+- Configured and active mapping: only `127.0.0.1:55434:5432`; PostgreSQL reports
+  database/user `oil_e_test` / `oil_e_test`.
+
+The container was already running and was left running. Only its authorized
+synthetic password was captured into process memory for the fixed child DSN;
+no credential value or DSN was printed or stored. The existing `e_repository`
+fixture ran real migrations in fresh `e_acceptance_<UUID>` schemas and dropped
+only those schemas. No container/volume/network was created, started or stopped.
+
+```text
+uv run --offline --locked --no-sync pytest tests/integration/test_business_reports.py tests/integration/test_business_cycles.py tests/integration/test_corpus_replay.py::test_T03_two_domains_do_not_create_two_independent_publishers tests/integration/test_postgres_pipeline.py::test_T04_independent_late_evidence_upgrades_same_persisted_event tests/integration/test_postgres_pipeline.py::test_T05_lower_severity_denial_corrects_original_authorized_recipients tests/integration/test_contextual_guards.py tests/integration/test_postgres_operations.py::test_T14_real_normal_queue_block_does_not_delay_urgent_delivery -q --tb=short -s -p no:cacheprovider
+```
+
+Result: **3 failed, 30 passed in 7.80 seconds**, no skips, exit **1**; measured
+child-process wall time **9.589 seconds**. This run predates the pure positive
+fixture correction: one failure was the unqualified empty-analysis case above,
+one was the superseded source fact, and one independently reproduced missing
+report failure health. SQL was not repeated for the pure fixture correction.
+
+The finite cycle body measured **0.933 seconds** for **3 accelerated business
+dates (2026-09-14/15/16)**, **3 Runtime/Repository reconstructions** and **6 real
+Procrastinate report-job triggers**. It used the actual migrated PostgreSQL
+repository, bounded normal-queue workers and existing report lease/outbox logic.
+Injected `TimeoutError` and an unexpected builder exception were synthetic fault
+stimuli; quota refusal came from the real SQL processing budget while preserving
+urgent reserved capacity. This did not measure a sixty-second deadline or kill
+and restart an OS process. The clock advanced across dates and past the existing
+90-second lease; it did not simulate elapsed uptime by sleeping.
+
+| Accelerated date / fault | Failure health observed | Recovery observed |
+| --- | --- | --- |
+| Sep 14 / timeout | missing, no safe error detail | 1 report, 2 unique intents |
+| Sep 15 / quota exhausted | stale, no safe error detail | 2 reports, 4 unique intents cumulatively |
+| Sep 16 / unexpected exception | stale, raw RuntimeError escaped, no safe error detail | 3 reports, 6 unique intents cumulatively |
+
+All three cycles recovered after reconstruction and lease expiry, restored
+`ok` on commit, became `stale` after six accelerated minutes, rejected stale
+build tokens and produced no duplicate daily report or recipient/revision
+intent. The separate original real-queue case also preserved urgent delivery
+while normal delivery was blocked; its channel remains explicitly dry-run.
+The missing/degraded-health assertions were collected after recovery, so their
+failure did not suppress observation of the complete three-cycle sequence.
+C received this exact persistence-backed red evidence.
+
+Bounded repeatable-read/read-only snapshots of the scoped database compared all
+original schema/relation identities, bounded table-row multisets and sequence
+states: **equal before/after**, **1 schema, 73 relations, 29 data objects,
+818 table rows** at both boundaries. No new schema remained. The final selected
+container read confirmed the same running identity, pinned image and loopback
+mapping. This proves bounded logical preservation, not physical-volume identity.
+
+Scoped Ruff check and format check for the two new integration files and
+`git diff --check` passed. The same bounded selection with `--collect-only -q
+-p no:cacheprovider` collected **34 cases in 0.63 seconds**, exit **0**, after
+adding the exercise negative; collection is not SQL execution. No full suite,
+C1 replay, build, dependency change,
+provider/model/source request, private configuration read, external send, phone
+window or continuous polling occurred. **Verdict: baseline defects reproduced
+and regression expectations frozen; final business acceptance remains pending
+owner repair and exact I integration.** Three accelerated dates and subsecond
+cycle-body execution do not establish fourteen-day operation, daemon uptime,
+SLA, real market accuracy, platform/phone delivery or production acceptance.
+
+## Final business acceptance on integrated candidate 69a43a8
+
+E independently accepted candidate
+`69a43a8cc9842ed5acbe9f5def7b93034f4049d9` on 2026-09-12. A fresh
+`git -c http.proxy=http://127.0.0.1:7890 -c http.version=HTTP/1.1 ls-remote origin refs/heads/songconmaisaix31-design/oil-v01-i`
+matched that full SHA; both original I and E worktrees were clean. E used a
+normal fast-forward merge from `8fbf808cb8e015f5688c646caa2e2e6acdaf21d6`
+to the exact candidate before testing, without changing source or expectations.
+
+Git ancestry and per-path blob comparisons verified all **12 changed paths**
+against the original owners: M `c4e41982fd1128c513d3b89750e7586eb23abb30`,
+AB `19c9194164eb42f6e16a29c628039118a20aeef4`,
+C `0593954a18837b9c9d4ec732b8f7cc27e9d4fe57`, and
+E `8fbf808cb8e015f5688c646caa2e2e6acdaf21d6`. No unassigned changed path was
+present relative to accepted I `78e5363d7c7da5d6bb76c3be6296b1f6e4010d87`;
+all other tracked files, dependency inputs, original fixtures and tests were
+unchanged. The existing assessment test gained a separate test function only.
+`git diff --check` passed. The corrected frozen positive preconditions and
+original exercise negative remained intact.
+
+E read the exact retained I dispatch `ctx_6d240a3b2a66` using bounded
+`orca orchestration worker-show` / `worker-read --source transcript --limit 14`.
+The actual tool result showed **217 passed, 1 existing AnyIO deprecation warning,
+6.19 seconds, exit 0**, and the subsequent exact-candidate offline wheel/sdist
+build result exited **0**. This was I's run, not another E execution; the bounded
+transcript was clipped outside the inspected result blocks. E also read the
+existing `oil_agent-0.1.0-py3-none-any.whl` and `oil_agent-0.1.0.tar.gz` in
+`C:/Users/DW/AppData/Local/Temp/oil-agent-i-business-ctx-6d240a3b2a66/dist`:
+both contained the exact I worktree bytes for the two changed service modules
+and declared 14 dependencies. Windows CRLF bytes differ from Git LF blobs but
+match after line-ending normalization. Initial E artifact-reader assumptions
+about directory file count and raw Git/archive byte equality failed; narrowing
+to the two existing archives and checking both checkout bytes and normalized
+Git content resolved those inspection-helper errors without modifying artifacts
+or product code. E did not repeat I's test union, Ruff or build, install a
+package, or execute an installed distribution.
+
+E then ran **once** the same frozen seven-target pytest command printed in the
+business baseline above, now containing **34 cases**, on the exact candidate:
+
+```text
+uv run --offline --locked --no-sync pytest tests/integration/test_business_reports.py tests/integration/test_business_cycles.py tests/integration/test_corpus_replay.py::test_T03_two_domains_do_not_create_two_independent_publishers tests/integration/test_postgres_pipeline.py::test_T04_independent_late_evidence_upgrades_same_persisted_event tests/integration/test_postgres_pipeline.py::test_T05_lower_severity_denial_corrects_original_authorized_recipients tests/integration/test_contextual_guards.py tests/integration/test_postgres_operations.py::test_T14_real_normal_queue_block_does_not_delay_urgent_delivery -q --tb=short -s -p no:cacheprovider
+```
+
+Actual result: **34 passed, 0 failed, 0 skipped, 6.31 seconds, exit 0**.
+The child process ran from **14:49:57.177368 UTC to 14:50:05.391588 UTC**,
+measured wall time **8.214 seconds**. The finite cycle body measured
+**0.947 seconds**, with **3 accelerated business dates (2026-09-14/15/16)**,
+**3 Runtime/Repository reconstructions** and **6 real Procrastinate report-job
+triggers**, using the actual migrated E PostgreSQL repository and outbox.
+
+| Accelerated date / injected fault | Safe failure state | Recovery / cumulative durable rows |
+| --- | --- | --- |
+| Sep 14 / timeout | degraded, `timeout` | ok, 1 report / 2 unique intents |
+| Sep 15 / actual SQL quota refusal | degraded, `quota_exhausted` | ok, 2 reports / 4 unique intents |
+| Sep 16 / unexpected builder exception | degraded, `invalid_output` | ok, 3 reports / 6 unique intents |
+
+The frozen tests now pass for Chinese conditional impact and watch citations,
+latest-source correction without stale facts, exercise/denial/invalid-reference
+guards, cutoff exclusion and missing-price uncertainty. Ordinary events remain
+silent; same-origin reposts are not independent evidence; independent follow-up
+and correction to the original authorized recipients pass. Each report cycle
+preserves the existing 90-second lease, suppresses an immediate rebuild,
+recovers the current business date after expiry, rejects a stale token, stays
+unique under a repeated queue trigger, restores healthy state on commit and
+becomes stale after six accelerated minutes. Urgent budget reserve and the
+original actual normal/urgent queue isolation case also pass. No assertion was
+weakened and no new test or product change was needed for this acceptance.
+
+Before connecting, E freshly verified container
+`b3c3a345428590922eb8e628a996dd634cb3333e5f0c86f588eede8fb7101cab` /
+`oil-agent-e-postgres-1`, project/service `oil-agent-e` / `postgres`, the exact
+original E Compose directory and two config labels, pinned image and image ID
+`sha256:e013e867e712fec275706a6c51c966f0bb0c93cfa8f51000f85a15f9865a28cb`,
+sole local volume `oil-agent-e_postgres-data`, only loopback
+`127.0.0.1:55434:5432`, and database/user `oil_e_test` / `oil_e_test`.
+The endpoint and complete resource paths are recorded in the baseline section.
+The existing synthetic password was captured only from that container into
+memory for the child process; no raw password/DSN was emitted, saved or placed
+in global environment. Only fixture-created `e_acceptance_<UUID>` schemas were
+created and dropped; no preexisting resource was started, stopped or altered.
+
+Bounded repeatable-read/read-only logical snapshots were **identical** before
+and after: **1 original schema, 73 relation identities, 29 data objects and
+818 table rows**, including full bounded row multisets and sequence states.
+No new schema remained. All selected container and volume metadata matched
+before/after, including running state, mount, labels, configured/active port,
+image, start time **2026-09-12T12:25:48.707130701Z** and restart count **0**.
+This is logical preservation evidence, not physical-volume byte identity.
+
+**Verdict: PASS for this bounded integrated event/report business behavior and
+real E PostgreSQL recovery increment.** It closes the qualified baseline's
+empty analysis, superseded fact and invisible report-failure defects. Only this
+existing evidence file is appended after acceptance. I must integrate the
+evidence commit; no further code repair was identified in the frozen selection.
+Synthetic timeout/unexpected exceptions are fault stimuli, and notification
+delivery uses dry-run channels. Runtime objects were reconstructed, not OS
+processes killed. Accelerated dates and bounded queue jobs do not establish
+fourteen-day operation, sixty-second deadline timing, daemon uptime, SLA,
+installed-product behavior, actual market accuracy, provider/source/model
+transport, real sending, platform/phone/login/callback or production acceptance.
+No full-suite/C1 replay, new Docker resource, shared restart, private C1 read,
+external product call, continuous polling or purchase occurred.

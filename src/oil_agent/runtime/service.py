@@ -30,13 +30,14 @@ from oil_agent.contracts.services import (
     SourceAdapter,
 )
 from oil_agent.runtime.authorization import RuntimeAuthorization
-from oil_agent.runtime.c1 import C1Runtime
+from oil_agent.runtime.c1 import C1Runtime, C1TenantLookup
 from oil_agent.runtime.settings import Settings
 from oil_agent.storage.base import new_id
 
 
 @dataclass
 class RuntimeServices:
+    c1_tenant_lookup: C1TenantLookup | None = None
     sources: dict[str, SourceAdapter] = field(default_factory=dict)
     assessment: AssessmentService | None = None
     reports: ReportService | None = None
@@ -89,6 +90,10 @@ class Runtime(C1Runtime, RuntimeAuthorization):
         self.repository = repository
         self.services = services or RuntimeServices()
         self.settings = settings or Settings()
+        # A transport constructed for one scope must not authorize a replacement.
+        self._c1_constructed_app_permission = self.settings.c1_app_request_permission
+        self._c1_constructed_permission = self.settings.c1_permission
+        self._c1_constructed_lookup_only = self.settings.c1_tenant_lookup_only
         self.repository.production_gate = lambda: self.settings.production_ready
         self.repository.trial_config_gate = self.trial_config_allowed
         self.repository.trial_item_gate = self.trial_item_allowed
@@ -98,17 +103,24 @@ class Runtime(C1Runtime, RuntimeAuthorization):
             self.settings.fixture_dataset,
         )
         self.repository.actor_scope_gate = self.actor_allowed
-        self.repository.c1_permission_provider = lambda: (
-            self.settings.c1_permission
-            if self.settings.c1_display_only
-            and self.settings.c1_permission
-            and self.settings.c1_host_binding == self.settings.c1_permission.host_binding
-            and self.settings.c1_permission.active(self.repository.clock())
-            else None
+
+        def current_or_none(method):
+            try:
+                return method()
+            except ServiceError:
+                return None
+
+        self.repository.c1_permission_provider = lambda: current_or_none(self.current_c1_permission)
+        self.repository.c1_app_permission_provider = lambda: current_or_none(
+            self.current_c1_app_request_permission
+        )
+        self.repository.c1_lookup_permission_provider = lambda: current_or_none(
+            self._current_c1_lookup_permission
         )
         self.repository.local_provisioning_allowed = lambda: (
             self.settings.data_provenance == "fixture"
             and not self.settings.c1_display_only
+            and not self.settings.c1_tenant_lookup_only
             and self.settings.identity_permission is None
             and self.settings.outbound_mode == "dry_run"
         )
@@ -250,6 +262,8 @@ class Runtime(C1Runtime, RuntimeAuthorization):
             raise ServiceError(code, "Assessment failed output validation") from None
 
     async def send_pending(self, *, subject_type="event"):
+        if self.settings.c1_tenant_lookup_only:
+            raise ServiceError(ErrorCode.FORBIDDEN, "C1 tenant lookup cannot deliver messages")
         c1 = self.settings.c1_display_only
         if c1 != (subject_type == "exercise"):
             raise ServiceError(ErrorCode.FORBIDDEN, "Delivery lane does not match C1 mode")
@@ -476,48 +490,57 @@ class Runtime(C1Runtime, RuntimeAuthorization):
         )
         if reserved is None:
             return None
-        await self._processing_budget(urgent=False, uses_model=self.services.reports_use_model)
-        report_id, token = reserved
-        records, events, observations = await self.db(
-            self.repository.report_snapshot,
-            now,
-            self.settings.data_provenance,
-            self.settings.fixture_dataset,
-        )
-        request = ReportBuildRequest(
-            report_id=report_id,
-            report_date=local.date(),
-            timezone=config.report_timezone,
-            cutoff_at=now,
-            revision=1,
-            records=records,
-            events=events,
-            observations=observations,
-            is_fixture=self.settings.data_provenance == "fixture",
-            provenance=self.settings.data_provenance,
-            fixture_dataset=self.settings.fixture_dataset,
-        )
-        report = await self.bounded(
-            lambda ctx: self.services.reports.build(request, context=ctx),
-            context=self.context(seconds=60),
-        )
-        if (report.report_id, report.cutoff_at, report.provenance, report.fixture_dataset) != (
-            request.report_id,
-            request.cutoff_at,
-            request.provenance,
-            request.fixture_dataset,
-        ):
-            raise ServiceError(
-                ErrorCode.INVALID_OUTPUT, "Report changed its input snapshot identity"
+        try:
+            await self._processing_budget(urgent=False, uses_model=self.services.reports_use_model)
+            report_id, token = reserved
+            records, events, observations = await self.db(
+                self.repository.report_snapshot,
+                now,
+                self.settings.data_provenance,
+                self.settings.fixture_dataset,
             )
-        gaps = await self.db(self.repository.coverage_gaps)
-        report = report.model_copy(
-            update={
-                "delayed": local > scheduled + timedelta(minutes=5),
-                "gaps": tuple(sorted(set(report.gaps) | set(gaps))),
-            }
-        )
-        result = await self.db(self.repository.commit_report, report, token)
+            request = ReportBuildRequest(
+                report_id=report_id,
+                report_date=local.date(),
+                timezone=config.report_timezone,
+                cutoff_at=now,
+                revision=1,
+                records=records,
+                events=events,
+                observations=observations,
+                is_fixture=self.settings.data_provenance == "fixture",
+                provenance=self.settings.data_provenance,
+                fixture_dataset=self.settings.fixture_dataset,
+            )
+            report = await self.bounded(
+                lambda ctx: self.services.reports.build(request, context=ctx),
+                context=self.context(seconds=60),
+            )
+            if (report.report_id, report.cutoff_at, report.provenance, report.fixture_dataset) != (
+                request.report_id,
+                request.cutoff_at,
+                request.provenance,
+                request.fixture_dataset,
+            ):
+                raise ServiceError(
+                    ErrorCode.INVALID_OUTPUT, "Report changed its input snapshot identity"
+                )
+            gaps = await self.db(self.repository.coverage_gaps)
+            report = report.model_copy(
+                update={
+                    "delayed": local > scheduled + timedelta(minutes=5),
+                    "gaps": tuple(sorted(set(report.gaps) | set(gaps))),
+                }
+            )
+            result = await self.db(self.repository.commit_report, report, token)
+        except Exception as error:
+            # Keep the lease until expiry: idle retries must neither clear failure health
+            # nor trigger an immediate rebuild loop that spends the remaining normal quota.
+            code = error.code if isinstance(error, ServiceError) else ErrorCode.INVALID_OUTPUT
+            await self.db(self.repository.health, "report", "degraded", code.value)
+            if isinstance(error, ServiceError):
+                raise
+            raise ServiceError(code, "Report failed output validation") from None
         await self.db(self.repository.health, "report")
         return result
 

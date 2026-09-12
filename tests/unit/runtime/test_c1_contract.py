@@ -15,6 +15,7 @@ NOW = datetime(2026, 9, 12, 6, tzinfo=UTC)
 def permission_values():
     return dict(
         approval_id="synthetic-c1-start",
+        app_request_approval_id="synthetic-c1-app-window",
         authorization_ref="synthetic:user-start",
         budget_ref="synthetic:zero-cost-confirmed",
         valid_from=NOW,
@@ -33,10 +34,19 @@ def permission_values():
     )
 
 
+def app_permission_values():
+    return {
+        key: value
+        for key, value in permission_values().items()
+        if key not in {"approval_id", "app_request_approval_id", "tenant_key", "identity"}
+    } | {"approval_id": "synthetic-c1-app-window"}
+
+
 def settings_values():
     return dict(
         c1_display_only=True,
         c1_permission=permission_values(),
+        c1_app_request_permission=app_permission_values(),
         c1_host_binding="synthetic-host",
         data_provenance="fixture",
         fixture_dataset="feishu-c1",

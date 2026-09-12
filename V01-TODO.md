@@ -1,16 +1,460 @@
 # V01 delivery board
 
-## Current phase: controlled real integration
+## Current phase: event business, daily analysis and operating usability
 
-### Active C1: local preparation, configuration incomplete
+**Verified business increment:** I source candidate
+`69a43a8cc9842ed5acbe9f5def7b93034f4049d9` passed E's independent bounded
+acceptance in `task_6fa17c0da1b2` / `ctx_f87717803d13`. AB delivered
+`19c9194164eb42f6e16a29c628039118a20aeef4`, C delivered
+`0593954a18837b9c9d4ec732b8f7cc27e9d4fe57`, and E froze regressions and
+baseline evidence at `8fbf808cb8e015f5688c646caa2e2e6acdaf21d6` before I
+integrated them. All source commits were normally pushed to their existing
+branches; I preserved owner blobs and original assertions without domain edits.
+
+- Daily reports now separate cited source facts, cautious Chinese supply/transport
+  implications, verification items and data gaps. Only cutoff-valid current
+  revisions support analysis; corrected source records cannot revive old facts.
+  Missing prices remain unknown. The generated, explicitly synthetic Chinese
+  example and replay command are in `src/oil_agent/reporting/AB-HANDOFF.md`.
+- Report timeout, quota refusal and unexpected failure now persist safe degraded
+  health; successful commit restores healthy state. Existing leases, current-day
+  selection, urgent reserves and unique report/recipient intents remain intact.
+- Ordinary silence, same-origin repetition, independent follow-up, original-scope
+  correction, exercise/denial protection and midnight freshness passed focused
+  regressions. No event-rule relaxation or new infrastructure was introduced.
+
+I ran the focused intelligence/reporting/R16/rules/daily-health/API/report union:
+**217 passed**, no failures/skips, 6.19 seconds, one existing AnyIO warning.
+Scoped Ruff/format/diff checks and an offline wheel/sdist build passed. E inspected
+the actual I receipts and existing archives, then independently ran the frozen
+34-case business/PostgreSQL/queue selection: **34 passed**, no failures/skips,
+6.31 seconds. Exact commands and final evidence are in `e2e/runtime-checks.md`.
+The final SQL child ran at 14:49:57-14:50:05 UTC on 2026-09-12, with measured
+wall time 8.214 seconds and cycle-body time 0.947 seconds. Three accelerated
+business dates, three Runtime/Repository reconstructions and six real queue
+triggers recovered three reports and six unique intents. The original E database
+snapshot remained identical: one schema, 73 relations, 29 data objects and 818
+table rows plus sequence states. The same running container/volume state remained.
+
+E's initial positive fixture contained exercise text and was invalid as evidence
+of an occurred event. It was retained as a negative; the corrected positive first
+asserts occurred/credible-single-source/urgent. Its qualified baseline reproduced
+empty analysis and superseded facts (2 failed/5 passed); actual SQL independently
+reproduced missing/stale failure health. Acceptance changed none of those guards.
+
+**Remaining limits:** finite phrase-based analysis is implemented, not general
+causal understanding or verified market accuracy. Fourteen-day live operation,
+OS-process crash recovery, SLA and installed-package execution remain untested;
+accelerated dates and synthetic fault stimuli do not establish them. Source,
+model, platform and phone acceptance still require the already recorded external
+scope and real evidence; production factory remains unimplemented and outside
+this increment. Product source/model/Feishu requests and model tokens were zero,
+new service cost was zero, and development-agent billing was unavailable. No
+continuous monitoring, sending, new resource or additional phone window began.
+
+The user's current instruction stops deeper infrastructure work and authorizes
+parallel product development in these three areas. Start from accepted delivery
+`78e5363d7c7da5d6bb76c3be6296b1f6e4010d87`; preserve the stack, data boundaries
+and all prior evidence. Do not continue C1 database tooling, deployment factories,
+secret-management helpers or generalized monitoring infrastructure in this phase.
+
+| Owner | Bounded business increment / exclusive paths | Observable acceptance |
+| --- | --- | --- |
+| AB | Existing `intelligence/`, `reporting/` and their unit tests: event follow-up/correction semantics and evidence-based Chinese daily impact analysis, watch items and gaps. | Frozen scenarios cover ordinary silence, same-origin repetition, independent corroboration, denial/correction, midnight freshness and missing quotes; facts and conditional analysis remain separate and cite cutoff-valid evidence. Preserve existing assertions. |
+| C | Existing runtime service, storage decisions/operations, corresponding unit tests and necessary existing API contracts only: report failure/recovery and usable operating state. | A failed/timed-out/quota-limited report is visible and can recover without duplicate daily reports; normal report work preserves urgent capacity; stale/degraded state is not healthy. Reuse existing leases, queues, health records and APIs, with no new framework. |
+| E | `tests/integration/`, `fixtures/`, existing `e2e/runtime-checks.md`: independent event/report scenario regressions and finite repeated-cycle/recovery evidence. | Reproduce gaps before owner fixes; review exact I candidate. Use the already identified E PostgreSQL database only when ownership is reconfirmed; distinguish simulated elapsed days from measured duration and fourteen-day live operation. |
+| I | Original integration branch; owner commits plus only explicitly requested import/factory/type glue. | Focused business tests and build, original owner blobs, clean tree and normal push; E independent acceptance. Domain fixes return to owners. |
+
+M remains governance-only. D is retained because the existing report page already
+renders facts, impact analysis, watch items and gaps; request D work only for a
+concrete demonstrated presentation gap. AB's original worktree/branch is clean at
+`dea13fa81825f1160ef44187885a98c569375edb`. Its last recorded dispatch
+`ctx_915cc32ffee1` is completed and capability-revoked; its old terminal is absent
+and the runtime refuses transcript access with `worker_identity_changed`. Preserve
+that history and branch. Reconnect the AB role in that same worktree with transferred
+context under the user's account-change/multi-agent instruction; do not add a
+second AB writer or a new track. Existing C/E/I sessions remain the owners.
+
+This phase is product development and bounded local verification, not permission
+to call providers, send messages, activate continuous polling or start a new phone
+window. Use explicitly labeled scenarios and existing data; no fabricated actual
+market events, customer data, prices or real-use approvals. Source/model/Feishu
+authorization gaps stay separate from executable local business work. Do not
+declare SLA, fourteen-day stability or real phone delivery from accelerated tests.
+
+## Previous phase: controlled real integration
+
+### Resumed after user-started Docker: targeted SQL and C1 assembly
+
+**Completed bounded increment:** I delivery
+`f74be29ab1f90114f30e4092428e73258f9195c2` passed E's final independent
+source-worktree/configuration-preparation review in `task_dededfefcd5a` /
+`ctx_894730fa3135`. The prior actual PostgreSQL run passed 21 cases; the new
+helper/Compose/general-gate command passed 53 cases with no failures or skips.
+Ruff, lock validation and offline wheel/sdist build passed. E independently
+verified the exact remote SHA, owner blobs, clean trees and existing artifacts,
+then ran the actual isolated `c1_database check` at 13:07:40-13:07:51 UTC with
+synthetic bounded stdin: `C1_DB_CONFIG_VERIFIED`, exit 0, empty stderr. The 77
+third-party packages and 415 artifact records are unchanged. I's temporary
+dependency declaration assignment is complete; normal C ownership resumes.
+
+Remaining items are distinct: **NOT IMPLEMENTED** production factory (outside
+this C1 increment); **IMPLEMENTED, ACTUAL VERIFICATION NOT EXECUTED** C1 database
+activation/migration/stop/resume, Windows database connectivity and network
+enforcement, tenant lookup/mapping, platform acceptance and phone display;
+**MISSING CONFIRMED SCOPE / CONFIGURATION** approved isolated C1 database and
+tenant binding/platform permission readiness, plus a fresh explicit phone-test
+window before sending. App, host and exact self binding are already prepared and
+must not be requested again. Login and signed interaction receipts remain outside
+the current C1 acceptance. No C1 resource was created and no new monitoring or
+test window was enabled. Product source/model/Feishu requests and model tokens
+were zero in this increment; new service cost was zero. Development-session
+billing is not available from these tools. Preserve all retained owner sessions.
+
+The user reports starting Docker and requests continued parallel development.
+The starting integration delivery is
+`4ec6c480dc971d44d176c3539bcbcade4ee7f802`; its adapter/routing integration passed
+independent E review. The old missing-engine observation must be refreshed on
+the exact previously identified E resource, not treated as current failure.
+This instruction does not start a Feishu window or authorize provider requests.
+
+| Owner | Current bounded task | Boundary and acceptance |
+| --- | --- | --- |
+| E | Reconfirm exact E PostgreSQL identity/isolation, then execute the existing 21 C1 SQL cases on fresh disposable E schemas. | Preserve all old data and resources; actual PostgreSQL transactions/concurrency, no SQLite substitute. Report any failure before owner repair. Record evidence in the existing runtime checks. |
+| C | Review the existing C1 private-entry to isolated-trial-database assembly on the already confirmed Windows host. Resolve technical configuration mappings; identify only concrete execution blockers. | Read existing project configuration/code only, no credentials or platform calls. No feature expansion or new approval registry. Any reproduced runtime defect stays with C; deployment glue goes to E/I through M. |
+| I | Integrate verified owner increments and this board on the existing branch, then request E final review. | Original assertions, provenance, exact identity and twenty-request/three-send gates remain intact. |
+
+Only the existing E test database may be used for the SQL task. Match container
+ID/name/project/service/worktree, volume, loopback port, database and user before
+connecting. A missing or mismatched resource does not authorize replacement,
+unknown-volume cleanup or a shared Docker restart. The user-started engine is
+not evidence that the container is running. Keep synthetic tests separate from
+the future C1 trial database. C's assembly review must produce concrete field
+mapping or a reproduced blocker, not a second plan. Retain AB/D when no bounded
+task exists; preserve all original sessions and ownership. No full-suite replay,
+production factory expansion, source/model call, message, new phone window,
+service purchase or public network opening is authorized by this increment.
+
+E task `task_fbae471e7c81` / `ctx_58cfd161bf0b` confirmed the original E
+PostgreSQL container is already running and healthy after the user's Docker
+startup. Its full ID, project/service, E deployment paths, pinned image, retained
+volume and loopback `127.0.0.1:55434` mapping match the recorded E scope. No
+container start/stop occurred. The E-only existing synthetic database password
+may be read once from only that container's `POSTGRES_PASSWORD` into process
+memory and injected only into the test child; no full environment dump, secret
+output/file, credential search or password change is authorized.
+
+At 12:36 UTC, E executed the unchanged 21 C1 cases once on actual PostgreSQL
+16.14: **21 passed, zero failures/skips**, pytest exit 0, 13.26 seconds. Tested
+source was `c725a56a803c77b94efec54956e30a97fea437fd`, with all executable inputs
+equal to integrated `4ec6c480dc971d44d176c3539bcbcade4ee7f802`. Evidence is in E
+`87065fea2e5ccfddad918dabf6db4a39df3d51d1`. Bounded read-only snapshots matched
+the original public schema, 73 relation identities, 29 data objects and 823
+row/sequence-state records; no new schema remained. Original container/volume
+metadata and running state matched afterward. This supersedes the historical
+missing-engine and unexecuted-21-case observations below. It proves actual
+PostgreSQL behavior with synthetic scenario inputs, not platform or phone receipt,
+physical-volume byte preservation or approval to use E's test DB for live C1.
+
+C completed `task_fac942c8c794` / `ctx_393ca3e4ccd4` with no code changes.
+The existing C1 structured stdin maps `database_url` directly to the fixed
+isolated child; both lookup and send need the same persistent approved database.
+Existing migration-only CLI is sufficient and no generic user/session setup is
+needed. C reproduced a deployment mismatch offline: general controlled-trial
+Compose publishes no PostgreSQL host port, its validator rejects adding one,
+and its wrapper requires TLS plus unrelated services/queue/recovery startup.
+These restrictions must remain intact. There is no reproduced C runtime defect.
+
+For the reproduced deployment blocker, C owns a minimal project-local runtime
+helper under `src/oil_agent/runtime/` and corresponding unit tests/config notes;
+E owns the separate database-only Compose definition under `deploy/`, focused
+integration checks and existing runtime evidence after its SQL task. The fixed
+candidate resource contract is Compose project `oil-agent-feishu-trial`, service
+`postgres`, database/user `oil_c1_trial`, named volume `c1-data`, internal backend
+network and only `127.0.0.1:55436:5432`. These are proposed local resource names,
+not created or approved live resource identities. Compose accepts only the
+process-injected `OIL_C1_DB_PASSWORD`; no real value is stored in repository files.
+Reuse the fixed C1 process and existing migration-only CLI, with bounded
+structured input and process-only injection, without a new approval registry.
+Do not write a generic Docker manager or change global environment. The candidate
+must use an explicitly scoped loopback endpoint, independent database/user/volume,
+safe disabled capabilities and preserved fixture exercise labeling. No general
+trial gate, existing E resources, provenance or production marker may be relaxed.
+Prepare and verify this concrete deployment result before requesting any missing
+new database activation scope; do not create the future C1 database, enable
+outbound access or start a phone window as part of code preparation. I integrates
+each verified increment; E reviews the final candidate independently.
+
+C preparation is `task_05c25c905346` / `ctx_991696c616e6`; E deployment
+preparation is `task_3e9b871c8e0e` / `ctx_9d11fada8b73`. Their exclusive new
+files are C's `src/oil_agent/runtime/c1_database.py` and
+`tests/unit/runtime/test_c1_database.py`, and E's `deploy/compose.c1-db.yaml`
+and `tests/integration/test_c1_database_deploy.py`. Notes remain in the existing
+owner documents. I's SQL-evidence integration is `task_83e2cc960e73` /
+`ctx_42faa36f4dd8`, independently of the unfinished database helper.
+
+The internal-only C1 network contract remains unchanged. The historical E test
+deployment used an additional host network after an internal-only publication
+problem; this does not establish current C1 packet behavior. Docker's internal
+network and port-publishing documentation permits some host communication and
+does not by itself prove this Windows Desktop candidate works or always fails.
+An ordinary secondary egress bridge is not an accepted correction. Current C1
+host reachability remains **IMPLEMENTED CONFIGURATION, ACTUAL VERIFICATION NOT
+EXECUTED**. The helper must reject absent actual binding/network evidence and
+failed database connections. A later finite activation probe must inspect actual
+publication and network membership and verify the loopback database identity;
+rendered Compose is not deployment or firewall acceptance.
+
+For the helper's new runtime `yaml` import, I has the explicit temporary glue
+assignment for `pyproject.toml` and `uv.lock` only to declare the already locked
+PyYAML package as a direct runtime dependency. These paths otherwise belong to
+C; C must not edit them concurrently. No package upgrades, additional libraries
+or general dependency cleanup are authorized. I must preserve the existing
+resolved third-party package versions/artifacts and validate the metadata/build.
+
+The SQL-evidence increment is integrated and independently accepted at I
+`37046e8f310f3be8cad161d70e1c0ba57fd843f1`. E verified the exact M/E document
+blobs, unchanged executable inputs, clean tree and independently matching remote
+SHA without replaying SQL. E's separate deployment preparation commits are
+`ec117b2b307d1bcba8944707bfe75f80938098fe` and
+`1ab32ce5fe774a434d3a63254124723fc77f02bc`; the latter only aligns the required
+password placeholder with C's interface. Five dedicated Compose checks passed,
+with the two existing general-trial gate regressions also passing. This is
+offline configuration evidence; C's helper integration and E's final candidate
+review remain separate from any live database activation.
+
+C's helper source is `55c3c8213070e6f3022c78e88e793b77bddc0758`, pushed with
+a clean tree and independently matched remote SHA. Its 46 focused tests,
+scoped Ruff and offline sdist/wheel build passed. Actual captured Compose
+rendering of E's exact committed candidate passed after the owner corrected
+Windows plugin discovery (`ProgramFiles`) and accepted only generated empty
+`entrypoint`/`ipam` defaults. Nonempty overrides remain rejected. Empty structured
+input failed before Docker access with exit 2. Resource lifecycle and migration
+effects were tested only with explicit doubles; no C1 resources were created.
+
+I final preparation integration is `task_809d440e3c49` / `ctx_244683c2cdb9`.
+E independent acceptance is `task_f803513bb3f5` / `ctx_04bbb7375acc`; C is
+retained after its verified handoff. The fixed entry is
+`python -I -B -m oil_agent.runtime.c1_database` with the documented bounded stdin
+and `check`, `start`, `status`, `migrate`, `stop`, `resume` actions. It requires
+the existing source-worktree/editable environment and does not imply an installed
+product. Final integration, real resource activation and phone acceptance must
+remain separate results.
+
+### Bounded increment: C1 PostgreSQL test adapter
+
+The user's new multi-agent development instruction resumes the existing C/E/I
+sessions on the accepted delivery `f04f64f55cc12e7fea4cfa5d56ee768816bad561`.
+It does not start a phone window or authorize provider calls. The concrete
+implementation gap was the recorded mismatch between C's database-only fixture
+and E's isolated migrated PostgreSQL fixture. E has implemented the adapter;
+21 current C1 SQL cases still remain unexecuted through the E harness.
+
+| Owner | Bounded work and exclusive edits | Acceptance / next owner |
+| --- | --- | --- |
+| E | Reproduce the fixture-selection blocker and add the smallest adapter under `tests/integration/`, reusing the original C1 assertions and E's existing migrated fixture. Record evidence only in existing `e2e/runtime-checks.md`. | Exact collection and fixture routing, applicable lint and targeted tests. Actual SQL only on independently confirmed E-owned resources; missing engine remains a separate execution gap. |
+| C | Read-only review of the 21 existing storage assertions, clock/config initialization and database ownership requirements; return a precise contract handoff to E through M. Domain fixes require a reproduced failure and a separate owner assignment. | Preserve original assertions and C database guards; no repository or private-configuration edits in this task. |
+| I | After the E commit, integrate only this adapter/evidence and M governance on the existing integration branch. | Check exact source changes and applicable targeted checks; hand the final candidate to E for independent delivery review. |
+| M | Maintain this board and dispatch/acceptance records only. | Retain all sessions; AB/D have no task in this increment. |
+
+The existing Run is `run_64e3991f76b9`. E completed
+`task_7c47961827c9` / `ctx_6e13f25bb2a2` in `oil-v01-e`; C completed
+`task_505e05b63fc7` / `ctx_a1ab0dd1210a` in `oil-v01-c`. Both original
+terminals were reused and actual task activity was observed. I integration was
+assigned as `task_f832cecd3377` / `ctx_77ed1ec38dc1` in the retained `oil-v01-i`
+session. No new worker, branch or worktree was created.
+C's read-only handoff confirmed 12 original functions expanding to 21 cases,
+shared function-scoped repository routing, assignable frozen UTC clock and
+independent transactional sessions. E's real migrations already insert the
+default configuration; the adapter must not insert it twice or create sessions
+through `e_actors`. No domain defect or SQL execution was claimed. C is retained.
+
+E's implementation commit is `a76571dcf2f8b2b276d72e527a06c78d08fc4a18`.
+It adds only `tests/integration/test_postgres_c1.py` and updates the existing
+runtime evidence. Before repair the original C fixture rejected E scope with
+one setup error and zero engine constructions. The adapter now collects all
+21 cases, preserves original callable/fixture/parameter identities, and routes
+only its module to E's existing migrated repository. Ruff and the effective
+fixture-routing audit passed. Missing E configuration produced 21 explicit
+skips, not SQL passes; wrong database scope still failed before connecting.
+Original tests, both existing fixtures, product sources and locks are unchanged.
+One exact E container inspection failed because `dockerDesktopLinuxEngine` is
+absent. No retry or resource mutation followed. This resolves the missing
+adapter implementation only; actual SQL, live C1 database permission and all
+Feishu/phone acceptance remain unexecuted. I owns integration of this exact
+increment; E owns its final delivery review, with settlement in the existing Run.
+
+Do not rerun full synthetic acceptance, change product code or production flags,
+read private credentials, start Docker, restart shared services or clean old
+resources. E may make one bounded read-only check of its previously identified
+container to determine whether the targeted SQL tests can run; a mismatch or
+unavailable engine ends that environment action without retry or substitution.
+Any SQL execution must retain fixture provenance and use only newly created
+E-owned disposable schemas, never the future live C1 database. Commit/push only
+verified changes to the existing origin; use `[skip ci]` to avoid an unrelated
+full-suite replay. Report harness checks separately from actual PostgreSQL and
+Feishu evidence. Production factory work remains outside this increment.
+
+### Active C1: local code accepted; phone test not executed
+
+The user reopened the official API Explorer and supplied one exact `open_id`
+for the self-binding step. At 11:26 UTC on 2026-09-12, D reverified the Explorer
+application against the protected local configuration, selected `open_id` in
+the existing member picker and copied the sole candidate through its UI.
+The copied value matched the user's exact input in memory and passed the ID
+format check; the native clipboard sequence was stable during the bounded
+read. No identity value or comparison digest is recorded in repository files.
+This resolves the earlier browser and candidate-identity prerequisites below.
+It proves a user-confirmed local binding input, not product login, a signed
+identity receipt, token authentication, message acceptance or phone display.
+At 11:29:39 UTC, C completed the existing private configuration's null-only
+`recipient_open_id` mapping using source
+`e690b61358e4216dfca574a6d58b9c9251edaf0d`, whose relevant executable inputs
+match integrated `3c7ee50383235587063fe938fc7d27fe50d90783`. C reported real
+path/owner/ACL, exclusive handle, single-link/non-reparse, bounded strict schema,
+approved host and exact copied-identity checks passed. Only the recipient field
+changed; other field bytes, formatting, file identity and owner/group/DACL were
+preserved according to C's before/after checks. No repository code changed.
+The existing `check` and `inject-check` each returned expected exit 2 with empty
+stderr, `CREATED`, `NOT_CONFIGURED`, missing only `tenant_key`, and
+`NOT_AUTHORIZED`. Actual isolated child injection succeeded.
+At 11:34 UTC, E independently verified the actual protected file, strict schema,
+approved host, nonempty application fields and exact recipient match. Effective
+directory/file access is limited to the current user and SYSTEM; the directory
+has inheritance disabled, and the file inherits that restricted access. E ran
+each existing helper mode once with the real isolated child and obtained the
+same expected exit 2, missing-only-`tenant_key` and `NOT_AUTHORIZED` result.
+The configuration bytes and file identity were unchanged across E's own checks.
+C's preservation of the original pre-write bytes remains C-reported evidence.
+Acceptance is **REAL LOCAL RECIPIENT CONFIGURATION / LOADING ONLY**; no phone
+window, token acquisition or product call was started. UI background counts
+remain unknown, and no platform/phone/login/callback acceptance is implied.
+
+At 10:59 UTC on 2026-09-12, D's computer-use self-binding attempt ended
+without copying an identity or modifying private configuration. After the Orca
+runtime restarted, M rebound the existing Run and resumed the same D Task in
+its original worktree. D's fresh desktop discovery found no external browser;
+`orca computer list-windows --app Tabbit --json` returned `app_not_found`.
+The explicitly authorized attempt to open the official API Explorer with the
+existing Windows HTTPS handler was rejected before execution by automatic
+approval review, with only `blocked by policy` as its reason. This is a local
+execution restriction, not missing application credentials or a product-code
+defect. No alternate shell or browser API was used to evade the rejection.
+
+The prior browser URL/application match is historical and was not reverified
+after the restart. Exact self selection, clipboard copy and C's recipient
+mapping remain **NOT EXECUTED**. The immediate manual prerequisite is to open
+the existing browser at `https://open.feishu.cn/api-explorer`; D can then resume
+the approved current-application/self-only UI step. Existing bot/self-only
+availability and host confirmations remain accepted, without another scope
+question. No message, token acquisition, source/model call or new phone window
+was initiated. Browser background request counts remain **UNKNOWN**; these
+observations do not establish compliance with the twenty-request live budget.
+No paid service was added; development-session cost is not available from the
+product ledger. D's source remains `da65fb1f2f80a455c058e3107a3df3964c22fbd5`;
+the integrated product source remains `9dfd0a54063b1b9c909d6dd322bbfb23567e27a3`.
+This increment records the attempted real setup and its limitation only;
+no code fix, repeated mock acceptance, database/service change or container
+operation is warranted by this observation. D's session and work are retained.
+
+At 10:31 UTC on 2026-09-12, the user confirmed that the existing application's
+bot is enabled and its availability is restricted to the user alone. Record
+both facts as **USER CONFIRMED**; do not ask for that scope again. This is not
+independent platform verification, an exact application-scoped `recipient_open_id`
+binding, verification of the send API permission/version release, or a new phone
+test start. D owns guidance for the next exact self-binding step; private values
+remain local, and tenant/database technical mapping stays with the agents.
+
+On 2026-09-12, the user confirmed the current `LAPTOP-BS46UHBR` computer as
+the test host. M recorded that confirmation at 10:12 UTC. C completed the
+existing protected configuration's null-only `host_binding` maintenance and
+reported it at 10:14:56 UTC, using accepted source
+`e690b61358e4216dfca574a6d58b9c9251edaf0d` without repository code changes.
+The confirmation answered a host-only question that explicitly excluded
+sending; it does not renew the expired phone window. C reported real path/owner/
+ACL, exclusive-handle, bounded schema and readback checks passed; only
+`host_binding` changed, with all other field bytes, formatting and ACL preserved.
+The existing `check` and `inject-check` each returned exit 2 as intended, with
+`CREATED`, `NOT_CONFIGURED`, missing `tenant_key` and `recipient_open_id`, and
+`NOT_AUTHORIZED`. Actual isolated process injection succeeded. E independently
+verified the real post-state, schema, approved host match and both helper modes;
+its checks preserved the configuration bytes and emitted no stderr. Effective
+file access is limited to the current user and SYSTEM. The file inherits from
+the restricted project-private directory, whose ACL inheritance is disabled.
+Unchanged pre-state across C's maintenance remains C's reported evidence.
+E's independent local evidence is committed in
+`d35a7fc192db05fb134a1459ce13d6748732f3c6` (`e2e/runtime-checks.md`).
+
+E's final independent disposition is **LOCAL CODE / TEST / SELECTED PACKAGE
+EVIDENCE ONLY**, recorded in `d4d1225811fd44f6fc7c39259beaabc85ab0e144`.
+Tested I delivery is `bfe0209f882f2ffb92fcfc4ab1f651e4541a36cd`; exact clean
+code/test/build source is `e98d4a69a2e317b8f573f1c868571dd66fccd1e3`.
+I and E independently passed the 65 entry/offline-factory cases and 19 Windows
+temporary-file binding cases. Thirteen PostgreSQL factory cases were
+deliberately unselected, no selected case was skipped, and the existing AnyIO
+deprecation warning remains. The binding cases mock ACL verification and are
+not real protected-file write evidence. No original assertion was weakened.
+
+Verified commands (existing dependencies, no network installation):
+
+```powershell
+uv run --offline --locked --no-sync pytest tests/integration/test_c1_entry.py tests/integration/test_bootstrap_factory.py -k 'c1_entry or offline_factory' -q --tb=short
+uv run --offline --locked --no-sync pytest tests/unit/runtime/test_c1_tenant_binding.py -q --tb=short
+uv build --offline --out-dir C:/Users/DW/AppData/Local/Temp/oil-agent-i-ctx-8394797ac280/dist
+```
+
+I performed the build once, from the exact source above. E read eight selected
+runtime/channel/factory members in each existing wheel and source archive,
+without extraction or modification: 16/16 matched after LF normalization,
+0/16 matched raw Git bytes because the archived files use CRLF. This is selected
+source/package correspondence, not raw-byte identity or installed acceptance.
+Post-build delivery changes are evidence/handoff documentation only. All
+verified increments were pushed to the original branches; sessions are retained.
+
+The implemented path now includes fixed app-only tenant transport, one shared
+window request budget for lookup and later sending, one first-message subject,
+an isolated fixed product entry, and explicit null-only private tenant mapping.
+The earlier code-acceptance round changed no private configuration. The new
+host-only maintenance above supersedes that local observation; no token
+authentication or platform/phone effect is inferred.
+
+Remaining gaps stay separate:
+
+- **NOT IMPLEMENTED:** the production factory before formal delivery.
+  Production is not a C1 prerequisite. The narrow E-owned C1 SQL adapter is now
+  implemented and its 21 actual SQL cases passed in the increment above.
+- **IMPLEMENTED, VERIFICATION NOT EXECUTED:** real tenant-result mapping,
+  platform acceptance and phone display. The E test database is now verified
+  reachable; it is separate from the future C1 database. No shared service restart
+  or unknown-resource action occurred.
+- **MISSING CONFIRMED SCOPE / CONFIGURATION:** tenant binding,
+  required platform permissions and an approved isolated database. The current
+  test host is now explicitly confirmed, locally mapped by C and checked by E.
+  Bot enablement and self-only application availability are user-confirmed;
+  the exact recipient is now user-confirmed, UI-copied and locally mapped by C.
+  E has independently verified the actual recipient post-state and loading;
+  platform API permission remains unverified.
+  The prior phone window expired; a new explicit start is still required.
+- **EVIDENCE LIMIT:** the receipt's live API count remains `null` / unknown;
+  durable reservations are not proof of remote arrival. Report these separately.
+  In-place write failure may leave modified/unconfirmed bytes, without automatic
+  requery or a crash-atomicity claim.
+
+Actual product source/model/Feishu calls, sends and model tokens this round are
+zero; no paid service was added. Development-session billing is not available
+from the product ledger. No source record, platform message ID, phone observation,
+web login, callback or signed confirmation receipt exists for this round.
+No business service, continuous monitoring or new test window was started.
 
 The user reports having obtained application credentials and has edited the
-project-private configuration locally. C's latest read-only check on
-2026-09-12 at 08:22 UTC, against integrated
-`41cfed431d8c8ac882d4cee88267cc20299b3c83`, passed JSON/schema, path/ACL and actual
-isolated process injection checks. Its redacted state is `CREATED`,
-`NOT_CONFIGURED`, missing `app_id`, `tenant_key`, `recipient_open_id` and
-`host_binding`, with start `NOT_AUTHORIZED`. Both helper commands returned exit 2
+project-private configuration locally. C's earlier read-only check on
+2026-09-12 at 09:31 UTC, against integrated
+`fe4b76c2f8b1f17130bd442812cbc046eed1f325`, passed JSON/schema, path/ACL and actual
+isolated process injection checks. The existing `app_id` already matches the
+user-supplied identifier: no private file was written or created. Its redacted
+state is `CREATED`, `NOT_CONFIGURED`, missing `tenant_key`,
+`recipient_open_id` and `host_binding`, with start `NOT_AUTHORIZED`.
+Both helper commands returned exit 2
 as designed for incomplete preparation. This proves local loading only, not
 platform authentication, credential rotation, application ownership or binding.
 No private value is recorded here. The display name remains
@@ -70,6 +514,97 @@ D's redacted check through the committed C helper still reported `CREATED` /
 `host_binding`, with zero product requests. An earlier path/ACL denial from D's
 older helper context did not reproduce with C's helper; no ACL or private file
 was changed. No message was attempted and the window must not renew silently.
+M checked the clock at 09:25 UTC: that window has expired. The user's subsequent
+instruction to continue development does not authorize a replacement window.
+
+The current bounded increment addresses the reproduced pre-binding tenant-query
+gap, not new product features. C task `task_9f68896111b5` / `ctx_1e8f29b67faa`
+completed the App ID comparison and two redacted checks without writes or calls.
+D task `task_1633a8eef6b0` / `ctx_e8b25d459470` reproduced the missing fixed tenant
+lookup transport; C confirmed that the full C1 permission and active delivery
+claim currently require bindings which this lookup must obtain first. D owns the
+fixed token/query transport, C the existing permission and request-ledger seam,
+and I task `task_d068a6cef6c0` / `ctx_9fd45f0998ab` the narrow assembly review.
+One immutable app-window request budget must cover lookup and later sending;
+tenant discovery never supplies recipient authorization or resets twenty calls.
+E task `task_14da0342346c` / `ctx_c02dde905576` checks only exact previously
+identified E-owned PostgreSQL test resources before proposing targeted execution
+of the eleven pending C1 storage regressions. No shared service restart, unknown
+resource operation or live test-host approval is inferred.
+
+C continues the bounded owner repair in task `task_8d50445f6a5e` /
+`ctx_14b98dc95b3f`. The immutable app request owner must be explicitly linked to
+the complete send permission; omitting or replacing it after lookup must not
+reset the request or three-send counters. Existing recipient/revision/lease
+checks remain in the same send-reservation transaction. I's read-only design
+review is complete and its session is retained pending exact owner commits.
+
+E recorded its actual resource observation in
+`a9264158e5ec64983f700d8c0a68373fff7f5be8`: the configured local Docker endpoint
+was readable, but one exact E container inspection failed because
+`dockerDesktopLinuxEngine` was absent. No current container/volume/cleanup state
+was verified and no service was started, restarted or cleaned up. The eleven
+C1 SQL cases remain **IMPLEMENTED, VERIFICATION NOT EXECUTED**. Their existing C
+fixture rejects E's database; reusing those assertions on E's own database needs
+a narrow E-owned fixture adapter, **NOT IMPLEMENTED**. That harness gap and the
+unavailable engine are separate from missing live provider authorization.
+
+D delivered `da65fb1f2f80a455c058e3107a3df3964c22fbd5` on its existing branch:
+fixed app-only `FeishuTenantLookup` reuses the token/HTTP implementation, requires
+a nonempty reservation before each token/query wire request, validates the
+response-derived tenant identity and never retries automatically. The initial
+missing-export assertion failed; the new lookup selection passed 34 and related
+existing channel checks passed 36, with original assertions retained. These are
+synthetic transport checks, not platform authentication. I task
+`task_8fb163cd7182` / `ctx_98d0b0ec61f9` integrates that exact increment and the
+governance/E evidence first; C's shared-budget and entry repair remains separate
+work in progress. No current provider request, send or added product cost exists.
+
+E independently accepted D transport only at I
+`d4414f9a3b24dc104e2f622ee0391f4ac811811a`, recorded in
+`5aa4219fd09473e7ab6f645289e00de0fde3ec85`. The same 34 new and 36 related original
+checks passed offline, with 56 deliberately unselected and no skips; these
+repeat checks are not an additive test total. E verified original channel test
+files and ordinary guards unchanged. Shared C runtime, SQL and live platform
+acceptance are outside that result.
+
+During the C repair, a focused regression reproduced that separate full send
+approvals sharing one app window could create separate first-message subjects.
+C owns the minimal correction in the existing exercise/outbox identity, without
+new tables or historical data mutation. M also reproduced a selected-result
+handoff gap: the new read probe discarded the returned tenant before private
+configuration mapping. C is authorized to repair this with an explicit option
+in the existing controlled entry and a checked parent update of only a blank
+`tenant_key`. The default probe remains non-writing; an equal value is a no-op,
+conflicting nonempty values or changed bindings are refused, and ordinary output
+stays redacted. This authorizes code and synthetic tests only: no real query,
+private update, new file, start window or recipient is authorized here. Both
+repairs need committed owner evidence, I integration and independent E review.
+
+C delivered core `1a699c7713ea4c62b5cd81b4e47e1c6909064042` and mapping delta
+`3dd8cb43c19fac00a6d1099baa4a8f28f3d63671`, both pushed on its existing branch.
+Core checks passed 115 after three initial missing-seam failures and one
+shared-first-message identity failure. The existing C storage selection now
+collects 21 cases, including the original eleven: **none were executed**.
+Mapping checks passed 75, including 19 Windows temporary synthetic-file cases
+with a mocked ACL verifier; the initial explicit-option regression failed before
+repair. Scoped Ruff and diff checks passed. The selections overlap and are not
+an additive acceptance total. `tenant-lookup --bind-if-unset` is now implemented;
+the prior result-to-private-binding implementation gap is superseded, with real
+protected-file/platform verification still pending. In-place I/O failure can
+leave modified or unconfirmed bytes; the code reports binding failure and does
+not claim crash-atomic writes or retry the lookup automatically.
+
+I integrated the core in `775308f7ded755da410044f8634b2e5f11a6ff23` and delivered
+its three-path fixed-factory glue in
+`d842b7b43c2f6ed91198a3e3695650db3b2a8cfe`. The new regression first reached the
+ordinary fixture factory; the repaired query branch passed 20 offline factory
+checks, with 13 PostgreSQL cases unselected and all sixteen original factory
+test function ASTs unchanged. E task `task_a8f43e8d111d` / `ctx_65f739b1af73`
+reproduced 26 original-entry fixture setup errors caused by the required app
+owner, and owns the necessary synthetic-input adaptation without weakening
+assertions. Combined integration, independent acceptance and the final single
+build remain pending at this checkpoint. No live window or resource is started.
 
 This bounded preparation is owned by C (runtime/private setup), D (channel and
 preview), I (existing explicit assembly seams), and E (independent focused
