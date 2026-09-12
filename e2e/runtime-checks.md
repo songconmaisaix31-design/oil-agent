@@ -2122,3 +2122,124 @@ placeholder text. E aligned only that interpolation error message to
 **5 passed in 0.30 seconds**, exit **0**. The required-variable gate is unchanged;
 this checks actual rendering after interface alignment, not execution of C's
 still-uncommitted helper.
+
+## Business baseline: events, daily analysis and finite recovery
+
+On 2026-09-12 E normally merged accepted I
+`78e5363d7c7da5d6bb76c3be6296b1f6e4010d87` and M phase-switch governance
+`c4e41982fd1128c513d3b89750e7586eb23abb30`, producing baseline
+`a3c1a8ac3cedf204519cebeb81cb600004581e0b`. The V01-only conflict was resolved
+to the exact M blob; no history was replaced. Frozen E expectations were
+committed/pushed as `08db6fc8c6d4ca373c9705dc4779972b3003735c`, then qualified
+by `83774440004fdf3969f2d3f0d283134e98bd8a87` before adopting any owner fix.
+Product source, original unit/integration assertions, E/C fixtures, R16 guards,
+the original v01 scenario corpus and dependency inputs remain unchanged.
+
+The new `business-days.json` is explicitly synthetic/fixture provenance. The
+bounded expectations cover ordinary silence; reuse original same-origin,
+independent follow-up, correction-recipient and R16 cases; require cutoff-valid
+Chinese conditional analysis with resolvable event/revision/evidence citations;
+exclude superseded evidence; preserve missing-price uncertainty; and exercise
+three report failure/recovery dates with durable daily uniqueness.
+
+**Correction to the initial E baseline interpretation:** the first positive
+body contained exercise/uncertainty language, so the real assessment correctly
+classified it unknown/routine/unverified. Its empty analysis was not proof of
+a missing supported-event analysis. That exact content is retained as a new
+negative. The corrected separate positive remains explicitly labeled in fixture
+metadata, uses a port loading/transport interruption predicate, and asserts
+occurred/credible-single-source/urgent before checking report output. No guard
+was relaxed. An earlier missing required `observations` test argument was also
+an E setup error, not a product failure.
+
+At corrected source `8377444`, this no-database command exited **1**:
+
+```text
+uv run --offline --locked --no-sync pytest tests/integration/test_business_reports.py -q --tb=short -p no:cacheprovider
+```
+
+Result: **2 failed, 5 passed in 0.64 seconds**, no skips. With qualified positive
+preconditions, `impact_analysis=()` still fails. A newer source revision also
+leaves the superseded revision in current report facts. Exercise protection,
+cutoff exclusion, absent-quote unknown/no-flat behavior, latest denial and invalid
+latest reference without fallback pass. AB received both exact reproductions;
+these red expectations remain frozen for integration, not weakened to match
+the baseline. Chinese analysis and watch lines use the owner-agreed existing
+field format `[event=<id>@<revision>; evidence=#<1-based index>]`; tests resolve
+the index to the full in-cutoff evidence reference rather than matching prose.
+
+The real SQL baseline ran once at source `08db6fc` from
+**14:37:04.448007 UTC to 14:37:14.036587 UTC**. The exact scoped E identity was
+reconfirmed before connecting:
+
+- Endpoint: `npipe:////./pipe/dockerDesktopLinuxEngine`.
+- Container: `b3c3a345428590922eb8e628a996dd634cb3333e5f0c86f588eede8fb7101cab`,
+  `/oil-agent-e-postgres-1`; project `oil-agent-e`, service `postgres`.
+- Compose directory: `C:\Users\DW\orca\workspaces\oil-agent\oil-v01-e\deploy`;
+  config labels reference exactly its `compose.yaml` and `compose.e-test.yaml`.
+- Image reference: `postgres:16-alpine@sha256:e013e867e712fec275706a6c51c966f0bb0c93cfa8f51000f85a15f9865a28cb`;
+  container image ID matches that digest.
+- Sole volume: `oil-agent-e_postgres-data`, local driver, project/volume labels
+  `oil-agent-e` / `postgres-data`, mounted at `/var/lib/postgresql/data`.
+- Configured and active mapping: only `127.0.0.1:55434:5432`; PostgreSQL reports
+  database/user `oil_e_test` / `oil_e_test`.
+
+The container was already running and was left running. Only its authorized
+synthetic password was captured into process memory for the fixed child DSN;
+no credential value or DSN was printed or stored. The existing `e_repository`
+fixture ran real migrations in fresh `e_acceptance_<UUID>` schemas and dropped
+only those schemas. No container/volume/network was created, started or stopped.
+
+```text
+uv run --offline --locked --no-sync pytest tests/integration/test_business_reports.py tests/integration/test_business_cycles.py tests/integration/test_corpus_replay.py::test_T03_two_domains_do_not_create_two_independent_publishers tests/integration/test_postgres_pipeline.py::test_T04_independent_late_evidence_upgrades_same_persisted_event tests/integration/test_postgres_pipeline.py::test_T05_lower_severity_denial_corrects_original_authorized_recipients tests/integration/test_contextual_guards.py tests/integration/test_postgres_operations.py::test_T14_real_normal_queue_block_does_not_delay_urgent_delivery -q --tb=short -s -p no:cacheprovider
+```
+
+Result: **3 failed, 30 passed in 7.80 seconds**, no skips, exit **1**; measured
+child-process wall time **9.589 seconds**. This run predates the pure positive
+fixture correction: one failure was the unqualified empty-analysis case above,
+one was the superseded source fact, and one independently reproduced missing
+report failure health. SQL was not repeated for the pure fixture correction.
+
+The finite cycle body measured **0.933 seconds** for **3 accelerated business
+dates (2026-09-14/15/16)**, **3 Runtime/Repository reconstructions** and **6 real
+Procrastinate report-job triggers**. It used the actual migrated PostgreSQL
+repository, bounded normal-queue workers and existing report lease/outbox logic.
+Injected `TimeoutError` and an unexpected builder exception were synthetic fault
+stimuli; quota refusal came from the real SQL processing budget while preserving
+urgent reserved capacity. This did not measure a sixty-second deadline or kill
+and restart an OS process. The clock advanced across dates and past the existing
+90-second lease; it did not simulate elapsed uptime by sleeping.
+
+| Accelerated date / fault | Failure health observed | Recovery observed |
+| --- | --- | --- |
+| Sep 14 / timeout | missing, no safe error detail | 1 report, 2 unique intents |
+| Sep 15 / quota exhausted | stale, no safe error detail | 2 reports, 4 unique intents cumulatively |
+| Sep 16 / unexpected exception | stale, raw RuntimeError escaped, no safe error detail | 3 reports, 6 unique intents cumulatively |
+
+All three cycles recovered after reconstruction and lease expiry, restored
+`ok` on commit, became `stale` after six accelerated minutes, rejected stale
+build tokens and produced no duplicate daily report or recipient/revision
+intent. The separate original real-queue case also preserved urgent delivery
+while normal delivery was blocked; its channel remains explicitly dry-run.
+The missing/degraded-health assertions were collected after recovery, so their
+failure did not suppress observation of the complete three-cycle sequence.
+C received this exact persistence-backed red evidence.
+
+Bounded repeatable-read/read-only snapshots of the scoped database compared all
+original schema/relation identities, bounded table-row multisets and sequence
+states: **equal before/after**, **1 schema, 73 relations, 29 data objects,
+818 table rows** at both boundaries. No new schema remained. The final selected
+container read confirmed the same running identity, pinned image and loopback
+mapping. This proves bounded logical preservation, not physical-volume identity.
+
+Scoped Ruff check and format check for the two new integration files and
+`git diff --check` passed. The same bounded selection with `--collect-only -q
+-p no:cacheprovider` collected **34 cases in 0.63 seconds**, exit **0**, after
+adding the exercise negative; collection is not SQL execution. No full suite,
+C1 replay, build, dependency change,
+provider/model/source request, private configuration read, external send, phone
+window or continuous polling occurred. **Verdict: baseline defects reproduced
+and regression expectations frozen; final business acceptance remains pending
+owner repair and exact I integration.** Three accelerated dates and subsecond
+cycle-body execution do not establish fourteen-day operation, daemon uptime,
+SLA, real market accuracy, platform/phone delivery or production acceptance.
