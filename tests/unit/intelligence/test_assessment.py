@@ -324,6 +324,71 @@ async def test_T05_advisory_correction_and_first_report_gates(source_record):
         suggest_notification(previous, previous.model_copy(update={"event_id": "different"}))
 
 
+async def test_business_repost_corroboration_followup_and_correction_sequence(source_record):
+    original = record(source_record, "Synthetic Cedar refinery stopped loading.", "first")
+    mirror = record(
+        source_record,
+        original.content_excerpt,
+        "mirror",
+        source_id="mirror-site",
+    )
+    independent = record(
+        source_record,
+        original.content_excerpt,
+        "independent",
+        origin_publisher="Synthetic Independent Wire",
+    )
+    followup = record(
+        source_record,
+        "Synthetic Cedar refinery stopped loading at all three docks.",
+        original.record_id,
+        revision=2,
+    )
+    denial = record(
+        source_record,
+        "The operator denies that loading stopped at Synthetic Cedar refinery.",
+        original.record_id,
+        revision=3,
+    )
+    inputs = (original, mirror, independent, followup, denial)
+    snapshots = tuple(r.model_dump_json() for r in inputs)
+    service = ConservativeAssessmentService(
+        policy=AssessmentPolicy(
+            allow_credible_single_source=True,
+            trusted_publishers=frozenset({original.origin_publisher}),
+        ),
+        matched_event_ids={(r.source_id, r.external_id): "synthetic-business" for r in inputs},
+        reviews=tuple(review(r) for r in inputs[:-1]) + (review(denial, AssertionStatus.DENIED),),
+        clock=lambda: NOW,
+    )
+    (first,) = await service.assess((original,), context=context())
+    (repost,) = await service.assess((original, mirror), context=context())
+    (corroborated,) = await service.assess((original, mirror, independent), context=context())
+    (updated,) = await service.assess((original, followup), context=context())
+    (corrected,) = await service.assess((original, followup, denial), context=context())
+    assert suggest_notification(None, first, allow_first_report=True) == "first_report"
+    assert len(repost.origin_groups) == 1
+    assert repost.evidence_status == "credible_single_source"
+    assert suggest_notification(first, repost) is None
+    assert corroborated.evidence_status == "independent_multi_source"
+    assert suggest_notification(repost, corroborated) == "update"
+    assert updated.evidence == (quote_reference(followup),)
+    assert suggest_notification(first, updated) == "update"
+    assert corrected.assertion_status == "denied" and corrected.severity == "routine"
+    assert corrected.evidence == (quote_reference(denial),)
+    assert suggest_notification(updated, corrected) == "correction"
+    withdrawn = corrected.model_copy(update={"evidence_status": EvidenceStatus.WITHDRAWN})
+    assert suggest_notification(corrected, withdrawn) == "withdrawal"
+    assert suggest_notification(None, corrected, allow_first_report=True) is None
+    assert suggest_notification(None, withdrawn, allow_first_report=True) is None
+    ordinary = record(source_record, "The supplier published a routine price bulletin.", "ordinary")
+    (routine,) = await service.assess((ordinary,), context=context())
+    assert routine.severity == "routine"
+    assert suggest_notification(None, routine, allow_first_report=True) is None
+    assert tuple(r.model_dump_json() for r in inputs) == snapshots
+    assert service.budgets["urgent"].calls == service.budgets["normal"].calls == 0
+
+
 async def test_T05_reviewed_negative_correction_retains_denial_and_correction_intent(source_record):
     original = record(source_record, "The operator reports refinery destruction.", "same-family")
     correction = record(
