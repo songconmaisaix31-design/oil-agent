@@ -5,6 +5,7 @@ import json
 import re
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
+from typing import Literal, Protocol
 from urllib.parse import urlsplit
 
 import httpx
@@ -108,13 +109,51 @@ class RequestFailure(Exception):
         self.may_have_arrived = may_have_arrived
 
 
+class RequestObserver(Protocol):
+    async def __call__(
+        self,
+        reservation_id: str,
+        phase: Literal["started", "responded", "transport_failure"],
+        *,
+        http_status: int | None = None,
+    ) -> None: ...
+
+
+class _ObservationFailure(RequestFailure):
+    """Do not relabel a recorder failure as an actual transport failure."""
+
+
 class ProviderHTTP:
     """One connection per operation; no redirects, environment proxy, logs or retries."""
 
-    def __init__(self, transport: httpx.AsyncBaseTransport | None = None):
+    def __init__(
+        self,
+        transport: httpx.AsyncBaseTransport | None = None,
+        *,
+        observe_request: RequestObserver | None = None,
+    ):
+        if observe_request is not None and not callable(observe_request):
+            raise ValueError("Request observation requires a callable recorder")
         self.transport = transport
+        self.observe_request = observe_request
 
-    async def request(self, method: str, url: str, *, seconds: float, **kwargs):
+    async def _observe(self, reservation_id, phase, *, may_have_arrived, http_status=None):
+        if self.observe_request is not None:
+            try:
+                await self.observe_request(reservation_id, phase, http_status=http_status)
+            except Exception:
+                # A recorder error cannot turn a possibly accepted send into a safe retry.
+                raise _ObservationFailure(may_have_arrived=may_have_arrived) from None
+
+    async def request(
+        self, method: str, url: str, *, seconds: float, reservation_id: str | None = None, **kwargs
+    ):
+        if self.observe_request is not None and (
+            not isinstance(reservation_id, str) or not reservation_id.strip()
+        ):
+            raise ServiceError(ErrorCode.FORBIDDEN, "Observed request requires its reservation")
+        started = False
+        response_complete = False
         try:
             async with asyncio.timeout(seconds):
                 async with httpx.AsyncClient(
@@ -124,6 +163,9 @@ class ProviderHTTP:
                     timeout=httpx.Timeout(seconds, connect=min(5, seconds)),
                     limits=httpx.Limits(max_connections=1, max_keepalive_connections=0),
                 ) as client:
+                    # A local dispatch marker, not proof that bytes reached the platform.
+                    await self._observe(reservation_id, "started", may_have_arrived=False)
+                    started = True
                     async with client.stream(method, url, **kwargs) as response:
                         body = bytearray()
                         async for chunk in response.aiter_bytes():
@@ -134,11 +176,27 @@ class ProviderHTTP:
                             data = json.loads(body)
                         except (ValueError, UnicodeError):
                             data = None
+                        response_complete = True
+                        await self._observe(
+                            reservation_id,
+                            "responded",
+                            may_have_arrived=True,
+                            http_status=response.status_code,
+                        )
                         return response.status_code, data, response.headers
-        except (httpx.ConnectError, httpx.ConnectTimeout, httpx.PoolTimeout):
-            raise RequestFailure(may_have_arrived=False) from None
-        except (httpx.HTTPError, TimeoutError):
-            raise RequestFailure(may_have_arrived=True) from None
+        except _ObservationFailure:
+            raise
+        except (RequestFailure, httpx.HTTPError, TimeoutError) as exc:
+            may_have_arrived = started and not isinstance(
+                exc, (httpx.ConnectError, httpx.ConnectTimeout, httpx.PoolTimeout)
+            )
+            if isinstance(exc, RequestFailure):
+                may_have_arrived = exc.may_have_arrived
+            if started and not response_complete:
+                await self._observe(
+                    reservation_id, "transport_failure", may_have_arrived=may_have_arrived
+                )
+            raise RequestFailure(may_have_arrived=may_have_arrived) from None
 
 
 def provider_error(status: int, data: object) -> tuple[str, bool]:

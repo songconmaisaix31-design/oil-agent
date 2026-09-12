@@ -11,6 +11,7 @@ from oil_agent.channels.common import (
     FeishuSettings,
     ProviderHTTP,
     RequestFailure,
+    RequestObserver,
     budget,
     provider_error,
     safe_service_failure,
@@ -27,21 +28,23 @@ class FeishuTenantLookup:
         settings: FeishuSettings,
         *,
         authorize_request: Callable[[LookupOperation], Awaitable[str]],
+        observe_request: RequestObserver | None = None,
         transport: httpx.AsyncBaseTransport | None = None,
     ):
         if not callable(authorize_request):
             raise ValueError("Tenant lookup requires per-request authorization")
         self.settings = settings
         self.authorize_request = authorize_request
-        self.http = ProviderHTTP(transport)
+        self.http = ProviderHTTP(transport, observe_request=observe_request)
         self._tokens = FeishuTenantToken(
             settings, self.http, lambda: self._reserve_request("tenant_token")
         )
 
-    async def _reserve_request(self, operation: LookupOperation) -> None:
+    async def _reserve_request(self, operation: LookupOperation) -> str:
         reservation = await self.authorize_request(operation)
         if not isinstance(reservation, str) or not reservation.strip():
             raise ServiceError(ErrorCode.FORBIDDEN, "Request authorization was not reserved")
+        return reservation
 
     async def lookup(self, *, context: CallContext) -> str:
         """C binds the hook to the app/window ledger; the result grants no send authority."""
@@ -60,11 +63,12 @@ class FeishuTenantLookup:
                 raise ServiceError(ErrorCode.INVALID_INPUT, "Invalid application binding")
             async with asyncio.timeout(budget(context)):
                 token = await self._tokens.get(context)
-                await self._reserve_request("tenant_query")
+                reservation = await self._reserve_request("tenant_query")
                 status, data, _ = await self.http.request(
                     "GET",
                     f"{API}/tenant/v2/tenant/query",
                     seconds=budget(context),
+                    reservation_id=reservation,
                     headers={"Authorization": f"Bearer {token}"},
                 )
             if status != 200:

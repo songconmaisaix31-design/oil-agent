@@ -4,7 +4,7 @@ import json
 from urllib.parse import quote
 from zoneinfo import ZoneInfo
 
-from oil_agent.channels.c1 import C1_BODY, C1_DATASET, C1_TITLE, build_c1_card
+from oil_agent.channels.c1 import C1_CONTENT, C1_DATASET, build_c1_card
 from oil_agent.channels.common import https_url
 from oil_agent.contracts.dto import NotificationIntent
 from oil_agent.contracts.services import ErrorCode, ServiceError
@@ -110,6 +110,10 @@ def build_message(
 
 def c1_message(intent: NotificationIntent) -> tuple[str, str]:
     """C's explicit exercise intent only; never reinterpret an event as a C1 drill."""
+    purpose = next(
+        (name for name, title, body in C1_CONTENT if (intent.title, intent.body) == (title, body)),
+        None,
+    )
     if not (
         intent.is_fixture
         and intent.provenance == "fixture"
@@ -118,10 +122,9 @@ def c1_message(intent: NotificationIntent) -> tuple[str, str]:
         and intent.kind == "exercise"
         and intent.revision == 1
         and intent.recipient_scope.is_test_recipient
-        and intent.title == C1_TITLE
-        and intent.body == C1_BODY
+        and purpose is not None
         and not intent.evidence
     ):
         raise ServiceError(ErrorCode.INVALID_INPUT, "Intent is outside the fixed C1 exercise")
-    card = build_c1_card(test_id=intent.subject_id, created_at=intent.created_at)
+    card = build_c1_card(test_id=intent.subject_id, created_at=intent.created_at, purpose=purpose)
     return "interactive", json.dumps(card, ensure_ascii=False, separators=(",", ":"))

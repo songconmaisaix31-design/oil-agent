@@ -14,9 +14,20 @@ C1_BODY = "本条消息用于验证飞书推送与手机显示，\n不代表真�
 C1_DATASET = "feishu-c1"
 C1_LABEL = "演练／非真实行情"
 C1_FINAL = "本阶段只验证消息到达。"
+C1_CONNECTION_TITLE = "【油品预警助手｜连接测试】"
+C1_CONNECTION_BODY = "飞书通知通道已接通。\n本消息由项目程序发送，不代表真实市场事件。"
+C1_AUTOMATIC_TITLE = "【油品预警助手｜自动通知演练】"
+C1_AUTOMATIC_BODY = (
+    "这条消息由程序定时触发，无需用户发送指令。\n当前尚未开启真实行情监控，不构成交易建议。"
+)
+C1_CONTENT = (
+    ("phone_receipt", C1_TITLE, C1_BODY),
+    ("connection_test", C1_CONNECTION_TITLE, C1_CONNECTION_BODY),
+    ("automatic_notice", C1_AUTOMATIC_TITLE, C1_AUTOMATIC_BODY),
+)
 
 
-def build_c1_card(*, test_id: str, created_at: datetime) -> dict:
+def build_c1_card(*, test_id: str, created_at: datetime, purpose: str = "phone_receipt") -> dict:
     """Same immutable card payload for local preview and the existing bot transport."""
     if (
         not re.fullmatch(r"c1-[0-9a-f]{32}", test_id)
@@ -26,16 +37,20 @@ def build_c1_card(*, test_id: str, created_at: datetime) -> dict:
         raise ServiceError(
             ErrorCode.INVALID_INPUT, "C1 requires a generated test ID and aware time"
         )
+    content = next((row for row in C1_CONTENT if row[0] == purpose), None)
+    if content is None:
+        raise ServiceError(ErrorCode.INVALID_INPUT, "Unknown C1 exercise purpose")
+    _, title, body = content
     local_time = created_at.astimezone(ZoneInfo("Asia/Shanghai"))
     return {
         "config": {"wide_screen_mode": True, "enable_forward": False},
         "header": {
             "template": "orange",
-            "title": {"tag": "plain_text", "content": C1_TITLE},
+            "title": {"tag": "plain_text", "content": title},
         },
         "elements": [
             {"tag": "div", "text": {"tag": "plain_text", "content": C1_LABEL}},
-            {"tag": "div", "text": {"tag": "plain_text", "content": C1_BODY}},
+            {"tag": "div", "text": {"tag": "plain_text", "content": body}},
             {
                 "tag": "div",
                 "text": {
