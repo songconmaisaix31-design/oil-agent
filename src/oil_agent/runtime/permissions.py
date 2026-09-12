@@ -6,7 +6,7 @@ An approval ID identifies one bounded authorization and must not be reused with
 changed scope to reset its durable budget. All dates are UTC-aware.
 """
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Annotated, Literal
 
 from pydantic import Field, model_validator
@@ -95,4 +95,47 @@ class TrialSendPermission(RequestPermission):
             raise ValueError("Trial recipient scope must be unique")
         if (self.exercise_dataset is None) != (self.exercise_ref is None):
             raise ValueError("A fixture exercise requires both dataset and exercise approval")
+        return self
+
+
+class C1Permission(RequestPermission):
+    """Future real user-start scope in the existing ledger; never made by prepare.
+
+    valid_from is the recorded explicit start. Caller must supply the real app,
+    host and personal binding; no OAuth, rule or event approval is fabricated.
+    """
+
+    start_trigger: Literal["开始手机测试"]
+    provider: Literal["feishu"] = "feishu"
+    app_id: NonEmpty
+    tenant_key: NonEmpty
+    credentials_ref: NonEmpty
+    host_binding: StableId
+    identity: ApprovedIdentity
+    max_requests: Annotated[int, Field(strict=True, ge=1, le=20)] = 20
+    max_send_attempts: Annotated[int, Field(strict=True, ge=1, le=3)] = 3
+    first_send_messages: Literal[1] = 1
+    max_new_fee: Literal[0] = 0
+
+    @property
+    def identities(self):
+        return (self.identity,)
+
+    @model_validator(mode="after")
+    def exact_c1_window(self):
+        import re
+
+        if self.expires_at - self.valid_from > timedelta(minutes=30):
+            raise ValueError("C1 authorization exceeds thirty minutes")
+        if self.identity.role != Role.VIEWER:
+            raise ValueError("C1 display permission cannot provision an administrator")
+        prefix = self.tenant_key + ":" + self.app_id + ":"
+        if not self.identity.subject.startswith(prefix) or not re.fullmatch(
+            r"ou_[A-Za-z0-9_-]{1,128}", self.identity.subject.removeprefix(prefix)
+        ):
+            raise ValueError("C1 requires the exact app-scoped personal identity")
+        if any(
+            not re.fullmatch(r"[A-Za-z0-9_-]{1,128}", s) for s in (self.app_id, self.tenant_key)
+        ):
+            raise ValueError("C1 app and tenant binding are invalid")
         return self
