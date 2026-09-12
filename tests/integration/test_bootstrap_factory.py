@@ -6,9 +6,10 @@ the factory constructs services and C's database authorization remains unchanged
 """
 
 import json
-from datetime import timedelta
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from types import SimpleNamespace
+from unittest.mock import Mock
 
 import httpx
 import pytest
@@ -27,7 +28,7 @@ from oil_agent.ingestion import ReplaySource
 from oil_agent.ingestion.http import PinnedHttpClient
 from oil_agent.intelligence.rules import ApprovedRules, PublicationRule
 from oil_agent.runtime.cli import load_runtime
-from oil_agent.runtime.permissions import ModelPermission, SourcePermission
+from oil_agent.runtime.permissions import C1Permission, ModelPermission, SourcePermission
 from oil_agent.runtime.settings import Settings
 from oil_agent.storage.models import (
     AckRow,
@@ -79,6 +80,124 @@ def test_offline_factory_ordinary_trial_requires_web_configuration(monkeypatch, 
     )
     with pytest.raises(ValueError, match=f"{missing} is required"):
         bootstrap._wire_feishu(runtime)
+
+
+@pytest.fixture
+def offline_c1_factory(monkeypatch):
+    """Synthetic construction scope; no live permission or database is created."""
+    now = datetime(2026, 9, 12, 6, tzinfo=UTC)
+    permission = C1Permission(
+        approval_id="synthetic-i-c1-start",
+        authorization_ref="synthetic:offline-i-start",
+        budget_ref="synthetic:zero-product-cost",
+        valid_from=now,
+        expires_at=now + timedelta(minutes=30),
+        start_trigger="开始手机测试",
+        app_id="synthetic_i_app",
+        tenant_key="synthetic_i_tenant",
+        credentials_ref="synthetic:private-c1-secret",
+        host_binding="synthetic-i-host",
+        identity={
+            "actor_id": "synthetic-i-person",
+            "recipient_id": "synthetic-i-recipient",
+            "subject": "synthetic_i_tenant:synthetic_i_app:ou_synthetic_i",
+        },
+    )
+    settings = Settings(
+        environment="test",
+        runtime_factory=None,
+        c1_display_only=True,
+        c1_permission=permission,
+        c1_host_binding=permission.host_binding,
+        data_provenance="fixture",
+        fixture_dataset="feishu-c1",
+        outbound_mode="trial",
+        public_origin="",  # C1 does not need an invented public host or OAuth URL.
+    )
+    engine = Mock(spec=["dispose"])
+    repository = SimpleNamespace(engine=engine, clock=lambda: now)
+    monkeypatch.setattr(bootstrap, "create_db_engine", lambda _: engine)
+    monkeypatch.setattr(bootstrap, "Repository", lambda _: repository)
+    monkeypatch.setenv("OIL_C1_APP_SECRET", "synthetic-i-c1-construction-only")
+    for field in (
+        "OIL_APPROVED_RULES_JSON",
+        "OIL_FEISHU_REDIRECT_URI",
+        "OIL_FEISHU_ENCRYPT_KEY",
+        "OIL_FEISHU_VERIFICATION_TOKEN",
+    ):
+        monkeypatch.delenv(field, raising=False)
+    return settings, engine
+
+
+@pytest.mark.parametrize(
+    "factory", [bootstrap.build_runtime, bootstrap.build_trial_runtime, load_runtime]
+)
+def test_offline_factory_c1_constructs_only_exact_guarded_display_channel(
+    offline_c1_factory, monkeypatch, factory
+):
+    settings, engine = offline_c1_factory
+    reads = []
+
+    def private_field(name):
+        reads.append(name)
+        assert name == "OIL_C1_APP_SECRET"
+        return "synthetic-i-c1-construction-only"
+
+    monkeypatch.setattr(bootstrap, "_required_environment", private_field)
+    runtime = factory(settings)
+    assert reads == ["OIL_C1_APP_SECRET"]
+    services = runtime.services
+    assert set(services.channels) == {"feishu"}
+    channel = services.channels["feishu"]
+    assert isinstance(channel, FeishuChannel) and channel.c1_display_only
+    assert channel.authorize == runtime.authorize_recipient
+    assert channel.authorize_request == runtime.authorize_c1_request
+    assert set(channel.recipients) == {settings.c1_permission.identity.recipient_id}
+    recipient = channel.recipients[settings.c1_permission.identity.recipient_id]
+    assert recipient.open_id == "ou_synthetic_i" and recipient.is_test_recipient
+    assert channel.settings.app_id == settings.c1_permission.app_id
+    assert channel.settings.tenant_key == settings.c1_permission.tenant_key
+    assert channel.public_base_url == channel.settings.redirect_uri == ""
+    assert channel.settings.encrypt_key is channel.settings.verification_token is None
+    assert services.identity is services.ack_verifier is None
+    assert services.assessment is services.reports is services.quote_parser is None
+    assert not services.sources and not services.external_sources
+    assert not services.source_poll_seconds
+    assert not services.assessment_uses_model and not services.reports_use_model
+    engine.dispose.assert_not_called()
+
+
+def test_offline_factory_c1_does_not_fall_back_to_ordinary_app_secret(
+    offline_c1_factory, monkeypatch
+):
+    settings, engine = offline_c1_factory
+    monkeypatch.delenv("OIL_C1_APP_SECRET")
+    monkeypatch.setenv("OIL_FEISHU_APP_SECRET", "synthetic-other-app-secret")
+    with pytest.raises(ValueError, match="OIL_C1_APP_SECRET is required"):
+        bootstrap.build_runtime(settings)
+    engine.dispose.assert_called_once_with()
+
+
+def test_offline_factory_c1_rejects_mismatched_binding_and_disposes(offline_c1_factory):
+    settings, engine = offline_c1_factory
+    permission = settings.c1_permission
+    # Deliberately bypass Pydantic to prove construction's app binding check too.
+    bad_identity = permission.identity.model_copy(update={"subject": "other:app:ou_synthetic_i"})
+    changed = settings.model_copy(
+        update={"c1_permission": permission.model_copy(update={"identity": bad_identity})}
+    )
+    with pytest.raises((ValueError, ServiceError)):
+        bootstrap.build_runtime(changed)
+    engine.dispose.assert_called_once_with()
+
+
+@pytest.mark.parametrize("factory", [bootstrap.build_runtime, bootstrap.build_trial_runtime])
+def test_offline_factory_c1_does_not_bypass_production_gate(offline_c1_factory, factory):
+    settings, engine = offline_c1_factory
+    changed = settings.model_copy(update={"outbound_mode": "production"})
+    with pytest.raises((ValueError, RuntimeError), match="[Pp]roduction"):
+        factory(changed)
+    engine.dispose.assert_not_called()
 
 
 @pytest.fixture

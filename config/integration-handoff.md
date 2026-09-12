@@ -24,32 +24,76 @@ its Windows ACL, or inject allowlisted fields into one fixed isolated process:
 ```powershell
 uv run --locked python -m oil_agent.runtime.c1_private check
 uv run --locked python -m oil_agent.runtime.c1_private inject-check
+uv run --locked python -m oil_agent.runtime.c1_private preview
 ```
 
 Both actual commands returned exit **2** and only
 `WAITING_FOR_APPLICATION_CREATION`, `NOT_CREATED`, `NOT_CONFIGURED`, missing
 field names, `start_trigger=NOT_AUTHORIZED` and `product_requests=0`.
 The child does not construct a runtime, connect a database, run a server or send.
+The actual preview command returned exit **0**, `PREVIEW_EXISTS_NOT_SENT`, and
+preserved C's existing `c1-preview.html` / `c1-preview.json` in that private
+directory. The generated preview ID/time do not start an authorization window.
 The no-overwrite `prepare` command remains C-owned; I did not rewrite the file.
 `web/c1-preview.html` opens directly without a server; its matching
 `web/c1-preview.json` is an offline card payload, not a platform/phone receipt.
 
 I first reproduced the ordinary factory rules/OAuth/callback-key requirements in
 `1c5f292b7a9807802b7bd5b158d99d35e2809cad`: the three offline guard checks pass
-and will remain in the C1 acceptance scope. Integrated D preview checks passed
+and remain in the C1 acceptance scope. Integrated D preview checks passed
 2 cases and the exact HTML/card text check at 390/320px, without actions, links,
 network requests or browser errors. Integrated C helper checks passed 16 cases;
-scoped Ruff and diff checks passed. Existing PostgreSQL factory cases were not
-run; no database or live-service acceptance is claimed by these offline checks.
+scoped Ruff and diff checks passed. C then created private preview artifacts;
+E's older helper rejected the new filenames. C's exact allowlist/preview repair
+`76fdb934525815131fea1bffe79e11630d717c2e` was ordinarily integrated at
+`ab86e486c9c07e1961d822615ba003409344bf8f`: changed helper tests passed 17,
+and actual check/inject-check again returned the expected waiting state/exit 2.
+E independently accepted that matching private preparation version. No permission
+was widened and no existing file was removed to make the check pass.
 
-Pending implementation at this checkpoint: C's explicit exercise/permission/
-durable budget path and fixed private preview mode, D's guarded display-only
-transport, and I's exact factory branch. Missing authorization remains separate:
+C's explicit exercise contract `fda37c87719c4ef9840fe866308707314c3832e2`,
+D's guarded channel `5355446d00e23dc64b1cd133ec191cfa0467bad8` and C's runtime
+`30e90dfee3c885c17c9cf48690a7381111ac4483` were ordinarily integrated. I added
+only the C1 branch in the existing trial factory and environment guidance. It
+uses the exact `C1Permission.identity` app/tenant/recipient binding,
+`OIL_C1_APP_SECRET`, `authorize_recipient` and `authorize_c1_request`. It installs
+only a Feishu channel: no identity adapter, callback verifier, public/OAuth URL,
+assessment, news rules, source, quote or report service. It neither provisions
+users nor creates an exercise, permission or outbox row. Ordinary factories keep
+their existing gates, and production remains rejected.
+
+Focused verification on the integrated runtime/factory:
+
+- `uv run --locked pytest tests/integration/test_bootstrap_factory.py -k offline_factory -q --tb=short`:
+  10 passed, 13 existing PostgreSQL cases intentionally unselected, zero skips;
+  includes the three original ordinary-mode guard assertions.
+- `uv run --locked pytest tests/unit/runtime/test_c1_runtime.py tests/unit/runtime/test_permissions.py tests/contracts -q --tb=short`:
+  46 passed, zero skips, including generated OpenAPI parity.
+- Integrated D guarded-channel tests: 22 passed. Earlier contract integration:
+  50 passed. These scopes overlap and are not an additive acceptance total.
+- Scoped Ruff and `git diff --check`: passed. The final receipt records the one
+  Python wheel/sdist build and packaged ACL-helper check.
+
+C's eleven new storage/PostgreSQL cases are unexecuted, not replaced with SQLite;
+durable SQL reservations, restart/concurrency and delivery behavior still need
+their own authorized isolated database test. Runtime tests use explicit in-memory
+test doubles; channel tests use isolated HTTP replies. E's final focused assembly
+acceptance belongs to the final receipt, separately from private-preparation
+acceptance above. No full synthetic CI was triggered or rerun for C1.
+
+Missing authorization remains separate:
 the actual app, tenant, recipient and host are unconfigured and the user has not
 issued `开始手机测试`. Future first-one / at-most-three attempts / at-most-twenty
 all-Feishu-API requests / zero new fee / thirty-minute limits are ceilings, not a
 current start window. All live operation evidence is **NOT EXECUTED**; source,
 model and Feishu calls, tokens and paid product cost remain zero.
+
+The standalone exercise/outbox/runtime methods and guarded transport now exist;
+their presence is not send readiness or PostgreSQL/live acceptance. Use only the
+non-sending helper commands above for this phase. Future
+`prepare_c1_exercise()` / `send_c1_once()` remain uninvoked and require the exact
+approved start, host, private injection and existing product authorization path.
+See D's [next app-console steps and minimum permission](../src/oil_agent/channels/C1.md).
 
 ## Active bounded increment: contextual guards and controlled trial preparation
 

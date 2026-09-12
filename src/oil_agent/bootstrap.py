@@ -236,12 +236,46 @@ def _wire_assessment(runtime: Runtime) -> None:
     runtime.services.assessment_uses_model = settings.model_calls_enabled
 
 
+def _build_c1_runtime(settings: Settings) -> Runtime:
+    """Construct the explicit display-only path without activation or web services."""
+    permission = settings.c1_permission
+    if permission is None:
+        raise ValueError("C1 assembly requires its exact display-only permission")
+    repository = Repository(create_db_engine(settings))
+    try:
+        runtime = Runtime(repository, RuntimeServices(), settings=settings)
+        feishu = FeishuSettings(
+            enabled=True,
+            app_id=permission.app_id,
+            tenant_key=permission.tenant_key,
+            app_secret=SecretStr(_required_environment("OIL_C1_APP_SECRET")),
+        )
+        identity = permission.identity
+        prefix = f"{permission.tenant_key}:{permission.app_id}:"
+        open_id = identity.subject.removeprefix(prefix)
+        if feishu_identity(feishu, open_id).subject != identity.subject:
+            raise ValueError("Approved C1 identity does not match this application")
+        runtime.services.channels["feishu"] = FeishuChannel(
+            feishu,
+            recipients={identity.recipient_id: FeishuRecipient(open_id, is_test_recipient=True)},
+            authorize=runtime.authorize_recipient,
+            c1_display_only=True,
+            authorize_request=runtime.authorize_c1_request,
+        )
+        return runtime
+    except Exception:
+        repository.engine.dispose()
+        raise
+
+
 def build_trial_runtime(settings: Settings) -> Runtime:
     """Assemble approved adapters; C owns each live operation's authorization."""
     if settings.data_provenance == "production" or settings.outbound_mode == "production":
         raise ValueError("Trial factory cannot construct a production runtime")
     if settings.data_provenance == "fixture" and settings.outbound_mode != "trial":
         raise ValueError("Fixture use of trial factory requires an explicit exercise permission")
+    if settings.c1_display_only:
+        return _build_c1_runtime(settings)
     runtime = _local_services(settings)
     try:
         _wire_source(runtime)
