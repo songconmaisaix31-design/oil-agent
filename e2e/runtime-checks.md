@@ -4,6 +4,111 @@ Provider replies and market content in this report are synthetic. Actual local
 file/ACL observations are labeled separately. No source license, production
 account, model, Feishu recipient, phone receipt or deployed server is accepted.
 
+## C1 final candidate accepted: bounded code and local package evidence only
+
+E independently accepts I candidate and reported single-build source
+**`ca0a425dc7bcb7b4c7c0c89b16ba8b7842a050db`** for the bounded C1 execution-entry
+code/local evidence scope on 2026-09-12. This closes the earlier missing-entry
+regression and test-harness correction in this scope. It does not accept a live
+execution, PostgreSQL transaction/concurrency behavior, platform/phone receipt,
+login, deployment or production.
+
+The retained E worktree was clean at
+`cdf3f8a57f2a678110133410735d05eb7d53baf5` before an ordinary fast-forward to
+the exact candidate. `git merge-base --is-ancestor` passed for original RED
+`2ca3c87577b7b0283e69d475f7822a7623622923`, E bounded tests
+`618e173cbb5549b55662349cbe9f9b29394e2f9e`, E harness correction `cdf3f8a`, C
+`7167c63d61a9501c9a69e4a112d9c4a64e86911b`, I factory evidence
+`1498863514453c15b26617514626f0d547149d6a` and M
+`0a38be78b606e62f6de36a17a98a81d1ecbd4ebd`. The remote query
+`gh api repos/songconmaisaix31-design/oil-agent/git/ref/heads/songconmaisaix31-design/oil-v01-i --jq '.object.sha'`
+independently returned the exact full `ca0a425` SHA.
+
+`git diff --exit-code cdf3f8a57f2a678110133410735d05eb7d53baf5 HEAD --
+tests/integration/test_c1_entry.py` passed, preserving the complete corrected
+assertion file. A read-only Python AST/source-segment comparison additionally
+confirmed that `test_send_once_reaches_only_fixed_isolated_product_entry` is
+exactly unchanged from original RED `2ca3c875`. `git diff --exit-code
+7167c63d61a9501c9a69e4a112d9c4a64e86911b HEAD -- src/oil_agent
+config/c1-preparation.md tests/unit/runtime/test_c1_execution.py` passed: C's
+application source and selected entry contract/test bytes remain unchanged.
+
+### Independent targeted test result
+
+```powershell
+uv run --locked pytest tests/integration/test_c1_entry.py tests/integration/test_bootstrap_factory.py -k 'c1_entry or offline_factory' -q --tb=short --junitxml=e2e/runtime-artifacts/c1-entry-final-candidate.xml
+```
+
+Result: **38 passed, 13 deliberately deselected**, zero failures/skips, 0.58
+seconds, exit 0. This comprises all 26 entry cases and 12 offline factory cases.
+The existing Starlette/AnyIO deprecated `BlockingPortal` alias warning remains.
+The 13 deselected factory cases require PostgreSQL; the separate 11 new C1
+PostgreSQL regressions remain **NOT EXECUTED**. C's unchanged 47-case scope was
+not rerun. No full suite, CI, new build, container or real private helper ran.
+
+The tests cover the fixed isolated parent command and environment, strict input
+and binding rejection, explicit product execution, authorization before prepare
+and again before send, one send/disposal, UNKNOWN handling and restricted receipt
+output. The actual product wrapper also constructs the existing guarded C1
+channel through the real bootstrap assembly with synthetic engine/bindings;
+ambient/configured factory overrides cannot select another factory. Ordinary
+rule/web configuration guards and the production gate remain asserted.
+
+### Existing build artifacts: bounded in-memory verification
+
+Only these two existing files were opened, without extraction, installation or
+rebuilding:
+
+- `C:/Users/DW/AppData/Local/Temp/oil-agent-i-ctx-1b00956b6bcd/dist/oil_agent-0.1.0-py3-none-any.whl`
+  (177482 bytes).
+- `C:/Users/DW/AppData/Local/Temp/oil-agent-i-ctx-1b00956b6bcd/dist/oil_agent-0.1.0.tar.gz`
+  (747984 bytes).
+
+A one-off `uv run --locked python -` script used `zipfile.ZipFile.read` and
+`tarfile.TarFile.extractfile` as in-memory reads, with a 262144-byte per-member
+ceiling and regular-file checks for tar members. It compared each listed member
+against `git show ca0a425dc7bcb7b4c7c0c89b16ba8b7842a050db:src/oil_agent/<path>`.
+Wheel entries have prefix `oil_agent/`; source-distribution entries have prefix
+`oil_agent-0.1.0/src/oil_agent/`. The six members below were checked in each
+archive, for 12 bounded member comparisons; no other package content is accepted
+by this inspection.
+
+| Relative member | Bytes in each archive | Git blob bytes | CRLF count in each archive |
+| --- | ---: | ---: | ---: |
+| `runtime/c1_execution.py` | 5634 | 5490 | 144 |
+| `runtime/c1_private.py` | 7550 | 7356 | 194 |
+| `runtime/c1_product.py` | 3889 | 3789 | 100 |
+| `runtime/c1_config.py` | 4175 | 4066 | 109 |
+| `runtime/c1_acl.ps1` | 4423 | 4341 | 82 |
+| `bootstrap.py` | 13818 | 13551 | 267 |
+
+All 12 raw comparisons to Git blobs are **unequal**. All 12 comparisons become
+**equal** after only `bytes.replace(b"\r\n", b"\n")` on each side: the complete
+observed difference is Windows CRLF versus Git LF. The script exited 0. This
+links the selected packaged source contents to exact candidate `ca0a425`; it is
+not raw Git-blob equality, full-archive reproducibility or installed runtime
+evidence. I supplied the single-build provenance; E inspected the existing
+outputs independently and produced no new build/hash/manifest system.
+
+### Authorization and remaining real-evidence limits
+
+The latest user task and M board supersede historical no-start statements below:
+M verified the explicit user start in D's structured transcript at
+**2026-09-12T08:43:15.149Z**, with fixed expiry
+**2026-09-12T09:13:15.149Z**. E did not reread private data or manufacture an
+executable permission from that trigger. Exact app/tenant/self/host bindings,
+an approved PostgreSQL URL and durable execution scope are still missing; the
+window cannot be inferred or renewed. The earlier older-helper ACL denial did
+not reproduce with committed C code according to the current task/board; no
+current ACL defect is inferred or repaired here.
+
+All test inputs, permissions and delivery receipts in this acceptance remain
+synthetic. This E task made **0 product calls, 0 model tokens, 0 sends and 0 added
+product cost**. An eventual live receipt's `api_requests=null` remains unknown,
+never measured zero. PostgreSQL, Feishu platform/phone receipt, login and
+production evidence are **NOT EXECUTED**. I adoption of E's evidence commit is
+the remaining handoff; this acceptance does not create business approval.
+
 ## C1 entry harness correction: 26 focused synthetic cases pass
 
 On 2026-09-12, E checked its retained branch/worktree was clean at
