@@ -2933,3 +2933,115 @@ onboarding and morning outcomes. Task acceptance does not prove platform or
 phone receipt, and a late/missed run must remain labeled as such. Product
 due-time/deduplication/UNKNOWN/budget/card behavior belongs to the forthcoming
 exact C/D/I status integration, not these deployment-only tests.
+
+## Independent personal-status PostgreSQL acceptance on I c99d327
+
+E dispatch `ctx_159e265c6d33` reviewed only the affected status authorization,
+execution, queue, delivery and stop paths, then normally fast-forwarded to
+published I `c99d327b3bf76a06878401dc17c6e87c4ffeb614`. Independent
+`git ls-remote --heads origin refs/heads/songconmaisaix31-design/oil-v01-i`
+matched that full SHA and the I worktree was clean. Git blob comparisons
+verified all **35 owner/glue paths** against C `b67f714`/`5104672` and its
+test-only repair `fb7767c`, D `d7958ae`, AB `0559e85`, E `0b70c90`, M `fba2e5c`
+and I glue `6958b280098c26371d598130ce5c8098fed919aa`. Every other tracked path,
+including dependency/lock inputs, was unchanged versus accepted `56b49bb`;
+`git diff --check` passed. E's existing host launcher/keep-awake source remains
+byte-identical to its accepted owner version.
+
+M relayed I's repaired 18-case check, focused factory/entry/host checks and
+successful exact-candidate offline wheel/sdist build in `msg_fb8829b31004`.
+These are I-reported results, not repeated E executions. I had earlier exposed
+a C test that assumed a non-I source path and accidentally reached a protected
+preparation call; C repaired that test at `fb7767c`. E did not run that owner
+test or inspect private state. Its own autouse test boundary explicitly fails
+if a protected loader/binder or C1 prepared-config/database-ready call is reached.
+
+### Draft finding resolved against the actual published owner SQL
+
+An early E note incorrectly attributed a draft `NOT IN` queue predicate to
+published C `5104672`. `git show` of the exact commit established that the
+published method already uses null-safe `IS DISTINCT FROM` predicates. E
+corrected the attribution to M; no additional C repair was needed.
+
+M separately authorized the already frozen missing-purpose case as an owner-SQL
+probe while I publication was pending. The bounded in-memory script passed to
+`uv run --offline --locked --no-sync python -B -c`
+extracted only `status_queue_clear`'s SQL literal by AST from exact C
+`5104672b7b1f7aa897bd539eda273582f28358c7`, reused the real E repository fixture
+and Procrastinate schema, and inserted one synthetic current-scope job without
+`purpose`. PostgreSQL returned **queue clear = false**, as required, and the
+job remained `todo` with identical arguments. Exit **0**, process
+`2026-09-12T17:32:27.959956Z` to `17:32:29.787949Z`, **1.828 seconds**.
+Procrastinate emitted its existing warning about an app instantiated in `-c`.
+This was owner SQL evidence only; it was not an I execution or a reproduced
+domain failure, and is not presented as a red-to-green product repair.
+
+### Six frozen cases on actual isolated E PostgreSQL
+
+The selected file is `tests/integration/test_status_postgres.py`. Collection
+returned **6 cases in 0.68 seconds, exit 0**. The final actual command was:
+
+```text
+uv run --offline --locked --no-sync python -B -m pytest tests/integration/test_status_postgres.py -q --tb=short -s -x -p no:cacheprovider
+```
+
+Result: **6 passed in 11.14 seconds, exit 0**, with no skipped case. The real
+test-child process ran from `2026-09-12T17:33:41.527699Z` to
+`17:33:54.072410Z`, **12.545 seconds**. Scoped Ruff check and format check passed.
+Only this new E test and this evidence append were authored in the increment.
+
+The selection independently verified:
+
+- Two distinct stable onboarding/morning subjects and outboxes with concurrent
+  same-task deduplication; one twenty-request/three-send budget persisted across
+  a synthetic UTC-midnight transition; early and expired creation was refused.
+- Actual I status factory, C repository/runtime/grants/recorder and D Feishu
+  client/renderer together, with only the engine redirected to the guarded E
+  schema and `httpx.MockTransport` replacing the wire. Accepted and timeout
+  responses produced durable request/response/uncertainty records, no resend
+  after reconstruction, and durable stop refusal. Wrong delivery lane and
+  foreign subject were refused; rendered cards contained no actions/URLs/callbacks.
+  Model/source/identity/callback services were absent, and no model was required.
+- One actual Procrastinate morning job obeyed its exact stored `schedule_at`,
+  made no simulated wire callback before due, completed once and remained
+  completed after repository/runtime reconstruction without another callback.
+- Existing foreign-scope and missing-purpose normal-queue jobs each caused
+  `STATUS_QUEUE_BUSY` before consumption, retaining the original `todo` job and
+  arguments with zero request reservations.
+
+The finite real-queue case used a deliberately short **synthetic** date window:
+due `2026-09-12T17:33:49.416116Z`, synthetic accepted receipt
+`17:33:51.931394Z`, **2.515278 seconds after due**, with **5.525 seconds** measured
+flow-body time. There was **one real succeeded job and zero platform requests**.
+The HTTP success/token/message IDs and timeout were synthetic; the DTO's trial
+classification does not make these actual authorized private bindings. This
+case proves local queue timing/filtering, not the future 08:00 host attendance,
+provider response latency, overnight operation or phone display.
+
+Before both the owner-only probe and integrated run, E reverified only container
+`b3c3a345428590922eb8e628a996dd634cb3333e5f0c86f588eede8fb7101cab`, name
+`oil-agent-e-postgres-1`, project/service `oil-agent-e`/`postgres`, original E
+deploy workdir and two Compose config labels, named local volume
+`oil-agent-e_postgres-data` with exact project/volume labels, original networks,
+and configured/active sole loopback `127.0.0.1:55434:5432`. The pinned image was
+`postgres:16-alpine@sha256:e013e867e712fec275706a6c51c966f0bb0c93cfa8f51000f85a15f9865a28cb`.
+Database/user identity was `oil_e_test`/`oil_e_test`. Only this exact container's
+project synthetic password was captured in memory for the child environment;
+no credential was printed or written to a file/global environment.
+
+Each operation used fresh `e_acceptance_<UUID>` namespaces through the existing
+fixture and real migrations, then dropped only those newly created schemas.
+Both before/after logical inventories were **1 schema, 73 relations, 29 data
+objects and 818 table rows**, with identical bounded complete row multisets and
+sequence states. Selected container/volume/running metadata remained identical.
+No Docker resource was created, restarted, stopped, pruned or altered.
+
+**PASS for the bounded integrated status execution on real PostgreSQL with
+synthetic HTTP transport; no concrete domain blocker remained.** E sent the
+result immediately to M in `msg_cfa501378ad4` so separately authorized C/D live
+onboarding could proceed. E performed no private read/write, dedicated C1 DB
+access, parent `prepare`/`onboarding` invocation, provider call, task registration
+or power request. Actual self-notification, redacted platform-record readback,
+dated task registration/launch/keep-awake and phone feedback remain separately
+assigned live actions; none is inferred from this SQL PASS. No general suite,
+old C1/business replay or new architecture was introduced.
