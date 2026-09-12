@@ -1,6 +1,68 @@
 # V01 delivery board
 
-## Active bounded increment: contextual guards and controlled trial preparation
+## Current phase: controlled real integration
+
+The user accepts `8af1c001b087c7a37973f2b5e4a8d545ec7d3027` as the code
+baseline for **bounded rule repairs and controlled trial preparation passed**.
+This is not actual deployment, live-service or production acceptance. Final
+[CI 34669986562](https://github.com/songconmaisaix31-design/oil-agent/actions/runs/34669986562)
+passed on that exact delivery SHA; E independently verified the documentation-only
+delta from accepted code `239baa6` and both published E/I branch heads.
+
+Use only the existing minimum intake below. M summarizes missing business
+choices in Chinese; agents map them to the existing technical permission fields.
+Do not create a second approval system or ask again for confirmed inputs. A phase
+change alone does not select a provider, approve costs or identify a recipient.
+
+The following live paths advance independently when their own conditions are
+approved; none requires all other paths to be ready:
+
+- A: one finite, read-only real source run verifies authentication, tool
+  parameters, bounded incremental records, database persistence and request
+  counts. Report empty responses, failures and genuine records separately.
+  Model calls, sending and continuous polling remain disabled for this path.
+- B: the approved model processes only a bounded set of content with established
+  usage rights. Record actual model/version, calls, input/output tokens, cost and
+  judgments. Ordinary messages remain silent. Preserve exercise/history labels
+  and the approved rule version; never tune rules to make a test message pass.
+- C: send only an approved, visibly labeled exercise card to the exact approved
+  Feishu test person. Separately record platform message ID/acceptance, phone
+  observation, detail access, real login, personal confirmation and durable
+  receipt. Do not wait for a real major event or present an exercise as one.
+
+Before the first live call, explicitly approve request/token/fee ceilings and a
+stop owner. Every MCP initialization, discovery, pagination and retry request
+counts. Do not enable ongoing polling, buy services or expand recipients without
+approval. Secrets enter only the agreed project-scoped private mechanism, never
+chat, Git or logs.
+
+Use existing trial deployment materials on the approved host to verify actual
+egress enforcement, trusted HTTPS, callbacks, database isolation and stop/resume.
+Loopback listening does not prove external callback reachability; configuration
+checks do not prove effective host rules. Keep provenance and production gates.
+The production factory remains unimplemented before formal delivery but is not
+a prerequisite for this trial. Inspect only confirmed legacy E resources; no
+unknown-resource cleanup or shared Docker restart.
+
+No feature development, generalized audit or repeated full synthetic acceptance
+is authorized by this phase transition. Dispatch repairs only for a defect found
+in real integration or an already reproduced blocking problem, returning domain
+repairs to AB/C/D; I integrates and E independently accepts. M edits governance
+only. A track with no executable work ends its current task and retains its
+session/results; no waiting loop, repeat tests or work invented to stay busy.
+
+Phase-entry evidence: no running version on an approved live host, genuine
+source record, model usage, platform message ID, phone observation or identity
+receipt has been verified. Live A/B/C and host operations are NOT EXECUTED, not empty
+successful responses or failed provider calls. Product requests/tokens/paid cost
+remain 0; development-agent/CI billing is unmeasured. The minimum intake still
+lacks the specific source, model/rules/budgets, test-person and runtime approvals.
+Only each dependent live action pauses. The existing E Docker observation below
+remains unverified; no repeated container probe is needed merely for this phase
+change. Current authorized work is this governance adoption by I and E; other
+tracks remain retained until approved live work or a reproduced defect exists.
+
+## Completed increment: contextual guards and controlled trial preparation
 
 ### Final code outcome: independently accepted synthetic repair and preparation
 
@@ -26,9 +88,9 @@ loopback TLS/callback routing, bounded logs and read-only cold/retained prefligh
 Runtime activation, packet filtering, trusted TLS and physical recovery are not
 accepted by these configuration tests.
 
-Only final report/governance adoption remains after this accepted code; it must
-preserve application/test/deployment bytes and receive I integration plus E's
-last equivalence/remote audit. All earlier checkpoints below are historical.
+Final report/governance adoption and E's equivalence/remote audit completed at
+`8af1c001b087c7a37973f2b5e4a8d545ec7d3027`, preserving application/test/deployment
+bytes. All earlier checkpoints below are historical.
 
 | Remaining item | Classification | Actual evidence / next required action |
 | --- | --- | --- |
@@ -40,7 +102,7 @@ last equivalence/remote audit. All earlier checkpoints below are historical.
 | Real login and human acknowledgement (R-04) | 已有实现待实测 | NOT EXECUTED; no authenticated real user confirmation. |
 | Trial host egress/TLS/callbacks/stop and recovery (R-03/R-17) | 已有实现待实测 | Preparation code passed; no host firewall/network activation or live trial startup/recovery. User-approved runtime and private injection required. |
 | Legacy E container and interrupted schema cleanup (R-14) | 已有实现待实测 | Actual targeted Docker check failed because the Linux engine pipe is absent. Exact known E resource remains unverified; no shared daemon restart, stop, deletion or cross-track operation. |
-| Production factory (R-13) | 代码尚未实现 | Still deliberately rejects startup; no relabeling or gate bypass. |
+| Production factory (R-13) | 代码尚未实现 | Still deliberately rejects startup; not a controlled-trial prerequisite, but remains unfinished before formal delivery. No relabeling or gate bypass. |
 
 Paid product-call cost is 0; development-agent/CI billing is unmeasured. No new
 services were bought, no public port activated, and no recipients expanded.
