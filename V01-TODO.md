@@ -4,6 +4,31 @@
 
 ### Resumed after user-started Docker: targeted SQL and C1 assembly
 
+**Completed bounded increment:** I delivery
+`f74be29ab1f90114f30e4092428e73258f9195c2` passed E's final independent
+source-worktree/configuration-preparation review in `task_dededfefcd5a` /
+`ctx_894730fa3135`. The prior actual PostgreSQL run passed 21 cases; the new
+helper/Compose/general-gate command passed 53 cases with no failures or skips.
+Ruff, lock validation and offline wheel/sdist build passed. E independently
+verified the exact remote SHA, owner blobs, clean trees and existing artifacts,
+then ran the actual isolated `c1_database check` at 13:07:40-13:07:51 UTC with
+synthetic bounded stdin: `C1_DB_CONFIG_VERIFIED`, exit 0, empty stderr. The 77
+third-party packages and 415 artifact records are unchanged. I's temporary
+dependency declaration assignment is complete; normal C ownership resumes.
+
+Remaining items are distinct: **NOT IMPLEMENTED** production factory (outside
+this C1 increment); **IMPLEMENTED, ACTUAL VERIFICATION NOT EXECUTED** C1 database
+activation/migration/stop/resume, Windows database connectivity and network
+enforcement, tenant lookup/mapping, platform acceptance and phone display;
+**MISSING CONFIRMED SCOPE / CONFIGURATION** approved isolated C1 database and
+tenant binding/platform permission readiness, plus a fresh explicit phone-test
+window before sending. App, host and exact self binding are already prepared and
+must not be requested again. Login and signed interaction receipts remain outside
+the current C1 acceptance. No C1 resource was created and no new monitoring or
+test window was enabled. Product source/model/Feishu requests and model tokens
+were zero in this increment; new service cost was zero. Development-session
+billing is not available from these tools. Preserve all retained owner sessions.
+
 The user reports starting Docker and requests continued parallel development.
 The starting integration delivery is
 `4ec6c480dc971d44d176c3539bcbcade4ee7f802`; its adapter/routing integration passed
