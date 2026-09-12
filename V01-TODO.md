@@ -29,9 +29,9 @@ No duplicate worker, terminal, worktree or Run was created.
 
 | Track | Current task / dispatch | Current state |
 | --- | --- | --- |
-| AB | task_57bc94c427ee / ctx_04bfbd1d58de | Implementing documented source/model/rule clients |
+| AB | task_2eacda0db6eb / ctx_a5f1b25a8789 | Same retained worker resumed for denial/correction regression after source/model delivery |
 | C | task_5614734edbd3 / ctx_96bb71f83ff1 | Implementing scoped trial permissions/runtime |
-| D | task_c2c9686439df / ctx_87f9412b8dde | Reusing and adapting Feishu/phone interfaces |
+| D | task_c2c9686439df / ctx_87f9412b8dde | Code delivered at ea2c3abb; settled and explicitly retained |
 | E | task_826e16b53577 / ctx_2437b4eb6866 | Independent preparation; exact I candidates pending |
 | I | task_642b869e5aaa / ctx_faf7e2afa63d | Baseline/governance merged; incremental integration active |
 
@@ -89,13 +89,18 @@ implementation. No additional workers/worktrees/branches are needed.
 | --- | --- | --- | --- |
 | R-01 | 已有实现待实测 | Concrete news network transport and adapter / AB | Implemented in d2f2d17fc0687dd75e56b21394830563df59e534: pinned HTTPS transport, Jin10 MCP negotiation/schema/flash adaptation; 79 ingestion checks including 37 synthetic MCP/HTTP cases passed; I/E integration and approved real call pending |
 | R-02 | 已有实现待实测 | Concrete model client and approved-rule assessment / AB | OpenAI Responses candidate and reusable approved rubric implemented at 85c9fb3e69b657308366e4d50248b0a4816d8bc5; 69 intelligence tests passed; I candidate 05231c5 awaits independent E review and approved real model/rules |
-| R-03 | 代码尚未实现 | Final trial assembly / I | C operational permissions, scoped sessions, budgets and data isolation delivered at ce3a66673afc15eef20337ac7acf300bacab36d3 (88 C tests including actual PostgreSQL passed); I factory integration, D generated types and E full-chain acceptance are in progress |
+| R-03 | 已有实现待实测 | Trial assembly / I | Implemented at 8de731b259b676a3187b2b04a63010f59d9371d4; all 13 factory PostgreSQL cases passed in CI 34664381567; complete acceptance remains FAIL until the owner repairs below pass E review |
 | R-04 | 已有实现待实测 | Feishu send/OAuth/signed callback / D + E | Existing code repaired at cfda44473a0c260b51f9762624166a6b419a6ce0: app-bound identity, trial test-recipient checks and labels; 98 Python/18 web checks passed; I/E candidate and actual tenant login/phone receipt/ack remain unverified |
 | R-05 | 缺外部授权 | Source/model/provider/rules/budget and project credential injection / user | One minimal external-input request is pending; no unrelated credential search or paid calls |
 | R-06 | 缺外部授权 | Feishu app/tenant, exact test-recipient allowlist, redirect/callback/public URL and test phone / user | No customer-scope expansion; credentials must not enter chat, public Git or logs |
 | R-07 | 已有实现待实测 | Real non-urgent source-to-model-to-storage chain and zero-alert result / AB + C + I + E | Requires R-01/R-02/R-03 and approved inputs; a marked urgent exercise is separate evidence |
 | R-08 | 已有实现待实测 | Authorized real quote sample, external deployment probes and 7/14-day operation | Outside this increment's first chain; preserve prior gates and do not claim production acceptance |
-| R-09 | 代码尚未实现 | Four known E integration-test binding migrations / E | CI 34663681247 reports 94 passed/4 failed: three contradictory fixture-production sender cases and one stale tenant-only identity in the quote operation test; migrate to scoped trial exercise/identity without weakening assertions |
+| R-09 | 已有实现待实测 | Complete integrated regression acceptance / E | The four original fixture/identity cases were repaired in d4d772a and 6be21de while preserving labels and assertions; E now runs the assembled factory and full CI, with R-10/R-11 failures preserved |
+| R-10 | 代码尚未实现 | Immutable identity approval on session use / C | E f783bac reproduces an expired session becoming valid after extending expiry under the SAME approval ID; fix must preserve the persisted approval scope and pass unchanged E regression |
+| R-11 | 代码尚未实现 | Explicit denial/correction regression / AB | CI 34664381567 and 34664692956 fail unchanged T05: AB 651c114 broad text guard returns UNKNOWN instead of DENIED; original AB worker owns repair without reverting conditional/training safeguards |
+| R-12 | 代码尚未实现 | Compose safety assertion migration / E | Authorized shared application environment uses explicit safe default interpolation; E must verify actual defaults and propagation instead of stale literal-only assertions |
+| R-13 | 代码尚未实现 | Production assembly / I | Deliberately rejected by build_runtime; outside the current trial-first increment. It is missing implementation, not merely missing credentials |
+| R-14 | 已有实现待实测 | Local container final-state verification / C + E + I | Docker Linux named pipe disappeared during I final image refresh; C/I had stopped their own containers, E was interrupted. Preserve resources; remote isolated PostgreSQL CI supplies testing while host recovery remains pending |
 
 Current construction decisions: rule identity is exactly authorization_ref@version,
 with @ excluded from either component, and the loaded rule must match both model
@@ -114,6 +119,26 @@ This is LIMITED_LOCAL_PASS, not real TLS/provider acceptance. Model candidate
 05231c5 and source reservation-guard successor 54b9c1d are pushed for E review;
 AB source guard code is 412aded9d5207fd542615facc5dd7fde55703752. Full candidate
 acceptance remains FAIL pending R-03/R-09 and the subsequent complete checks.
+
+Latest assembled evidence supersedes the early candidate status above. I code
+8de731b wires Jin10 transport, OpenAI Responses candidate, reusable approved-rule
+assessment, C reservations/provenance/session gates and D OAuth/send/ack through
+one factory. CI 34664381567 passed 340 core and 128 integration checks, failed two
+integration checks, and skipped none. E f783bac added immutable-session and durable
+usage regressions; its CI 34664692956 passed 339 core and 125 integration checks,
+failed two, and skipped none. Unknown/overrun usage cases passed on Linux PostgreSQL.
+E independently confirmed 93 unchanged rule checks, including the previously
+failing Chinese conditional/procedure/training messages. Explicit denial remains
+a separate regression. I candidate 6f76950d02fe336508a4d9ff17d3428919fb6119 preserves
+all three current domain/test failures. No full acceptance is claimed yet.
+
+The implemented factory preserves default fixture/dry-run and empty startup.
+Trial uses explicit settings, matching typed permissions and fixed project secret
+variables; no automatic credentials search or per-message ClaimReview is required.
+I's own 18-check PostgreSQL smoke passed, including ordinary-message silence and
+synthetic-provider OAuth/outbox/signed acknowledgement. These are actual local
+runtime/database paths with synthetic provider responses, not real source, model,
+tenant login or phone evidence. Frontend 23 tests/schema/TypeScript/Vite passed.
 
 Minimal external inputs were requested once: (1) approved source/interface/license,
 (2) approved model provider/model and this run's budget, (3) alert rules and
