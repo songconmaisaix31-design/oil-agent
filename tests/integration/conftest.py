@@ -89,7 +89,13 @@ def e_repository(monkeypatch):
         or (parsed.host, parsed.port, parsed.database, parsed.username) != expected
     ):
         pytest.fail("Refusing database outside the explicit E local/CI synthetic scope")
-    admin = create_engine(value, hide_parameters=True, pool_size=1, max_overflow=0)
+    admin = create_engine(
+        value,
+        hide_parameters=True,
+        pool_size=1,
+        max_overflow=0,
+        connect_args={"connect_timeout": 5},
+    )
     schema = "e_acceptance_" + uuid4().hex
     with admin.begin() as connection:
         connection.execute(text(f'CREATE SCHEMA "{schema}"'))
@@ -99,7 +105,8 @@ def e_repository(monkeypatch):
         pool_size=2,
         max_overflow=2,
         connect_args={
-            "options": f"-c search_path={schema} -c timezone=UTC -c statement_timeout=5000"
+            "connect_timeout": 5,
+            "options": f"-c search_path={schema} -c timezone=UTC -c statement_timeout=5000",
         },
     )
     try:

@@ -382,6 +382,93 @@ No actual tenant or phone is verified. E PostgreSQL remains in the explicitly
 allocated lightweight test slot for the next bounded operational tests; no full
 Compose or image work is authorized in that concurrent PG slot.
 
+### Candidates 7/8: rule corrections, UI schema and operational isolation
+
+Exact I candidate **`bf4629b7da0d6516aeb93a98eb2f09c71d8ad6a4`** includes candidate
+7 `5fd432ce233588f80c34711f904fb3475ea094a8`, AB rule correction
+`651c11428642b8a3ac5549c7d40cc6edff3fe0f7`, C operational code/tests through
+`f32a9493bcb6fafbca27b9439e580b0d01a04200` and D schema/UI
+`7e575c293a2a7ad19f0c08f6c2575db90577fe4f`. E normally merged this exact integrated
+candidate at `00a02f76d75cbde4f8a667600935cddbc10b373a`; uncommitted I factory work
+was excluded. No producer tip was adopted independently.
+
+```text
+uv run --locked pytest tests/unit/intelligence tests/integration/test_rules_acceptance.py -q --tb=short --junitxml=e2e/runtime-artifacts/v11-candidate8-rules.xml
+cd web
+npm test
+npm run build
+```
+
+Rules: **93 passed, 0 failed, 0 skipped, 1.42 seconds**. The two unchanged E
+Chinese procedure/training regressions now pass; their earlier failures remain in
+the candidate-4 record. Frontend: **23 passed, 0 failed, 4.88 seconds**; authoritative
+generated-type validation, TypeScript and Vite build PASS. These are local
+synthetic rule/UI checks, not the final configured factory or a real browser/phone
+session. The five model-client cases use five isolated synthetic HTTP responses.
+
+```text
+uv run --locked pytest tests/integration/test_postgres_trial_acceptance.py -q --tb=short --junitxml=e2e/runtime-artifacts/v11-candidate8-trial.xml
+```
+
+At the five-case revision of this new file: **1 failed, 4 passed, 0 skipped,
+10.36 seconds**, exit 1, Windows Python 3.13.13 and actual E PostgreSQL 16.14 with
+real `0003_trial` migrations in isolated schemas. A prior setup error (missing
+dry-run channel in the E helper) was corrected before this result; the domain
+failure below remains an ordinary required assertion, without xfail/deselection.
+
+The passing cases exercise actual Jin10 MCP request callbacks and durable C
+source budgets, routine event persistence with **zero intents/deliveries/sends**,
+actual model-client concurrency for the final PostgreSQL reservation and
+idempotent/mismatched usage replay, rejection of fixture sessions and unapproved
+user provisioning under trial identity, revocation at the actual API, and mixed
+fixture/trial/production pending/outbox/API filtering in one retained schema.
+Only the trial outbox is sent through the actual D sender with synthetic responses;
+foreign intents remain pending and their evidence/event endpoints return 403.
+Trusted synthetic per-record annotations are used only in that C isolation case;
+it does not establish automatic approved-rule factory assembly.
+
+**DOMAIN_FAILURE / R2 acceptance FAIL:**
+`test_R2_reusing_identity_approval_id_cannot_extend_existing_session_permission`
+shows that an expired, previously scoped OAuth session becomes usable after a
+validated settings reload extends the identity permission expiry while reusing
+the same immutable approval ID. The original stored permission fingerprint must
+continue to govern session/API/callback access; changed authority requires a new
+approval. E handed this reproduction to C through M and preserves the failing
+test. This is an implementation defect, separate from missing real authorization.
+Opaque session values are omitted from the explicit failure message.
+
+The five-case run used **19 synthetic HTTP requests**: source case 2 OAuth + 4 MCP,
+model case 1 Responses request, old-session case 2 OAuth, expiry case 2 OAuth,
+mixed-scope case 6 OAuth + 2 sender. None reaches a real provider. Source/model/
+Feishu product requests and sends, product input/output tokens and paid cost all
+remain **0**; modeled usage 22/8 is synthetic and not vendor billing evidence.
+
+Two additional durable-usage variants were then added (unknown usage remains
+reserved after Runtime reconstruction; reservation overrun blocks further calls):
+
+```text
+uv run --locked pytest tests/integration/test_postgres_trial_acceptance.py -k model_reservation_survives -q --tb=short --junitxml=e2e/runtime-artifacts/v11-candidate8-usage.xml
+```
+
+**ENVIRONMENT_FAILURE / NO COMPLETED RESULT:** Docker's
+`dockerDesktopLinuxEngine` named pipe disappeared while this command waited on its
+database connection; no usage JUnit result was produced. Only the verified E
+pytest process was stopped. These two cases are **NOT EXECUTED to completion**,
+not application passes, failures or skipped external gates. The test fixture now
+bounds PostgreSQL connection establishment to five seconds; it still refuses any
+database outside E's exact local/CI scope. Ruff check/format and diff-check PASS;
+the connection-timeout change awaits a restored database for runtime verification.
+
+The coordinator was notified. At daemon loss the exact retained E PostgreSQL
+container was running in its allocated lightweight slot; its final state and
+cleanup of the interrupted UUID schema cannot yet be verified. E did not restart
+Docker, remove a container/volume, run a full Compose stack or build an image.
+Final I factory assembly/binding and the C fix require new exact I candidates.
+Real scoped source/model/identity/recipient inputs remain MISSING_AUTHORIZATION;
+implemented provider paths remain IMPLEMENTED_AWAITING_REAL_TEST. Real provider
+calls, OAuth/account login, phone receipt, deployment, >=7-day comparison and
+>=14-day operation remain **NOT EXECUTED**.
+
 ## Verified checkpoint, 2026-09-11 UTC
 
 - Dependencies: reviewed C `41a00ded1f949aee8099b549d5d419f0487dd0f9`,
