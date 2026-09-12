@@ -116,6 +116,24 @@ with the two existing general-trial gate regressions also passing. This is
 offline configuration evidence; C's helper integration and E's final candidate
 review remain separate from any live database activation.
 
+C's helper source is `55c3c8213070e6f3022c78e88e793b77bddc0758`, pushed with
+a clean tree and independently matched remote SHA. Its 46 focused tests,
+scoped Ruff and offline sdist/wheel build passed. Actual captured Compose
+rendering of E's exact committed candidate passed after the owner corrected
+Windows plugin discovery (`ProgramFiles`) and accepted only generated empty
+`entrypoint`/`ipam` defaults. Nonempty overrides remain rejected. Empty structured
+input failed before Docker access with exit 2. Resource lifecycle and migration
+effects were tested only with explicit doubles; no C1 resources were created.
+
+I final preparation integration is `task_809d440e3c49` / `ctx_244683c2cdb9`.
+E independent acceptance is `task_f803513bb3f5` / `ctx_04bbb7375acc`; C is
+retained after its verified handoff. The fixed entry is
+`python -I -B -m oil_agent.runtime.c1_database` with the documented bounded stdin
+and `check`, `start`, `status`, `migrate`, `stop`, `resume` actions. It requires
+the existing source-worktree/editable environment and does not imply an installed
+product. Final integration, real resource activation and phone acceptance must
+remain separate results.
+
 ### Bounded increment: C1 PostgreSQL test adapter
 
 The user's new multi-agent development instruction resumes the existing C/E/I
