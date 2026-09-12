@@ -1,5 +1,43 @@
 # V01 delivery board
 
+## Active bounded increment: contextual guards and controlled trial preparation
+
+The user accepts `cd6e8d9d87acbde9b844b4568ab2df72e00bab8d` as the
+simulated-integration baseline for real-integration code only. Real source,
+model, phone and production acceptance remain NOT EXECUTED. The earlier
+delivery interruption below is historical: replacement I/E finished and retained
+their sessions, and final CI 34666490657 passed 343 core, 150 integration and
+23 frontend tests. This acceptance does not authorize external product calls.
+
+Current audit: M `473078f`, AB `6c517f5`, C `1723886`, D `ea2c3ab`,
+E `4676827`, I `cd6e8d9`; all six worktrees clean, existing origin unchanged.
+The retained replacement I/E terminals are connected and writable. The retained
+AB terminal currently reports disconnected/unwritable with `stop_unverified`;
+recover its existing session through Orca evidence, never assume it exited.
+
+| Owner | This increment only | Completion evidence |
+| --- | --- | --- |
+| E then AB | E first commits minimal failing regressions for unrelated casualty negation and midnight freshness; preserve denial/planning/exercise/archive assertions. AB fixes only intelligence-owned paths after reproduction. | Original failures and unchanged assertions passing on I candidate |
+| E | Prepare opt-in controlled trial deployment, constrained egress, HTTPS/callbacks, isolated database, scoped recipients, redacted logs and stop/resume; inspect only confirmed E containers and retain data. | Configuration/negative tests and exact resource observations; no public exposure or external delivery |
+| I | Integrate owner commits incrementally in existing approved glue paths; map existing configuration into one minimal intake in this board via M handoff. | Exact pushed candidate, applicable core/integration/build checks, independent E acceptance |
+| C / D | Retain sessions; domain or contract defects return to their original owners only when found. | Scoped handoff and tests if a change is necessary |
+| M | Record decisions, ownership, acceptance and one minimum external-input sheet here. | No business-code edits and no duplicate TODO |
+
+Existing exclusive paths and I transfers below remain authoritative. E may add
+deployment overlays/scripts/tests in its owned paths; I retains only the
+factory/environment seam in `deploy/compose.yaml` and integrated startup notes
+in `docs/runbook.md`. No simultaneous edits to those seams. No production
+factory work, project rebuild, new services purchase or public ingress activation.
+
+New gaps for this increment: R-16 `代码尚未实现` contextual false-negative guard
+repair / AB pending E reproduction; R-17 `代码尚未实现` controlled trial deployment
+preparation / E; R-14 `已有实现待实测` exact E container final state. R-05/R-06
+remain `缺外部授权`; only their corresponding live actions pause. MCP initialize,
+discovery, pagination and every explicit retry count against the approved request
+budget; never silently increase cost or hide degraded monitoring. Real source,
+model, platform acceptance, phone view and human confirmation require separate
+evidence; synthetic tests cannot replace any of them.
+
 ## Current phase: real integration v1.1 (2026-09-12)
 
 The user's current conversation is the v1.1 execution authority. The Downloads
