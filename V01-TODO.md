@@ -1,6 +1,38 @@
 # V01 delivery board
 
-## Current phase: controlled real integration
+## Current phase: event business, daily analysis and operating usability
+
+The user's current instruction stops deeper infrastructure work and authorizes
+parallel product development in these three areas. Start from accepted delivery
+`78e5363d7c7da5d6bb76c3be6296b1f6e4010d87`; preserve the stack, data boundaries
+and all prior evidence. Do not continue C1 database tooling, deployment factories,
+secret-management helpers or generalized monitoring infrastructure in this phase.
+
+| Owner | Bounded business increment / exclusive paths | Observable acceptance |
+| --- | --- | --- |
+| AB | Existing `intelligence/`, `reporting/` and their unit tests: event follow-up/correction semantics and evidence-based Chinese daily impact analysis, watch items and gaps. | Frozen scenarios cover ordinary silence, same-origin repetition, independent corroboration, denial/correction, midnight freshness and missing quotes; facts and conditional analysis remain separate and cite cutoff-valid evidence. Preserve existing assertions. |
+| C | Existing runtime service, storage decisions/operations, corresponding unit tests and necessary existing API contracts only: report failure/recovery and usable operating state. | A failed/timed-out/quota-limited report is visible and can recover without duplicate daily reports; normal report work preserves urgent capacity; stale/degraded state is not healthy. Reuse existing leases, queues, health records and APIs, with no new framework. |
+| E | `tests/integration/`, `fixtures/`, existing `e2e/runtime-checks.md`: independent event/report scenario regressions and finite repeated-cycle/recovery evidence. | Reproduce gaps before owner fixes; review exact I candidate. Use the already identified E PostgreSQL database only when ownership is reconfirmed; distinguish simulated elapsed days from measured duration and fourteen-day live operation. |
+| I | Original integration branch; owner commits plus only explicitly requested import/factory/type glue. | Focused business tests and build, original owner blobs, clean tree and normal push; E independent acceptance. Domain fixes return to owners. |
+
+M remains governance-only. D is retained because the existing report page already
+renders facts, impact analysis, watch items and gaps; request D work only for a
+concrete demonstrated presentation gap. AB's original worktree/branch is clean at
+`dea13fa81825f1160ef44187885a98c569375edb`. Its last recorded dispatch
+`ctx_915cc32ffee1` is completed and capability-revoked; its old terminal is absent
+and the runtime refuses transcript access with `worker_identity_changed`. Preserve
+that history and branch. Reconnect the AB role in that same worktree with transferred
+context under the user's account-change/multi-agent instruction; do not add a
+second AB writer or a new track. Existing C/E/I sessions remain the owners.
+
+This phase is product development and bounded local verification, not permission
+to call providers, send messages, activate continuous polling or start a new phone
+window. Use explicitly labeled scenarios and existing data; no fabricated actual
+market events, customer data, prices or real-use approvals. Source/model/Feishu
+authorization gaps stay separate from executable local business work. Do not
+declare SLA, fourteen-day stability or real phone delivery from accelerated tests.
+
+## Previous phase: controlled real integration
 
 ### Resumed after user-started Docker: targeted SQL and C1 assembly
 
