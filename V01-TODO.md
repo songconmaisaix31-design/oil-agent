@@ -41,6 +41,29 @@ start. No public web/HTTPS/login/callback or production factory is a prerequisit
 M governs and dispatches; AB remains retained. Final outcome is actual delivery
 evidence or the precise live blocker, never preview/mock success as phone proof.
 
+Current bounded execution decisions and findings:
+
+- C confirmed the existing protected application/person/host bindings. Only
+  `tenant_key` is missing. The user's eventual local start may use the existing
+  application-only tenant lookup under the same request budget and persist only
+  an absent tenant binding; preparation makes no platform calls. The second task
+  becomes due at the first accepted message's durable `accepted_at + 120s`.
+- C owns the minimal closed-set changes in `C1Exercise` and
+  `NotificationIntent.validate_recipient_scope`, plus an explicit two-message
+  permission option; legacy one-message assertions and all provenance gates stay.
+  D owns the two card pairs and existing HTTP observation. I wires
+  `observe_request=runtime.observe_c1_request`; phases are `started`, `responded`
+  and `transport_failure`, keyed by the existing reservation ID. Existing audit
+  records distinguish reservations, local dispatches, responses and uncertainty;
+  a local dispatch is not evidence of platform receipt.
+- C's actual dedicated database start created the exact project container,
+  volume and internal network. The container is healthy, but the runtime port
+  binding is absent and the strict helper returned `C1_DB_EFFECT_UNKNOWN`.
+  No migration or database-connectivity acceptance is claimed. E dispatch
+  `ctx_13fb0d6d365e` owns this reproduced deployment diagnosis; C pauses resource
+  mutation while continuing the runner. Preserve the new data and internal
+  network. Any necessary runtime-helper correction returns to C, integration to I.
+
 ## Previous phase: event business, daily analysis and operating usability
 
 **Verified business increment:** I source candidate

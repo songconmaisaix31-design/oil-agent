@@ -222,6 +222,12 @@ def _open_private_update():
 
 def _replace_blank_tenant(raw, tenant):
     """Replace just the known JSON member, preserving all other bytes and whitespace."""
+    return _replace_blank_member(raw, "tenant_key", tenant)
+
+
+def _replace_blank_member(raw, field, replacement):
+    if field not in {"tenant_key", "database_password", "database_container_id", "exercise_start"}:
+        raise PreparationError("INVALID_CONFIGURATION", ("configuration",))
     text = raw.decode("utf-8")
     decoder = json.JSONDecoder()
     cursor = text.index("{") + 1
@@ -231,7 +237,12 @@ def _replace_blank_tenant(raw, tenant):
         if text[cursor] == "}":
             separator = "," if text[1:cursor].strip() else ""
             return (
-                text[:cursor] + separator + '"tenant_key":' + json.dumps(tenant) + text[cursor:]
+                text[:cursor]
+                + separator
+                + json.dumps(field)
+                + ":"
+                + json.dumps(replacement)
+                + text[cursor:]
             ).encode("utf-8")
         key, cursor = decoder.raw_decode(text, cursor)
         while text[cursor].isspace():
@@ -241,14 +252,56 @@ def _replace_blank_tenant(raw, tenant):
             cursor += 1
         start = cursor
         value, cursor = decoder.raw_decode(text, cursor)
-        if key == "tenant_key":
+        if key == field:
             if value is not None:
                 raise PreparationError("C1_LOOKUP_COMPLETED_BINDING_FAILED", ("tenant_key",))
-            return (text[:start] + json.dumps(tenant) + text[cursor:]).encode("utf-8")
+            return (text[:start] + json.dumps(replacement) + text[cursor:]).encode("utf-8")
         while text[cursor].isspace():
             cursor += 1
         if text[cursor] == ",":
             cursor += 1
+
+
+def bind_local_field(config, field, value):
+    """Null-to-value maintenance of three fixed local fields, never credential reset."""
+    if field not in {"database_password", "database_container_id", "exercise_start"}:
+        raise PreparationError("INVALID_CONFIGURATION", ("configuration",))
+    verify_private_path()
+    with _open_private_update() as stream:
+        info = os.fstat(stream.fileno())
+        if (
+            not stat.S_ISREG(info.st_mode)
+            or info.st_nlink != 1
+            or getattr(info, "st_file_attributes", 0) & stat.FILE_ATTRIBUTE_REPARSE_POINT
+            or info.st_size > _MAX_BYTES
+        ):
+            raise PreparationError("PRIVATE_PATH_UNVERIFIED", ("configuration_file",))
+        raw = stream.read(_MAX_BYTES + 1)
+        current = parse_preparation(raw)
+        if current != config:
+            raise PreparationError("LOCAL_BINDING_CHANGED", (field,))
+        previous = getattr(current, field)
+        if previous is not None:
+            raise PreparationError("LOCAL_FIELD_ALREADY_BOUND", (field,))
+        updated = _replace_blank_member(raw, field, value)
+        parsed = parse_preparation(updated)
+        if parsed.model_dump(exclude={field}) != current.model_dump(exclude={field}):
+            raise PreparationError("LOCAL_BINDING_CHANGED", (field,))
+        verify_private_path()
+        try:
+            stream.seek(0)
+            if stream.write(updated) != len(updated):
+                raise OSError()
+            stream.truncate()
+            stream.flush()
+            os.fsync(stream.fileno())
+            stream.seek(0)
+            if stream.read(_MAX_BYTES + 1) != updated:
+                raise OSError()
+        except Exception:
+            raise PreparationError("LOCAL_BINDING_IO_UNKNOWN", (field,)) from None
+    verify_private_path()
+    return load_private_config()
 
 
 def bind_selected_tenant(config, execution, selected):
