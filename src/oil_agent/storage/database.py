@@ -5,7 +5,7 @@ from sqlalchemy.engine import Engine
 
 from oil_agent.runtime.settings import Settings
 
-SCHEMA_REVISION = "0002_runtime"
+SCHEMA_REVISION = "0003_trial"
 
 
 def create_db_engine(settings: Settings) -> Engine:

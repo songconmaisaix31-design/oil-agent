@@ -21,7 +21,11 @@ from oil_agent.runtime.permissions import (
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_prefix="OIL_", env_file=None, extra="ignore", hide_input_in_errors=True
+        env_prefix="OIL_",
+        env_file=None,
+        env_parse_none_str="null",
+        extra="ignore",
+        hide_input_in_errors=True,
     )
 
     environment: Literal["development", "test", "production"] = "development"
@@ -49,6 +53,7 @@ class Settings(BaseSettings):
     daily_model_calls: int = Field(default=0, ge=0, le=100000)
     daily_model_tokens: int = Field(default=0, ge=0, le=100_000_000)
     urgent_model_reserve: int = Field(default=0, ge=0, le=100000)
+    urgent_model_token_reserve: int = Field(default=0, ge=0, le=100_000_000)
     external_sources_enabled: bool = False
     model_calls_enabled: bool = False
     identity_enabled: bool = False

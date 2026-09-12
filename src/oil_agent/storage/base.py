@@ -40,6 +40,28 @@ class RepositoryBase:
         self.sessions = sessionmaker(engine, expire_on_commit=False)
         self.clock = clock or (lambda: datetime.now(UTC))
         self.production_gate = lambda: False
+        self.trial_config_gate = lambda config: False
+        self.trial_item_gate = lambda item, user, kind: False
+        self.recipient_scope_gate = lambda item, user: item.provenance != "trial"
+        self.data_scope = lambda: None
+        self.actor_scope_gate = lambda user, session: True
+        self.local_provisioning_allowed = lambda: True
+
+    def payload_scope(self, column):
+        scope = self.data_scope()
+        return (
+            ()
+            if scope is None
+            else (
+                column["provenance"].astext == str(scope[0]),
+                column["fixture_dataset"].astext == scope[1],
+            )
+        )
+
+    def require_data_scope(self, item):
+        scope = self.data_scope()
+        if scope is not None and (item.provenance, item.fixture_dataset) != scope:
+            reject(ErrorCode.FORBIDDEN, "Object belongs to another runtime data scope")
 
     def audit(self, session, action, object_id, *, actor_id=None, details=None):
         session.add(
