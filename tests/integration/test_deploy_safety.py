@@ -22,13 +22,46 @@ def test_database_is_internal_and_only_gateway_publishes_loopback():
 
 
 def test_one_application_image_safe_defaults_and_explicit_initialization():
-    services = yaml.safe_load((ROOT / "deploy/compose.yaml").read_text())["services"]
+    config = yaml.safe_load((ROOT / "deploy/compose.yaml").read_text())
+    services = config["services"]
+    shared = config["x-app"]["environment"]
+    defaults = {
+        "OIL_ENVIRONMENT": "test",
+        "OIL_OUTBOUND_MODE": "dry_run",
+        "OIL_DATA_PROVENANCE": "fixture",
+        "OIL_FIXTURE_DATASET": "local-v01",
+        "OIL_EXTERNAL_SOURCES_ENABLED": "false",
+        "OIL_MODEL_CALLS_ENABLED": "false",
+        "OIL_IDENTITY_ENABLED": "false",
+        "OIL_SOURCE_PERMISSIONS": "[]",
+        "OIL_MODEL_PERMISSION": "null",
+        "OIL_IDENTITY_PERMISSION": "null",
+        "OIL_TRIAL_SEND_PERMISSION": "null",
+        "OIL_DAILY_MODEL_CALLS": "0",
+        "OIL_DAILY_MODEL_TOKENS": "0",
+    }
+    for key, default in defaults.items():
+        assert shared[key] == "${" + key + ":-" + default + "}"
+    for key in (
+        "OIL_JIN10_TOKEN",
+        "OIL_OPENAI_API_KEY",
+        "OIL_FEISHU_APP_SECRET",
+        "OIL_FEISHU_ENCRYPT_KEY",
+        "OIL_FEISHU_VERIFICATION_TOKEN",
+    ):
+        assert shared[key] == "${" + key + ":-}"
+    assert shared["OIL_DATABASE_URL"].startswith("${OIL_DATABASE_URL:?")
+    assert services["postgres"]["environment"]["POSTGRES_PASSWORD"].startswith(
+        "${OIL_POSTGRES_PASSWORD:?"
+    )
+    assert shared["OIL_COOKIE_SECURE"] == "true"
     image = services["api"]["image"]
     for name in ("api", "init", "ingest", "urgent", "normal"):
         service = services[name]
         assert service["image"] == image
-        assert service["environment"]["OIL_OUTBOUND_MODE"] == "dry_run"
-        assert service["environment"]["OIL_ENVIRONMENT"] == "test"
+        # Parsed YAML resolves the application anchor. Every queue/API/init must
+        # inherit the entire permission, factory and credential environment.
+        assert service["environment"] == shared
         for key in ("OIL_REMINDERS_ENABLED", "OIL_SMS_ENABLED", "OIL_PHONE_ENABLED"):
             assert service["environment"][key] == "false"
         assert service["read_only"] is True
