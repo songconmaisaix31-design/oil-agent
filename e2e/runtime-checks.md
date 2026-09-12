@@ -469,6 +469,34 @@ implemented provider paths remain IMPLEMENTED_AWAITING_REAL_TEST. Real provider
 calls, OAuth/account login, phone receipt, deployment, >=7-day comparison and
 >=14-day operation remain **NOT EXECUTED**.
 
+#### Exact E code Linux CI follow-up
+
+[Actions 34664692956](https://github.com/songconmaisaix31-design/oil-agent/actions/runs/34664692956)
+ran exact E code **`f783bac621b8e8e5a246cd953bdbed4fec295dd0`**: **339 core tests
+passed**, zero skips, 17.217 seconds; **125 integration tests passed, 2 failed,
+0 errors, 0 skipped**, 24.010 seconds. The downloaded JUnit artifacts independently
+confirm both unknown/overrun model-usage variants **PASS** on Linux PostgreSQL
+(0.249 / 0.246 seconds); this supplies completed CI evidence for those cases while
+their Windows Docker-interrupted invocation remains incomplete. The bounded
+connection fixture also ran in this CI environment. Locked sync, corpus and Ruff
+passed; frontend, shell and image steps after failing integration were not run in
+this CI invocation. The earlier local 23 frontend tests/build remain separately
+scoped evidence.
+
+The two unchanged required failures are the C identity-expiry regression and
+`test_T05_lower_severity_denial_corrects_original_authorized_recipients`:
+the synthetic correction "Correction: our destruction report was wrong; no
+refinery damage is established." now produces `unknown` instead of `denied`.
+The AB rule correction applies the general `no` blocker to an explicitly reviewed
+denial. E handed this regression to AB through M; the existing T05 assertion is
+unchanged. Prior exact E `6be21de` CI
+[34664237011](https://github.com/songconmaisaix31-design/oil-agent/actions/runs/34664237011)
+had **118 integration passes, 2 failures, 0 skips**, 19.983 seconds, with only the
+two Chinese procedure/training cases failing and T05 passing. Thus neither new
+failure is missing external authorization. **Full acceptance remains FAIL** until
+the original owners' fixes arrive through I and pass independent acceptance.
+No real product call or additional local container operation was performed.
+
 ## Verified checkpoint, 2026-09-11 UTC
 
 - Dependencies: reviewed C `41a00ded1f949aee8099b549d5d419f0487dd0f9`,
