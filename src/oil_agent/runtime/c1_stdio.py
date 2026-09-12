@@ -13,7 +13,7 @@ from oil_agent.runtime.c1_config import PreparationError
 
 MAX_CONNECTIONS = 12  # C1 SQLAlchemy 2 + Procrastinate 4, with bounded status/stop headroom.
 MAX_SECONDS = 1800
-CONNECTION_SECONDS = 240
+CONNECTION_SECONDS = MAX_SECONDS
 
 
 def bridge_command(value):
@@ -41,7 +41,7 @@ def bridge_command(value):
         "/bin/busybox",
         "nc",
         "-w",
-        "180",
+        str(MAX_SECONDS),
         "127.0.0.1",
         "5432",
     ]

@@ -143,6 +143,7 @@ class C1Permission(RequestPermission):
     max_requests: Annotated[int, Field(strict=True, ge=1, le=20)] = 20
     max_send_attempts: Annotated[int, Field(strict=True, ge=1, le=3)] = 3
     first_send_messages: Literal[1] = 1
+    exercise_messages: Literal[1, 2] = 1
     max_new_fee: Literal[0] = 0
 
     @property
