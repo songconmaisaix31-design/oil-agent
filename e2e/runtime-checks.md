@@ -4,6 +4,60 @@ Provider replies and market content in this report are synthetic. Actual local
 file/ACL observations are labeled separately. No source license, production
 account, model, Feishu recipient, phone receipt or deployed server is accepted.
 
+## Actual local host binding: independent read-only post-state verified
+
+On 2026-09-12, E verified its retained branch clean at
+`d4d1225811fd44f6fc7c39259beaabc85ab0e144`, then ordinarily fast-forwarded to
+**`e690b61358e4216dfca574a6d58b9c9251edaf0d`**. The only difference was
+`V01-TODO.md`; accepted runtime code was unchanged. This task verifies only the
+user-confirmed current test-host binding, explicitly without sending or a new
+phone-test start. The scoped C transcript corroborated the source, helper checks
+and missing fields. M attributed C's maintenance claims to handoff
+`msg_91a73a5fc9da` at 10:14:56 UTC and successful completion
+`msg_5120f422dca4`. The null-only update and preservation of other pre-update
+bytes are **C-reported maintenance**, not an E observation of that earlier state.
+
+E inspected only the approved configuration and its required protected-path
+metadata through the accepted helpers:
+`C:/Users/DW/AppData/Local/oil-agent/private/feishu-c1/config.json`.
+All comparisons remained in memory; output contained only field names, booleans
+and fixed check status/exit values. The actual file is a bounded, single-link
+regular file without a reparse point, owned by the current Windows user, with
+exactly the current user and SYSTEM allowed FullControl. The private directory
+has ACL inheritance disabled; the file itself inherits its restricted ACL, so E
+does **not** claim the file's inheritance flag is disabled. The accepted path/ACL
+verifier passed without repair, and the strict configuration schema was valid.
+The configured `host_binding` exactly matched the actual machine name, which
+matched the user's explicitly approved current host; no host identifier is copied
+here. No configuration value or credential was printed or written.
+
+An inline `uv run --offline --locked --no-sync python -` command loaded the actual
+configuration with `load_private_config`, compared the host against Windows
+`GetComputerNameW` in memory, and invoked each existing CLI command **once** using
+the locked environment's `sys.executable`:
+
+```text
+python -B -m oil_agent.runtime.c1_private check
+python -B -m oil_agent.runtime.c1_private inject-check
+```
+
+Both returned **exit 2**, `NOT_CONFIGURED`, `start_trigger=NOT_AUTHORIZED`, and
+exactly `tenant_key`, `recipient_open_id` as missing fields; stderr was empty.
+The surrounding verification exited 0. `inject-check` exercised the real fixed
+isolated `python -I -m oil_agent.runtime.c1_product` child and compared its exact
+redacted response; no child, ACL or configuration double was used. E compared
+bounded bytes before and after these checks in memory: unchanged. This supports
+read-only E verification and the observed post-state, not reconstruction of C's
+earlier write or a claim of crash-atomic maintenance.
+
+Verdict: **ACTUAL LOCAL HOST-BINDING / LOADING / ISOLATED INJECTION VERIFIED**.
+Tenant and personal recipient remain missing, and this creates no executable
+provider permission. The previous phone window remains expired with no new
+start trigger. Product API calls, model tokens, sends and added product cost are
+**0**; live receipt API usage remains unknown/null. No private write, broader test,
+build, SQL, Docker, host service or provider operation occurred. Platform, phone,
+login, callback, deployment and production acceptance remain outside this result.
+
 ## Final C1 binding: bounded local code, tests and package members accepted
 
 On 2026-09-12, E independently accepted the bounded local scope of I delivery
