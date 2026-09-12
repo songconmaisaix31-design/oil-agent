@@ -2347,3 +2347,209 @@ installed-product behavior, actual market accuracy, provider/source/model
 transport, real sending, platform/phone/login/callback or production acceptance.
 No full-suite/C1 replay, new Docker resource, shared restart, private C1 read,
 external product call, continuous polling or purchase occurred.
+
+## C1 dedicated database host-path diagnosis and bounded stdio proof
+
+On 2026-09-12, E investigated the concrete C1 assembly blocker under dispatch
+`ctx_13fb0d6d365e`. Accepted I `6f70295768fa3eb98e92cf4cdfd1a6135ab99df8`
+and M governance `c28106623e3d3a5163016a4dbf7507738719ca36` were normally
+merged, preserving history, at E source
+`75ee3eee768cd0fca48f89cce8b7f5765927e7c0`. No deployment or helper source
+was changed for this diagnosis; only this existing evidence file is appended.
+
+Selected metadata reads used only
+`docker --host npipe:////./pipe/dockerDesktopLinuxEngine` and these approved
+resources, without dumping container environment or reading private files:
+
+- Container `5ab6d8fb192e33242f51a6b80e3e768eb4421fbd81de80c5627d02a161583b76`,
+  name `oil-agent-feishu-trial-postgres-1`, project/service
+  `oil-agent-feishu-trial` / `postgres`, scope/dataset `feishu-c1`,
+  provenance `fixture`.
+- Compose workdir `C:/Users/DW/orca/workspaces/oil-agent/oil-v01-i` and config
+  `C:/Users/DW/orca/workspaces/oil-agent/oil-v01-i/deploy/compose.c1-db.yaml`.
+- Image reference `postgres:16-alpine@sha256:e013e867e712fec275706a6c51c966f0bb0c93cfa8f51000f85a15f9865a28cb`
+  and the same image ID, with sole local volume
+  `oil-agent-feishu-trial_c1-data` at `/var/lib/postgresql/data`.
+- Sole bridge network `oil-agent-feishu-trial_backend`, ID
+  `a2a3036e03807d1840b9b5c01135349eeeaf7168d10755b26cdfa6b625569ef5`,
+  internal `true`, IPv6 `false`, and only the approved container attached.
+  Its address was `192.168.96.2/20`, gateway empty.
+- Running and healthy; start time `2026-09-12T15:34:52.072399985Z`, restart
+  count `0`; HostConfig requested `127.0.0.1:55436:5432`, while actual
+  NetworkSettings ports were exactly `{"5432/tcp": []}`.
+
+One Windows `socket.create_connection(("127.0.0.1", 55436), timeout=3)`
+failed with `ConnectionRefusedError`, Windows error **10061**, after **2.036
+seconds**. One fixed in-container command
+`docker --host npipe:////./pipe/dockerDesktopLinuxEngine exec <exact-container-id> pg_isready -h 127.0.0.1 -p 5432 -U oil_c1_trial -d oil_c1_trial`
+returned **exit 0**, `127.0.0.1:5432 - accepting connections`. These are
+readiness/protocol observations, not authenticated SQL or schema inspection.
+An initial selected-network JSON formatter had a missing closing brace;
+correcting that inspection-helper syntax resolved its parse error without
+changing resources or product code.
+
+**Reproduced blocker:** the healthy PostgreSQL service has no effective Windows
+host publication in this internal-only topology. Requested PortBindings do
+not prove an active endpoint. Docker Desktop documents that the host cannot
+directly route to the Linux bridge network and relies on published ports;
+the upstream internal-only publication discussion corroborates this symptom.
+These references explain the observed path failure, rather than proving an
+uninspected daemon version or all possible internal-network behavior:
+[Docker Desktop networking](https://docs.docker.com/desktop/features/networking/networking-how-tos/),
+[Moby internal-only publication discussion](https://github.com/moby/moby/discussions/53256).
+C's helper correctly refuses the absent actual endpoint and reports
+`C1_DB_EFFECT_UNKNOWN` after creation; it must not reinterpret that result as
+successful host connectivity or automatically repeat/clean up the effect.
+C reported that migration had not run; E did not execute migration.
+
+The existing pinned image's `/bin/busybox nc --help` succeeded and identified
+BusyBox **1.37.0**, including its client-mode timeout option. E then ran one
+fixed, bounded no-authentication probe from Windows:
+
+```text
+docker --host npipe:////./pipe/dockerDesktopLinuxEngine exec --interactive --user postgres <exact-container-id> /bin/busybox nc -w 3 127.0.0.1 5432
+```
+
+Python `subprocess.run` supplied exactly `struct.pack("!II", 8, 80877103)`
+(the eight-byte PostgreSQL SSLRequest), captured output, and imposed a
+six-second parent timeout. Result: **exit 0**, **3.145 seconds**, one response
+byte **N**, empty stderr. No username, password, query or application payload
+was sent. This proves the fixed Docker stdio path reaches PostgreSQL; it does
+not prove authentication, migration, a working connection pool or an implemented
+host bridge. `/bin/busybox timeout --help` also confirmed an in-container
+TERM/kill-grace deadline mechanism is already available without an image change.
+
+The minimal repair contract was handed to M, who assigned it to C in
+`msg_40b6137092c1`: retain the exact container, volume and internal network;
+C owns a bounded process-owned Docker stdio transport and helper validation,
+and I owns only fixed-child wiring. A host-side bridge must bind only the
+approved loopback address/port and use fixed endpoint/container/user/target
+argv, without a shell or configurable nc listener/execute flags. Bound
+connections and child lifetimes explicitly; the current SQLAlchemy engine
+uses default pool sizing, so an existing small pool cap must not be assumed.
+Use a hard in-container deadline as well as parent cleanup, because terminating
+only the Docker client does not establish remote-child termination. The probe's
+three-second timeout is not the runtime idle allowance for the approved
+120-second exercise. Refuse bind/identity uncertainty, close only owned sockets
+and children, and never blindly replay an uncertain database operation.
+Keep native publication checks strict outside the explicit transport mode;
+require actual transport and database binding before the existing
+`runtime.cli migrate` path, with process-scoped DSN injection and no queue
+initialization/recovery expansion. Authenticated validation and lifecycle tests
+remain C/I work followed by independent E acceptance.
+
+This option adds no image, persistent service, network attachment or fee; its
+cost is bounded Docker exec/BusyBox children per active database connection
+and explicit process-lifecycle handling. Static inspection of existing general
+trial templates found a broader app-image/multiservice assembly, not an already
+verified C1 application process; E did not enumerate or probe unknown resources.
+Adding a normal network to PostgreSQL would change its isolation and was not
+used. No Compose-only edit can be accepted here merely to obtain a reachable
+port while weakening the approved internal boundary.
+
+The single focused command
+`uv run --offline --locked --no-sync pytest tests/integration/test_c1_database_deploy.py -q --tb=short -p no:cacheprovider`
+returned **5 passed in 0.33 seconds, exit 0**. It includes actual captured
+Compose rendering with synthetic credentials and existing boundary assertions;
+it is configuration evidence, not a Docker publication or connectivity fix.
+No new test case, full suite, SQL replay, build or dependency change was needed.
+
+A final selected container/network read at **15:44:23.203363 UTC** exited **0**
+and confirmed the same running/healthy identity, image, start time, restart
+count, volume mount, internal network and endpoint, configured binding and
+absent actual published port. E did not start, stop, restart, recreate or
+remove a resource, alter a network, inspect credentials, authenticate to SQL,
+or read database contents. This is selected metadata preservation evidence,
+not an independent logical/physical comparison of database data; protocol
+readiness requests may themselves produce server logs.
+
+**Verdict: diagnosis and minimal existing-container transport feasibility
+confirmed; actual host database access remains blocked pending C repair and
+I integration.** The bounded SSL byte exchange is not authenticated SQL,
+migration, installed-product behavior, autonomous two-card execution, platform
+or phone receipt, or production acceptance. No provider/source/model request,
+Feishu call, send, exercise start, new resource or purchase occurred.
+
+### Additional local compatibility checkpoint requested by M
+
+Before settlement, M requested bounded independent verification of published I
+`1b28e6b74c81fd5da3886699f065c5b5782c1110` in `msg_8d6b782dcf38`.
+An independent command-scoped proxy/HTTP/1.1 `git ls-remote origin
+refs/heads/songconmaisaix31-design/oil-v01-i` matched that exact SHA.
+I HEAD also matched, but its worktree already contained staged D channel
+integration changes, so E did not run candidate tests in that changing tree.
+E normally merged the exact checkpoint into the retained E branch at
+`127179b152b2e8b76515fb6f4c09223d84f7ce09`, preserving this evidence append.
+The committed E tree equaled the complete I candidate tree, with only this
+evidence file differing in the working tree before execution.
+
+Git verified exactly seven changed paths versus accepted I `6f702957`: the
+six C-owned source/test files and M's existing board. Each blob matched its
+owner: DTO and contract tests from
+`f194225f0dcb96354c7fd63c666a7ac3cc75cc27`; local configuration, private
+field mapper, local preparation and local tests from
+`f5cd36560b3869c79f53bead9a758120aba297a2`; V01 from
+`21d7d7ec62a282e08afcde00c0147d56c8db3f44`. All owners and the accepted
+baseline were ancestors; all other tracked paths were unchanged. The original
+contract test file remained an exact prefix of the new version.
+
+E ran only
+`uv run --offline --locked --no-sync python -B -m pytest tests/unit/runtime/test_c1_contract.py tests/unit/runtime/test_c1_local.py -q --tb=short -p no:cacheprovider`:
+**32 passed, 0 skipped, 0 failed, 0.41 seconds, exit 0**. These tests use
+synthetic values, a temporary Windows file and mocked child/resource operations;
+they do not access the real protected configuration or database. They preserve
+the original fixture exercise and permit only the two additional exact approved
+title/body pairs, rejecting altered or mixed pairs. They also cover null-only
+local mapping, refusal to reset or bind unrelated fields, fixed child arguments,
+secret stdin/environment filtering, wrong-host/missing-secret refusal, existing
+resource refusal without a retained ID, and preparation without a start window.
+
+**PASS for this local compatibility and closed-card contract increment only.**
+M reported I's separate 68-case run; E did not replay that larger selection.
+These tests do not accept the real private-file state, authenticated database
+transport, migrations, queue installation, runner lifecycle, elapsed 120-second
+automation, real Feishu delivery or phone receipt. C's transport and the later
+I runner integration still require their own concrete candidate and independent
+acceptance. No C/I source or test was edited by E.
+
+### Final ready C/D card and request-observation checkpoint
+
+M subsequently requested the concrete ready checkpoint
+`d27368a37af85be7ab3ec87a1a948dd8c24b9dc8` in `msg_b8d6a5afbe13`.
+Independent `git ls-remote` matched that exact I SHA; I HEAD matched and
+`git status --porcelain=v1` was empty. It normally merges D
+`7a74236c1a6cf68ab5eef8438f7520772ddf60b3` onto the checked compatibility
+checkpoint `1b28e6b`. All ten new channel/test/document blobs matched D exactly,
+and the prior seven C/M paths were unchanged: **17 authorized paths total**
+versus accepted `6f702957`, with no other change. AST comparison of every
+preexisting test function in the two affected channel test files passed.
+
+E normally merged this exact checkpoint at
+`8ab2788643afd16f4c8f3ecc6d1a2619cb9f4f09`, keeping the already pushed
+diagnosis/compatibility evidence `dc4f57668b8de05a35a974f180702e1adf20f9c9`.
+E was clean before execution; all tracked paths equaled the candidate except
+the existing E evidence file. Only the direct two-card and request-observation
+selection was executed, without repeating the compatibility or full channel
+suite:
+
+```text
+uv run --offline --locked --no-sync python -B -m pytest tests/unit/channels/test_c1.py tests/unit/channels/test_tenant_lookup.py -k 'autonomous_exercise or two_exercise_tasks or c1_observes or observer_failure or observed_transport or observed_http or response_observation or tenant_lookup_observes' -q --tb=short -p no:cacheprovider
+```
+
+Result: **27 passed, 56 deselected, 0 skipped, 0 failed, 0.21 seconds, exit 0**.
+The selection checks both exact exercise cards, noninteractive fixture labels,
+rejection of altered scope before a request, distinct stable task send keys,
+reservation/start/response ordering, omission of cached token requests, and
+safe classifications for pre-request recorder failure, post-response recorder
+failure/timeout, transport failure and nonaccepting HTTP responses. It also
+checks tenant-query observation with the exact reservation. All requests use
+`httpx.MockTransport` with synthetic identities and responses. No real provider
+request, recorder persistence, private configuration or database operation ran.
+
+**PASS for the bounded C/D local implementation checkpoint.** M reported I's
+separate 44-case run; E did not repeat it. No runner, durable recorder or new
+runtime integration glue is accepted by this checkpoint. Authenticated database
+transport/migration, actual runtime lifecycle, first accepted-at plus 120-second
+timing, platform acceptance and phone receipt remain unexecuted and require the
+later concrete C/I delivery and explicitly authorized exercise. Only this
+evidence append was authored by E; owner source and assertions remain intact.
