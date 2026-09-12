@@ -28,6 +28,16 @@ once. Current AB Task `task_b670c01d251a` / `ctx_819451107da2` uses
 C/D have no work this increment; old terminals are disconnected (C reports
 operator_close), and their worktrees/branches/evidence remain preserved.
 
+The first AB resume inherited the old workspace-write/on-request execution
+profile; even read-only commands hung and made no changes. M canceled the exact
+pending read, observed the interrupted turn, fenced/abandoned that dispatch and
+closed only its newly created external PTY (positive ptyKilled receipt). The
+same original session was resumed with the current workspace's explicit
+danger-full-access/never execution profile; no global hooks/configuration were
+changed. Same Task now retries as `ctx_915cc32ffee1` in
+`term_c862b0a8-b6ee-4fe0-84bb-f918f4c133ef`; its exact transcript confirms actual
+tools returned successfully. Original history/worktree/branch remain preserved.
+
 | Owner | This increment only | Completion evidence |
 | --- | --- | --- |
 | E then AB | E first commits minimal failing regressions for unrelated casualty negation and midnight freshness; preserve denial/planning/exercise/archive assertions. AB fixes only intelligence-owned paths after reproduction. | Original failures and unchanged assertions passing on I candidate |
@@ -86,6 +96,14 @@ casualty negation vetoes at rule/guard/assessment boundaries; two show rejection
 after a 50-second midnight crossing inside an approved 60-minute age window.
 Existing denial and other negative assertions remain unchanged. I is authorized
 to integrate this evidence increment; it is deliberately not a passing candidate.
+
+I BEFORE candidate `0fa7d85c8e235403cb893f566828f4213131c34f` is pushed;
+E independently verified identical application code and unchanged regression
+assertions. CI 34668619029 confirms 343 core pass; integration 163 pass/8 fail,
+zero errors/skips. R-14 actual recheck: Docker Linux pipe remains unavailable and
+targeted inspection of the known E container failed for that reason. No daemon
+restart, deletion, resource stop or cross-track container inspection occurred;
+E final container/schema-cleanup state remains unverified.
 
 ## Current phase: real integration v1.1 (2026-09-12)
 
