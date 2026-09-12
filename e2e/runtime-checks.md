@@ -4,6 +4,51 @@ Provider replies and market content in this report are synthetic. Actual local
 file/ACL observations are labeled separately. No source license, production
 account, model, Feishu recipient, phone receipt or deployed server is accepted.
 
+## C-core and I factory: bounded local checks accepted, binding delta excluded
+
+After M explicitly extended this finite task to I's exact glue candidate,
+E accepts the tested local C-core/factory scope at I
+**`d842b7b43c2f6ed91198a3e3695650db3b2a8cfe`**, with C core
+`1a699c7713ea4c62b5cd81b4e47e1c6909064042` and E fixture/regression source
+`8fbea024aabd1ff6ae77c2f2514fee2f53f1662e`. E first committed and pushed its
+fixture changes, verified the exact E remote, and ordinarily merged the exact
+I glue into merge checkpoint `c57a06970843912e2c57b23cd1b5c717d1fe29a4`.
+The I remote independently returned the full `d842b7b` SHA. This is not final
+combined C1 acceptance or package/build evidence.
+
+The I delta is confined to `src/oil_agent/bootstrap.py`, its owned factory test
+and `config/integration-handoff.md`. Its new lookup factory revalidates Settings,
+constructs only the C Runtime and D tenant-read adapter, binds the adapter to
+the current app reservation callback, reads only the explicit C1 application
+secret, and disposes on construction failure. It does not install send, OAuth,
+source, report or fixture-provisioning services. C runtime/storage bytes remain
+equal to exact `1a699c`; E's complete entry test file remains equal to `8fbea024`.
+A read-only AST comparison preserved all 16 original factory test functions and
+parameterizations. E authored no factory or C-domain change.
+
+The independent command on merge checkpoint `c57a069` was:
+
+```powershell
+uv run --offline --no-sync --locked pytest tests/integration/test_c1_entry.py tests/integration/test_bootstrap_factory.py -k 'c1_entry or offline_factory' -q --tb=short --junitxml=e2e/runtime-artifacts/c1-shared-owner-factory.xml
+```
+
+Result: **65 passed, 13 deliberately deselected**, zero failures/skips, 0.86
+seconds, exit 0: all 45 E entry cases plus 20 offline factory cases. The existing
+Starlette/AnyIO `BlockingPortal` alias deprecation warning remains. The 32 C
+app-scope cases previously passed once in the 77-case intermediate selection;
+they were not rerun for factory-only changes. These selections overlap and must
+not be summed as a final suite total. Final evidence `git diff --check` passed.
+
+No domain failure was reproduced in these bounded checks. C's separately
+delivered bind-if-unset delta `3dd8cb43c19fac00a6d1099baa4a8f28f3d63671` was not
+adopted or inspected, as directed by M. Its parent write behavior, failure states,
+final combined integration and build require an authorized candidate and separate
+review. The 21 C1 PostgreSQL cases and 13 factory PostgreSQL cases remain
+**NOT EXECUTED**; no SQL guard or unknown engine state was bypassed. All inputs
+and HTTP effects here were synthetic; actual product calls/sends/model tokens/
+added product cost are **0**, live usage remains unknown/null, and the expired
+phone window is unchanged. No real private file or platform was accessed.
+
 ## C shared app owner: intermediate review and E fixture adaptation
 
 E ordinarily adopted exact I intermediate
@@ -76,8 +121,8 @@ separate bind-if-unset delta is excluded and requires an authorized candidate.
 
 M subsequently authorized exact I factory glue
 `d842b7b43c2f6ed91198a3e3695650db3b2a8cfe` for ordinary adoption after E commits
-this fixture increment. Its bounded acceptance, if executed, is recorded in a
-separate continuation below; this intermediate result alone accepts no factory.
+this fixture increment. Its bounded acceptance is recorded above; this
+intermediate result alone accepts no factory.
 
 ## D tenant transport accepted: isolated transport scope only
 
