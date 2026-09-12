@@ -5,7 +5,7 @@
 Starting point `cd6e8d9d87acbde9b844b4568ab2df72e00bab8d` remains accepted only
 for simulated integration. I reused its retained worktree/branch/session under
 task `task_c01affff8c19`, dispatch `ctx_6d12690fe3ab`, and ordinarily merged M
-governance through `e2aabc85b8f121381f667691b05fe5805f36e5ee`. The inspected
+governance through `b3b1253aaf945f554bf4de04d619b52906459ef5`. The inspected
 nonsecret input-to-setting mapping was handed to M and incorporated in the
 unique V01-TODO.md intake; no provider, rule, budget or recipient is approved.
 
@@ -44,12 +44,36 @@ without allowing true host-path creation, and adds read-only `check-retained`
 for the exact seven stopped trial resources. The original 54-check command above
 now passes 70 cases, zero skips (1.00 seconds); full src/tests/script Ruff, shell
 syntax and unchanged E semantic assertions pass. I updated only the owned
-runbook recovery notes. Exact complete Linux CI and E's independent acceptance
-belong to the resulting candidate receipt; these scoped local results do not
-substitute for them. Firewall enforcement, live TLS trust and actual stop/resume
-remain unexecuted, and production assembly remains unsupported.
+runbook recovery notes. The accepted code candidate is
+`239baa69b06bf9ede8c71391d12a2cb89e1a1064`; final report/governance adoption
+preserves all application, test, deployment and workflow bytes from that SHA.
+The delivery SHA is recorded separately in I's final receipt.
+
+I and E independently inspected exact-run metadata and downloaded JUnit for
+[complete CI 34669549557](https://github.com/songconmaisaix31-design/oil-agent/actions/runs/34669549557):
+375 core and 237 integration passed, zero failures/errors/skips, using the
+separate C/E real PostgreSQL services. All 23 frontend tests, generated schema,
+TypeScript/Vite, shell checks and both Linux image builds passed.
+[Deployment CI 34669549519](https://github.com/songconmaisaix31-design/oil-agent/actions/runs/34669549519)
+passed 70 checks, zero failures/errors/skips, plus actual Nginx syntax/key loading
+with a disposable test certificate and network disabled. Those 70 overlap the
+237 integration checks and must not be added to the total. E independently
+accepted this synthetic repair and offline preparation in evidence commit
+`6cf292b347f801d442db68734708b51e89ebdc41`, adopted by ordinary merge;
+[the E report](../e2e/runtime-checks.md) retains the original failures and limits.
+
+Remaining implementation: production assembly is deliberately unsupported.
+Missing authorization: source rights/request caps, model/data-processing and
+spending scope, first-report rubric, exact Feishu test recipient and phone,
+runtime/TLS and private secret injection remain pending in M's unique intake.
+Implemented but awaiting authorized real tests: source/model/Feishu transports,
+phone receipt, authenticated acknowledgement, host firewall enforcement, live TLS
+trust and actual trial startup/stop/resume. The separate legacy E container and
+interrupted schema cleanup remain unverified because the local Docker Linux
+engine pipe is unavailable; no daemon restart or resource mutation was attempted.
 Docker checks used configuration parsing with synthetic inputs; no containers,
-networks or host firewall were started or changed. No live calls or credential
+networks or host firewall were started or changed locally. CI's isolated Nginx
+check did not activate a trial server. No live calls or credential
 discovery occurred; product source/model/Feishu calls, tokens and paid cost remain zero.
 
 ## Current phase: real integration v1.1
