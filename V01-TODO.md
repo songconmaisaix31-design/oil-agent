@@ -4,6 +4,14 @@
 
 ### Active C1: local code accepted; phone test not executed
 
+At 10:31 UTC on 2026-09-12, the user confirmed that the existing application's
+bot is enabled and its availability is restricted to the user alone. Record
+both facts as **USER CONFIRMED**; do not ask for that scope again. This is not
+independent platform verification, an exact application-scoped `recipient_open_id`
+binding, verification of the send API permission/version release, or a new phone
+test start. D owns guidance for the next exact self-binding step; private values
+remain local, and tenant/database technical mapping stays with the agents.
+
 On 2026-09-12, the user confirmed the current `LAPTOP-BS46UHBR` computer as
 the test host. M recorded that confirmation at 10:12 UTC. C completed the
 existing protected configuration's null-only `host_binding` maintenance and
@@ -68,6 +76,8 @@ Remaining gaps stay separate:
 - **MISSING CONFIRMED SCOPE / CONFIGURATION:** tenant/person bindings,
   required platform permissions and an approved isolated database. The current
   test host is now explicitly confirmed, locally mapped by C and checked by E.
+  Bot enablement and self-only application availability are user-confirmed;
+  exact recipient identity and platform API permission are still unverified.
   The prior phone window expired; a new explicit start is still required.
 - **EVIDENCE LIMIT:** the receipt's live API count remains `null` / unknown;
   durable reservations are not proof of remote arrival. Report these separately.
