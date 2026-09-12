@@ -29,8 +29,15 @@ def timestamp(value):
     return value.isoformat() if value else "未知"
 
 
-def notification_body(item, records):
-    lines = ["【测试样例】" if item.is_fixture else "【业务通知】", f"版本：{item.revision}"]
+def notification_body(item, records, *, exercise=False):
+    label = (
+        "【合成演练】"
+        if exercise
+        else {"fixture": "【测试样例】", "trial": "【试运行】", "production": "【生产数据】"}[
+            item.provenance
+        ]
+    )
+    lines = [label, f"版本：{item.revision}"]
 
     def section(label, values):
         lines.append(label + "：")

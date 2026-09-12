@@ -66,8 +66,8 @@ def candidate(record, *, status="credible_single_source", family="source-family-
         processing={"rule_version": "synthetic", "model_version": None, "prompt_version": None},
         assessed_at=record.discovered_at,
         change_summary="Synthetic candidate",
-        is_fixture=True,
-        provenance="fixture",
+        is_fixture=record.is_fixture,
+        provenance=record.provenance,
         fixture_dataset=record.fixture_dataset,
     )
 

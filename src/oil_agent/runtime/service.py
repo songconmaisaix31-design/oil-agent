@@ -28,6 +28,7 @@ from oil_agent.contracts.services import (
     ServiceError,
     SourceAdapter,
 )
+from oil_agent.runtime.authorization import RuntimeAuthorization
 from oil_agent.runtime.settings import Settings
 from oil_agent.storage.base import new_id
 
@@ -47,7 +48,17 @@ class RuntimeServices:
     source_poll_seconds: dict[str, int] = field(default_factory=dict)
 
 
-class Runtime:
+class Runtime(RuntimeAuthorization):
+    async def latest_source_record(self, source_id: str, external_id: str):
+        """AB receives committed immutable history in this runtime's exact data scope."""
+        record = await self.db(self.repository.latest_source_record, source_id, external_id)
+        if record and (record.provenance, record.fixture_dataset) != (
+            self.settings.data_provenance,
+            self.settings.fixture_dataset,
+        ):
+            raise ServiceError(ErrorCode.FORBIDDEN, "Source history belongs to another data scope")
+        return record
+
     async def authorize_recipient(self, scope):
         return await self.db(self.repository.authorize_recipient, scope)
 
@@ -60,7 +71,11 @@ class Runtime:
         )
 
     async def resolve_identity(self, identity):
-        return await self.db(self.repository.resolve_identity, identity)
+        approved = None if self.local_test_identity() else self.approved_identity(identity)
+        result = await self.db(self.repository.resolve_identity, identity)
+        if approved and result != (approved.actor_id, approved.recipient_id):
+            raise ServiceError(ErrorCode.FORBIDDEN, "Identity mapping differs from approved scope")
+        return result
 
     def __init__(
         self,
@@ -73,6 +88,19 @@ class Runtime:
         self.services = services or RuntimeServices()
         self.settings = settings or Settings()
         self.repository.production_gate = lambda: self.settings.production_ready
+        self.repository.trial_config_gate = self.trial_config_allowed
+        self.repository.trial_item_gate = self.trial_item_allowed
+        self.repository.recipient_scope_gate = self.recipient_allowed
+        self.repository.data_scope = lambda: (
+            self.settings.data_provenance,
+            self.settings.fixture_dataset,
+        )
+        self.repository.actor_scope_gate = self.actor_allowed
+        self.repository.local_provisioning_allowed = lambda: (
+            self.settings.data_provenance == "fixture"
+            and self.settings.identity_permission is None
+            and self.settings.outbound_mode == "dry_run"
+        )
 
     async def db(self, method, *args, **kwargs):
         return await asyncio.to_thread(method, *args, **kwargs)
@@ -104,13 +132,15 @@ class Runtime:
         source = self.services.sources.get(source_id)
         if source is None:
             self.missing("Source")
+        permission = None
         if source_id in self.services.external_sources:
-            raise ServiceError(ErrorCode.FORBIDDEN, "External source authorization is not verified")
-        await self.db(
-            self.repository.charge_budget,
-            "source:" + source_id,
-            self.settings.daily_source_requests,
-        )
+            permission = self.source_permission(source_id)
+        else:
+            await self.db(
+                self.repository.charge_budget,
+                "source:" + source_id,
+                self.settings.daily_source_requests,
+            )
         checkpoint = await self.db(self.repository.checkpoint, source_id)
         try:
             batch = await self.bounded(
@@ -119,6 +149,15 @@ class Runtime:
             if batch.checkpoint.source_id != source_id:
                 raise ServiceError(
                     ErrorCode.INVALID_OUTPUT, "Source returned another source identity"
+                )
+            if any(
+                (r.provenance, r.fixture_dataset)
+                != (self.settings.data_provenance, self.settings.fixture_dataset)
+                or (permission is not None and r.rights_ref != permission.rights_ref)
+                for r in batch.records
+            ):
+                raise ServiceError(
+                    ErrorCode.INVALID_OUTPUT, "Source changed its authorized data scope or rights"
                 )
             count = await self.db(self.repository.persist_batch, batch, expected=checkpoint)
             await self.db(
@@ -134,8 +173,8 @@ class Runtime:
             raise
 
     async def _processing_budget(self, *, urgent, uses_model):
-        if uses_model and not self.settings.model_calls_enabled:
-            raise ServiceError(ErrorCode.FORBIDDEN, "Product model calls are not authorized")
+        if uses_model:
+            self.model_permission()
         await self.db(
             self.repository.charge_budget,
             "processing",
@@ -143,22 +182,18 @@ class Runtime:
             reserve=self.settings.urgent_processing_reserve,
             urgent=urgent,
         )
-        if uses_model:
-            await self.db(
-                self.repository.charge_budget,
-                "model",
-                self.settings.daily_model_calls,
-                reserve=self.settings.urgent_model_reserve,
-                urgent=urgent,
-            )
+        # Actual provider requests/tokens are reserved by the injected per-request hook.
 
     async def assess_pending(self):
         if self.services.assessment is None:
             self.missing("Assessment")
-        if not await self.db(self.repository.pending_record_exists):
+        scope = dict(
+            provenance=self.settings.data_provenance, fixture_dataset=self.settings.fixture_dataset
+        )
+        if not await self.db(self.repository.pending_record_exists, **scope):
             return ()
         await self._processing_budget(urgent=True, uses_model=self.services.assessment_uses_model)
-        claims = await self.db(self.repository.claim_records, lease_seconds=90)
+        claims = await self.db(self.repository.claim_records, lease_seconds=90, **scope)
         if not claims:
             return ()
         try:
@@ -207,9 +242,18 @@ class Runtime:
         config = await self.db(self.repository.business_config)
         if config.notification_channel not in self.services.channels:
             self.missing("Configured notification channel")
-        if config.notification_channel != "dry_run" and not self.settings.production_ready:
-            raise ServiceError(ErrorCode.FORBIDDEN, "Production readiness is not verified")
-        claims = await self.db(self.repository.claim_deliveries, limit=1, subject_type=subject_type)
+        if config.notification_channel != "dry_run" and not (
+            self.trial_config_allowed(config)
+            or (config.outbound_mode == "production" and self.settings.production_ready)
+        ):
+            raise ServiceError(ErrorCode.FORBIDDEN, "Sending permission is not valid")
+        claims = await self.db(
+            self.repository.claim_deliveries,
+            limit=1,
+            subject_type=subject_type,
+            provenance=self.settings.data_provenance,
+            fixture_dataset=self.settings.fixture_dataset,
+        )
         completed = []
         for claim in claims:
             if not await self.authorize_intent(claim.intent):
@@ -227,11 +271,20 @@ class Runtime:
                 continue
             try:
                 if claim.intent.channel == "feishu":
-                    await self.db(
-                        self.repository.charge_budget,
-                        "delivery",
-                        self.settings.production_budget_units,
-                    )
+                    if config.outbound_mode == "trial":
+                        permission = self.settings.trial_send_permission
+                        await self.db(
+                            self.repository.reserve_provider_call,
+                            permission,
+                            "trial_send",
+                            daily_limit=permission.max_requests,
+                        )
+                    else:
+                        await self.db(
+                            self.repository.charge_budget,
+                            "delivery",
+                            self.settings.production_budget_units,
+                        )
                 result = await self.bounded(
                     lambda ctx, claim=claim: self.services.channels[claim.intent.channel].send(
                         claim.intent, context=ctx
@@ -300,20 +353,48 @@ class Runtime:
     async def login(self, request, browser_cookie):
         if self.services.identity is None or not self.settings.identity_enabled:
             self.missing("Verified identity")
+        permission = None if self.local_test_identity() else self.identity_permission()
         await self.db(self.repository.consume_login_state, request.state, browser_cookie)
+        if permission:
+            await self.db(
+                self.repository.reserve_provider_call,
+                permission,
+                "identity_exchange",
+                daily_limit=permission.max_requests,
+            )
         identity = await self.bounded(
             lambda ctx: self.services.identity.authenticate(request.code, context=ctx),
             context=self.context(seconds=10),
         )
+        if permission:
+            approved = self.approved_identity(identity)
+            actual = await self.db(self.repository.resolve_identity, identity)
+            if actual != (approved.actor_id, approved.recipient_id):
+                raise ServiceError(
+                    ErrorCode.FORBIDDEN, "Identity mapping differs from approved scope"
+                )
         return await self.db(
             self.repository.issue_session,
             identity,
             duration_seconds=self.settings.session_ttl_seconds,
+            authentication_scope=permission.approval_id if permission else None,
         )
 
     async def quote_preview(self, actor, request):
         if self.services.quote_parser is None:
             self.missing("Quote parser")
+        is_fixture = self.settings.data_provenance == "fixture"
+        publisher = (
+            "Authorized local quote upload" if is_fixture else self.settings.quote_origin_publisher
+        )
+        if not is_fixture and (
+            not publisher
+            or not self.settings.quote_upload_rights_ref
+            or request.rights_ref != self.settings.quote_upload_rights_ref
+        ):
+            raise ServiceError(
+                ErrorCode.FORBIDDEN, "Real upload publisher and rights require server approval"
+            )
         try:
             raw = base64.b64decode(request.content_base64, validate=True)
         except (binascii.Error, ValueError):
@@ -324,10 +405,10 @@ class Runtime:
             lambda ctx: self.services.quote_parser.preview(
                 QuoteParseRequest(
                     upload=request,
-                    origin_publisher="Authorized local quote upload",
+                    origin_publisher=publisher,
                     discovered_at=self.repository.clock(),
-                    is_fixture=True,
-                    provenance="fixture",
+                    is_fixture=is_fixture,
+                    provenance=self.settings.data_provenance,
                     fixture_dataset=self.settings.fixture_dataset,
                 ),
                 context=ctx,
@@ -335,7 +416,8 @@ class Runtime:
             context=self.context(seconds=20),
         )
         if parsed.file_hash != hashlib.sha256(raw).hexdigest() or any(
-            not record.is_fixture or record.fixture_dataset != self.settings.fixture_dataset
+            (record.provenance, record.fixture_dataset, record.origin_publisher)
+            != (self.settings.data_provenance, self.settings.fixture_dataset, publisher)
             for record in parsed.records
         ):
             raise ServiceError(
@@ -358,7 +440,7 @@ class Runtime:
             self.repository.reserve_report,
             local.date(),
             config.report_timezone,
-            "fixture",
+            self.settings.data_provenance,
             self.settings.fixture_dataset,
         )
         if reserved is None:
@@ -366,7 +448,10 @@ class Runtime:
         await self._processing_budget(urgent=False, uses_model=self.services.reports_use_model)
         report_id, token = reserved
         records, events, observations = await self.db(
-            self.repository.report_snapshot, now, "fixture", self.settings.fixture_dataset
+            self.repository.report_snapshot,
+            now,
+            self.settings.data_provenance,
+            self.settings.fixture_dataset,
         )
         request = ReportBuildRequest(
             report_id=report_id,
@@ -377,8 +462,8 @@ class Runtime:
             records=records,
             events=events,
             observations=observations,
-            is_fixture=True,
-            provenance="fixture",
+            is_fixture=self.settings.data_provenance == "fixture",
+            provenance=self.settings.data_provenance,
             fixture_dataset=self.settings.fixture_dataset,
         )
         report = await self.bounded(

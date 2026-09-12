@@ -17,7 +17,7 @@ session_cookie = APIKeyCookie(name="oil_session", auto_error=False)
 
 def resolve_session(request: Request, cookie: str | None = Depends(session_cookie)) -> Actor | None:
     runtime = request.app.state.runtime
-    return runtime.repository.resolve_session(cookie) if runtime else None
+    return runtime.resolve_session(cookie) if runtime else None
 
 
 async def require_actor(actor: Actor | None = Depends(resolve_session)) -> Actor:
