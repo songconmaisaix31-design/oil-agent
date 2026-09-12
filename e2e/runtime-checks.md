@@ -3045,3 +3045,23 @@ or power request. Actual self-notification, redacted platform-record readback,
 dated task registration/launch/keep-awake and phone feedback remain separately
 assigned live actions; none is inferred from this SQL PASS. No general suite,
 old C1/business replay or new architecture was introduced.
+
+## Host task registration attempt (2026-09-12/13 UTC)
+
+Against I source `b2c85b8fc1affdbcf50592f0b01cd6f15142e515`, the exact command
+`powershell.exe -NoProfile -NonInteractive -File deploy/status-morning-task.ps1
+-Mode Check -ExpectedCommit <sha>` returned `STATUS_TASK_PREREQUISITES_VERIFIED`
+with `registered=false`. The authorized single registration command then
+returned `STATUS_TASK_EFFECT_UNKNOWN`; E did not retry, overwrite, start or stop
+the task. A bounded exact-name readback of
+`OilAgent-StatusMorning-20260913` found the task present with the expected
+07:58+08:00 one-time trigger, exact I interpreter/module action, InteractiveToken
+principal, WakeToRun and PT17M limit, but `VerifyRegistered` returned
+`STATUS_TASK_MISMATCH` because COM-normalized XML omitted/null-normalized fields
+(`RunLevel`, `Enabled` and default settings) that the script currently compares
+byte-for-byte. This is a deployment verification defect, not evidence of a
+successful product launch; `status_morning_awake.py` was not started because its
+fail-closed readiness check correctly rejects the mismatch. Minimum repair is to
+compare normalized semantic/default values (or emit stable explicit XML) while
+retaining the exact task name, host-only action, trigger window, no recurrence,
+retry or catch-up behavior; no task or power state was changed by E.
