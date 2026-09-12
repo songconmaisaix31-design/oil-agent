@@ -152,3 +152,18 @@ def test_product_preparation_entry_never_loads_runtime_or_authorizes(monkeypatch
     text = capsys.readouterr().out
     assert "SECRET_CANARY" not in text
     assert json.loads(text)["status"] == "NOT_AUTHORIZED"
+
+
+def test_preview_uses_D_card_without_config_read_and_never_overwrites(tmp_path, monkeypatch):
+    monkeypatch.setattr(c1_private, "PRIVATE_DIRECTORY", tmp_path)
+    monkeypatch.setattr(c1_private, "verify_private_path", lambda **kwargs: None)
+    monkeypatch.setattr(c1_private, "CONFIG_PATH", None)
+    assert c1_private.prepare_preview()["status"] == "PREVIEW_CREATED_NOT_SENT"
+    metadata = json.loads((tmp_path / "c1-preview.json").read_bytes())
+    html = (tmp_path / "c1-preview.html").read_bytes()
+    assert "油品预警 Agent｜演练消息" in html.decode()
+    assert not any(token in metadata["content"] for token in ('"callback"', '"open_url"'))
+    assert "started_at" not in metadata and "start_trigger" not in metadata
+    (tmp_path / "c1-preview.html").write_bytes(b"KEEP_EXISTING_BYTES")
+    assert c1_private.prepare_preview()["status"] == "PREVIEW_EXISTS_NOT_SENT"
+    assert (tmp_path / "c1-preview.html").read_bytes() == b"KEEP_EXISTING_BYTES"
