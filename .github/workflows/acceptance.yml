@@ -65,8 +65,8 @@ jobs:
         env:
           OIL_DATABASE_URL: postgresql+psycopg://oil_c_test:SYNTHETIC-CI-C-ONLY@127.0.0.1:55431/oil_c_test
         run: uv run --locked python -m oil_agent.runtime.cli migrate
-      - run: uv run --locked pytest tests/contracts tests/unit -q --junitxml=e2e/core-acceptance.xml
-      - run: uv run --locked pytest tests/integration -q --junitxml=e2e/local-acceptance.xml
+      - run: uv run --locked pytest tests/contracts tests/unit -q --tb=short --junitxml=e2e/core-acceptance.xml
+      - run: uv run --locked pytest tests/integration -q --tb=short --junitxml=e2e/local-acceptance.xml
       - run: npm ci --ignore-scripts
         working-directory: web
       - run: npm test

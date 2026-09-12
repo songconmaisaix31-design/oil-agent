@@ -88,6 +88,8 @@ def signed_callback(app, intent, *, actor="a", callback_id="e-callback-1", **cha
         body["event"]["action"]["value"]["revision"] = changes["revision"]
     if "tenant" in changes:
         body["header"]["tenant_key"] = changes["tenant"]
+    if "app_id" in changes:
+        body["header"]["app_id"] = changes["app_id"]
     if "message" in changes:
         body["event"]["context"]["open_message_id"] = changes["message"]
     raw = json.dumps(body, separators=(",", ":")).encode()
@@ -116,6 +118,7 @@ def signed_callback(app, intent, *, actor="a", callback_id="e-callback-1", **cha
         {"actor": "b"},
         {"revision": 2},
         {"tenant": "foreign-tenant"},
+        {"app_id": "cli_unapproved"},
         {"message": "om_unrelated"},
     ],
 )
