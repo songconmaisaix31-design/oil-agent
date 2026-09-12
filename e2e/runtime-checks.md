@@ -40,6 +40,43 @@ configuration and makes no claim about its current state. Source/model/Feishu
 product calls, sends and external cost are all **0**; no old PostgreSQL tests,
 full suite, build, CI, Docker or service startup ran.
 
+### Bounded entry cases and RED handoff
+
+The first minimal RED source commit is
+`2ca3c87577b7b0283e69d475f7822a7623622923` (`[skip ci]`), pushed to the retained
+E branch and independently confirmed through the exact remote branch reference
+before the follow-up cases were added. Its original positive assertion remains
+unchanged. The follow-up tests additionally cover:
+
+- Missing explicit start, expired/future windows, protected host/app/tenant/person
+  mismatch, non-PostgreSQL URL and extra input keys at both parent and product
+  entry, with forbidden child/runtime/database effects and secret canaries.
+- Duplicate JSON keys, an oversized stdin document and a non-object envelope.
+- A timeout, malformed child output and an UNKNOWN carrying a spurious receipt:
+  one attempt only, UNKNOWN exit 3, no receipt and no secret output.
+- The fixed bootstrap target, even under hostile ambient factory settings;
+  authorization, preparation, one send and disposal in order using a runtime
+  double. A synthetic accepted result must preserve its identifier, aware UTC
+  timestamp and attempt, with `api_requests=null` (unknown), and cannot claim
+  phone receipt or login. These are proposed acceptance checks, not live results.
+
+`uv run --locked pytest tests/integration/test_c1_entry.py -q --tb=short
+--junitxml=e2e/runtime-artifacts/c1-entry-red-bounded.xml` produced **5 failed,
+21 passed**, 0.61 seconds, exit 1, still against unchanged baseline application
+bytes. Four failures show no child reached; the fifth shows no factory/runtime
+operations reached because the product entry still runs preparation. The 21
+negative cases pass under that blanket refusal and therefore **do not establish
+implemented permission validation** until the positive path passes on an exact
+integrated candidate. No negative pass is represented as owner-repair acceptance.
+
+Ruff initially requested two line wraps in the added cases; `uv run --locked
+ruff format tests/integration/test_c1_entry.py` corrected them. Final
+`ruff check`, `ruff format --check` (both through `uv run --locked`) and
+`git diff --check` pass. No existing test assertion or domain file was changed.
+C/I implementation and exact candidate integration remain pending; real start
+authorization is a separate gap, and PostgreSQL/platform/phone evidence remains
+unexecuted. No private-file check was repeated for this entry task.
+
 ## C1 independent acceptance: LOCAL PREPARATION ONLY
 
 E accepts integrated code **`f86c29e3bc99f9f761ebb32236b2dd37a7800357`** for
