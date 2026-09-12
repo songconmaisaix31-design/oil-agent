@@ -348,7 +348,7 @@ def operate(action, value):
         require(
             not host.get("Privileged")
             and not host.get("CapAdd")
-            and not host.get("Binds")
+            and host.get("Binds") in (None, [], [VOLUME + ":/var/lib/postgresql/data:rw"])
             and not host.get("VolumesFrom")
             and not host.get("Devices")
             and host["NetworkMode"] == NETWORK

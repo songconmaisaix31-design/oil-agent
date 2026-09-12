@@ -51,6 +51,30 @@ def test_stdio_keeps_internal_network_and_exact_worktree_checks(docker):
     assert docker.effects == []
 
 
+@pytest.mark.parametrize("source,accepted", [(db.VOLUME, True), ("C:/unrelated", False)])
+def test_docker_named_volume_bind_representation_stays_exact(docker, source, accepted):
+    docker.identifier = db.STDIO_CONTAINER_ID
+
+    def transformed(kind, item):
+        item = missing_publish(kind, item)
+        if kind == "container":
+            item["HostConfig"]["Binds"] = [source + ":/var/lib/postgresql/data:rw"]
+        return item
+
+    docker.transform = transformed
+    if accepted:
+        assert (
+            db.operate("status", request(container_id=docker.identifier, transport="stdio"))[
+                "status"
+            ]
+            == "C1_DB_RUNNING"
+        )
+    else:
+        with pytest.raises(PreparationError):
+            db.operate("status", request(container_id=docker.identifier, transport="stdio"))
+    assert docker.effects == []
+
+
 def test_command_has_no_secret_or_arbitrary_target_and_remote_hard_timeout(monkeypatch):
     monkeypatch.setattr(bridge.shutil, "which", lambda _: "C:/Docker/docker.exe")
     value = request(container_id=db.STDIO_CONTAINER_ID, transport="stdio")
