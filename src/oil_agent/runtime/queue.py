@@ -11,13 +11,13 @@ from procrastinate import App, PsycopgConnector
 QUEUES = ("ingest", "urgent", "normal")
 
 
-def create_queue_app(conninfo: str) -> App:
+def create_queue_app(conninfo: str, *, connect_timeout: int = 3) -> App:
     return App(
         connector=PsycopgConnector(
             conninfo=conninfo,
             min_size=1,
             max_size=4,
-            timeout=5,
-            kwargs={"connect_timeout": 3, "options": "-c timezone=UTC"},
+            timeout=connect_timeout + 2,
+            kwargs={"connect_timeout": connect_timeout, "options": "-c timezone=UTC"},
         )
     )

@@ -413,12 +413,12 @@ may have left changed persistent state. Do not retry blindly or infer rollback.
 Compose is not an atomic compare-and-create API: out-of-band Docker changes and
 partial starts require exact independent inspection, not automatic cleanup.
 
-Preparation evidence is bounded unit testing with synthetic subprocess/inspect
+The initial helper delivery used bounded unit testing with synthetic subprocess/inspect
 doubles, including allowed commands, isolated child environments, redaction,
 foreign/changed scopes, missing retained IDs, no-effect checks and preserved
-resources after failure. No real C1 Docker resource, password, database or phone
-window was used. E's Compose integration and actual Windows loopback reachability
-remain separate acceptance gates; internal-only networking must not be silently
+resources after failure. That delivery used no real C1 Docker resource, password,
+database or phone window. Compose integration and actual Windows loopback reachability
+were separate acceptance gates; internal-only networking must not be silently
 expanded to obtain a passing check.
 
 The exact E candidate `1ab32ce5fe774a434d3a63254124723fc77f02bc` was compared
@@ -432,3 +432,68 @@ internal networking, restart `no` and bounded local logs match that E candidate.
 This is configuration-only evidence, not running Docker/Windows DB reachability.
 I must declare the already locked `PyYAML>=6.0.3,<7` as a direct runtime
 dependency; the current resolved version is 6.0.3 and no package upgrade is needed.
+
+## One local autonomous exercise
+
+The fixed integrated worktree is
+`C:/Users/DW/orca/workspaces/oil-agent/oil-v01-i`. After integration and database
+readiness, the user runs the following foreground command in an interactive
+PowerShell terminal; preparation and an agent must not invoke `start`:
+
+```powershell
+& 'C:/Users/DW/orca/workspaces/oil-agent/oil-v01-i/.venv/Scripts/python.exe' -I -B -m oil_agent.runtime.c1_local start
+```
+
+Use the same interpreter/module with `status`, `stop` or `resume`. `status` reads
+only the selected local ledger and never queries Feishu. `stop` blocks the
+existing permission and wakes the same queue worker; an already dispatched
+request may still complete. `resume` requires the existing window and never
+renews it. It preserves task identities, accepted receipts, request reservations
+and the second task's due time. Unknown delivery outcomes and a failed first
+connection task stop automatic progression. A stopped or expired scope is not
+reopened by repeating these commands.
+
+`start` checks protected configuration and database readiness before recording
+one actual UTC user action in the existing private `exercise_start` field. It
+derives internal permission data without asking the user to write JSON. The
+fixed child performs any required app-only tenant lookup within that same
+30-minute, zero-fee, 20-request budget, then sends the connection test. A second
+distinct exercise is scheduled by the existing Procrastinate `normal` queue at
+the first actual acceptance time plus 120 seconds. Both sends share the existing
+three-send-attempt cap, outbox and whitelist. No periodic product tasks, OAuth,
+callback server, news, model or reporting worker starts. The two messages are
+closed, prominently labeled exercise payloads with no buttons.
+
+The child boundary validates its status, selected task IDs, accepted timestamps
+and platform message IDs. Request status separates reserved, locally started,
+responded and uncertain operations using the existing audit rows; a local start
+observation does not prove a response or phone receipt. `C1_COMPLETED` requires
+two distinct accepted receipts with the second timestamp at least 120 seconds
+after the first. Unit queue doubles accelerate time and are not live acceptance.
+
+Database-only commands are `db-prepare`, `db-status`, `db-stop` and `db-resume`.
+They use the same protected file and exact dedicated Compose resource scope;
+stop preserves the volume. Password generation is null-only and never replaces
+existing credentials. Database preparation also installs the existing
+Procrastinate schema after the application migration. It never records a user
+start or calls Feishu. The already observed internal-only container uses an
+explicit, verified Docker stdio connection bridge on loopback 55436: there is no
+new container, network, public port or volume. The bridge lives only in the
+foreground process, has bounded connections and a 30-minute hard lifetime, and
+closes on exit. Local C1 database connections allow 15 seconds for measured
+Windows Docker startup; unrelated connection defaults stay at three seconds.
+Status/stop may use an active bridge only after checking the exact fixed user
+start/resume process as its port owner. No command replaces unknown listeners
+or adopts a different container.
+
+On 2026-09-12, the actual fixed I source
+`fd49c75b6f7c1f254a1ef265175f10287711a3a8` completed `db-prepare` with exit 0 and
+`C1_DB_READY` at 16:18:51 UTC: authenticated dedicated database/user identity,
+application migration head and the existing Procrastinate schema were ready.
+Only `database_container_id` changed in that operation; the retained password
+and other fields were preserved, with protected-path and strict readback checks.
+At 16:20:02 UTC, `db-status` returned `C1_DB_READY` and `status` returned
+`C1_NOT_STARTED`, both exit 0 with no stderr. The loopback listener and container
+`nc`/`timeout` counts were zero after exit. `tenant_key` and `exercise_start`
+remained absent. This is actual dedicated database readiness, without a Feishu
+request, user start, delivery, phone receipt or synthetic test-data relabeling.

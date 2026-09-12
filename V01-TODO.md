@@ -1,6 +1,56 @@
 # V01 delivery board
 
-## Current phase: minimal autonomous Feishu notification exercise
+## Current phase: personal Feishu presence and one dated morning broadcast
+
+The user has filled the project-private API intake with a DeepSeek V4.1 Flash
+key and explicitly instructed: "send if possible, build the application, use
+the budget as needed." This authorizes agent-executed delivery to the already
+confirmed sole personal Feishu recipient, using the existing application and
+host. Preserve accepted I delivery `56b49bb4df272d58b4ae3357ede4a5ac09b7dc83`.
+Do not fabricate a user-local C1 start or extend an old thirty-minute window.
+
+M's stated bounded interpretation is one onboarding notification and one dated
+morning broadcast, initially the nearest morning at 2026-09-13 08:00 Asia/Shanghai
+(2026-09-13T00:00:00Z), subject to the user's correction. Keep at most twenty
+Feishu wire requests and three total send attempts for this scope. The initial
+model scope is at most ten requests and 100,000 total reserved tokens using
+existing account credit; no recharge, purchased service or added recipient.
+Only this one morning is in scope, not indefinite daily operation. Record a
+missed/failed run honestly rather than claiming a punctual delivery afterwards.
+
+The private intake has a present key but blank platform, purpose, base_url and
+model fields. User text identifies DeepSeek V4.1 Flash; official versus gateway
+origin remains a necessary destination check before transmitting the key.
+The published official model is `deepseek-flash` and the official Responses
+base is `https://api.deepseek.com`; these do not establish this key's origin.
+The user was asked only for that remaining platform identity. The earlier fee
+question is superseded by the explicit budget instruction above.
+
+| Owner | Exclusive bounded increment | Evidence required |
+| --- | --- | --- |
+| AB | Existing intelligence model client and its unit tests/handoff only. | Minimal official DeepSeek transport reusing bounded HTTP, extraction validation and C request/usage callbacks; preserve OpenAI behavior, labels and rules. No private key access or unsolicited source/model calls. |
+| C | Existing contracts/runtime/storage/private configuration and corresponding C tests. | Map the protected key, add only the explicit dated nonmarket status scope/task needed by the existing outbox and Procrastinate, preserve C1, singleton recipient and durable request limits, and expose fixed process entry contracts to I. |
+| D | Existing channels, card renderer and corresponding tests. | Reuse Feishu sender and HTTP hooks for closed onboarding/morning-status cards, with factual trial labels and no login/actions/links; no alternate sender or OAuth work. |
+| E | Existing deployment/integration tests and runtime evidence. | Verify only affected paths, prepare the smallest one-shot host launch for the actual dated product job, verify host/time/stop behavior and actual send records. Never restart shared Docker or relabel synthetic evidence. |
+| I | Existing integration branch and explicitly assigned bootstrap/fixed-entry glue. | Integrate exact owner commits, remove only reproduced assembly coupling via the approved status path, run affected checks/build, preserve source owners and normal push. |
+
+Confirmed implementation gaps are distinct from missing external input: current
+model assembly only accepts OpenAI; normal Feishu wiring depends on identity,
+redirect and callback configuration and lacks the C1 wire hooks; the only
+existing no-action cards are fixed C1 fixtures and their scope cannot cover an
+overnight report. Fix only these necessary gaps. Reuse the dedicated C1 database
+and existing queues without changing its internal network or adding a scheduler.
+A bounded launch near the due time may reuse the existing thirty-minute stdio
+connection; do not keep or pretend an expired C1 authorization alive overnight.
+
+Onboarding must state that it is a project trial and real monitoring is not yet
+enabled. With no verified real source, the morning message must explicitly state
+that it has no verified current news/market data and cannot make an event
+assessment; model memory is not a live news source. Report model connectivity,
+platform acceptance, actual phone display and host scheduling independently.
+No login, callback or production-factory work is required for this increment.
+
+## Previous phase: minimal autonomous Feishu notification exercise
 
 The user now prioritizes actual program execution and two real messages to the
 already confirmed sole personal Feishu recipient. Preserve delivery
@@ -40,6 +90,109 @@ actual platform requests and the two sends wait for the user's explicit local
 start. No public web/HTTPS/login/callback or production factory is a prerequisite.
 M governs and dispatches; AB remains retained. Final outcome is actual delivery
 evidence or the precise live blocker, never preview/mock success as phone proof.
+
+Current bounded execution decisions and findings:
+
+- C confirmed the existing protected application/person/host bindings. Only
+  `tenant_key` is missing. The user's eventual local start may use the existing
+  application-only tenant lookup under the same request budget and persist only
+  an absent tenant binding; preparation makes no platform calls. The second task
+  becomes due at the first accepted message's durable `accepted_at + 120s`.
+- C owns the minimal closed-set changes in `C1Exercise` and
+  `NotificationIntent.validate_recipient_scope`, plus an explicit two-message
+  permission option; legacy one-message assertions and all provenance gates stay.
+  D owns the two card pairs and existing HTTP observation. I wires
+  `observe_request=runtime.observe_c1_request`; phases are `started`, `responded`
+  and `transport_failure`, keyed by the existing reservation ID. Existing audit
+  records distinguish reservations, local dispatches, responses and uncertainty;
+  a local dispatch is not evidence of platform receipt.
+- C's initial dedicated database start created the exact project container,
+  volume and internal network. At that initial checkpoint it was healthy, but the
+  runtime port
+  binding is absent and the strict helper returned `C1_DB_EFFECT_UNKNOWN`.
+  No migration or database-connectivity acceptance was claimed then. E independently
+  reproduced Windows connection refusal and exchanged a PostgreSQL SSL-request
+  byte through fixed Docker exec/BusyBox `nc`; this is protocol feasibility only,
+  without authentication or SQL. E evidence is pushed at
+  `e0ccbeabd3c1b99f6c541a73d40ae9d1ee264145` and its session is retained.
+- The bounded repair is C's explicit fixed-container stdio transport, without
+  changing the original database, volume or internal network. C commit
+  `94542e2d81ccc14b94d7bcabec2d0adfe48fb978` keeps native checks strict by default,
+  adds a process-owned loopback connection with bounded children/deadlines and
+  narrows the C1 SQL pool. I integrates this repair; C then performs authenticated
+  database identity checks and existing migrations, followed by E's independent
+  runtime verification. No new general gateway, service or scheduler is authorized.
+- The earlier C private/closed-card and D card/request-observation increments were
+  integrated at `d27368a37af85be7ab3ec87a1a948dd8c24b9dc8` and independently checked
+  by E. That checkpoint preceded the autonomous runner, durable request recorder
+  and actual stdio runtime described below. Platform requests, sends and new
+  exercise windows were zero and remain gated on a fresh user local start.
+
+**Actual local database preparation:** C ran the integrated fixed `c1_local
+db-prepare` at I `fd49c75b6f7c1f254a1ef265175f10287711a3a8`, with the relevant
+owner blobs equal to `2b3b8d54fd9abbeedd7babb9051a8f01d6d0ffbe`. It returned
+`C1_DB_READY`, empty missing fields, exit 0 and no stderr at
+2026-09-12T16:18:51.809322Z. Authenticated database/user identity, existing
+application migrations and real Procrastinate schema readiness passed. Only the
+previously empty protected `database_container_id` was bound to the observed
+resource; other fields and ACLs were preserved, and `exercise_start` stayed absent.
+Earlier actual failures were separately reproduced and repaired: internal-only
+Docker port publication, exact named-volume representation, and local Docker
+startup exceeding the old three-second connect budget. The C1-only connection
+budget is now 15 seconds with a 17-second queue acquisition budget; other defaults
+remain 3/5 seconds. This is C's actual local execution evidence; E's independent
+final-runtime check is recorded below. Neither is platform or phone acceptance.
+
+The autonomous C runner/local-control increment
+`2b3b8d54fd9abbeedd7babb9051a8f01d6d0ffbe` and E timeout/streaming regressions
+`82cadafde1ff2c8191de557d8a4978854b8b5476` are integrated. I completed only the
+fixed product-child and request-observer glue in executable checkpoint
+`75a6fc4b7e0cd00fc82fdb49a4cc8cc615b67c9a`. The clean, normally pushed I branch
+`songconmaisaix31-design/oil-v01-i` is at
+`cc4c13b8f990c136ff222e2a3a0da1ec34537d38`; its later merges only updated this
+board and C preparation notes. I verified exact owner blobs and unchanged
+unrelated files. Focused connection, runner/local/stdio, timeout and existing
+entry/factory selections passed (1, 27, 5 and 29 cases respectively; 60 cases
+not selected, one existing AnyIO warning). Scoped lint/format/diff checks,
+fixed-interpreter import resolution and one final offline wheel/sdist build
+passed. These are code and build results, not live provider acceptance.
+
+E independently passed five affected PostgreSQL cases against executable
+`75a6fc4`: concurrent task identity/shared caps, durable request observations,
+UNKNOWN/stopped refusal, real queue timing and reconstruction without resend.
+The real Procrastinate run produced two succeeded jobs using a synthetic
+channel; the due time was exactly first acceptance plus 120 seconds and the
+observed synthetic receipt gap was 120.384224 seconds (flow wall 120.822 seconds,
+process wall 124.562 seconds). E corrected one test-harness constructor error
+without changing assertions, then ran only the remaining three cases. The
+original E database inventory and resource metadata remained unchanged. This
+proves bounded local queue execution, not actual Feishu delivery.
+
+E's final bounded acceptance is pushed at
+`b97b9ae669ece59cdc4a49b24f80486376f9b4c6`, changing only
+`tests/integration/test_c1_two_task_postgres.py` and `e2e/runtime-checks.md`.
+Against actual I `cc4c13b`, isolated `c1_local db-status` returned `C1_DB_READY`
+and `status` returned `C1_NOT_STARTED`, both exit 0 with no stderr. Readonly SQL
+verified database/user `oil_c1_trial`, migration head `0003_trial`, queue
+readability, and zero jobs/provider calls/permissions/exercise subjects/request
+observations. The final stdio path used actual hard/idle arguments 1800/1800;
+listener, `nc` and `timeout` counts returned to zero by
+2026-09-12T16:31:08.183897Z. Protected file bytes, identity, ACL and selected
+resource metadata remained unchanged. Full thirty-minute expiry, OS-crash
+cleanup and actual private start/stop/resume were not executed. E reported no
+reproduced domain defect; its existing report contains exact commands/times and
+separates artifact checks, real database execution and synthetic channel data.
+
+Actual external requests remain gated on the user's fresh local start. No
+platform message IDs, phone observations or identity interaction receipts exist
+for this two-message exercise yet. Product Feishu/source/model requests and new
+service fees are zero; development-agent billing is unavailable. The remaining
+action is the user's interactive local `c1_local start` in the reviewed I
+environment documented in `config/c1-preparation.md`. It must first establish
+the still-absent tenant binding within the same approved request budget. No
+additional permission, recipient or window may be inferred from these local
+checks. I's final evidence-only integration must preserve executable `75a6fc4`;
+the existing E acceptance applies to those exact executable bytes.
 
 ## Previous phase: event business, daily analysis and operating usability
 

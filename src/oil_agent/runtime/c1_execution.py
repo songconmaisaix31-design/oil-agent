@@ -5,7 +5,8 @@ Neither preparation state nor this module creates a start, identity or new windo
 """
 
 import json
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
+from uuid import NAMESPACE_URL, uuid5
 
 from pydantic import BaseModel, ConfigDict, Field, SecretStr
 
@@ -105,6 +106,47 @@ def execution_settings(config, execution, *, now=None) -> Settings:
 
 def tenant_lookup_settings(config, execution, *, now=None) -> Settings:
     return _execution_settings(config, execution, now=now, lookup=True)
+
+
+def local_app_permission(config):
+    """Derive internal scope from the one retained actual local user action."""
+    if config.exercise_start is None:
+        raise PreparationError("C1_NOT_AUTHORIZED", ("exercise_start",))
+    return C1AppRequestPermission(
+        approval_id="c1-local-app-" + config.exercise_start.start_id,
+        authorization_ref="local-user:oil-agent-feishu-trial:start",
+        budget_ref="local-user:oil-agent-feishu-trial:zero-fee",
+        valid_from=config.exercise_start.started_at,
+        expires_at=config.exercise_start.started_at + timedelta(minutes=30),
+        start_trigger="开始手机测试",
+        app_id=config.app_id,
+        credentials_ref="private:oil-agent-feishu-trial",
+        host_binding=config.host_binding,
+        tenant_read_ref="local-user:sole-app-tenant-read",
+        max_requests=20,
+        max_new_fee=0,
+    )
+
+
+def local_send_permission(config, app):
+    if config.tenant_key is None or config.recipient_open_id is None:
+        raise PreparationError("C1_NOT_CONFIGURED", ("tenant_key", "recipient_open_id"))
+    subject = config.tenant_key + ":" + config.app_id + ":" + config.recipient_open_id
+    identity = uuid5(NAMESPACE_URL, "oil-agent-c1-person:" + subject).hex
+    return C1Permission(
+        **app.model_dump(exclude={"approval_id", "tenant_read_ref"}),
+        approval_id="c1-local-send-" + config.exercise_start.start_id,
+        app_request_approval_id=app.approval_id,
+        tenant_key=config.tenant_key,
+        identity={
+            "actor_id": "c1-person-" + identity,
+            "recipient_id": "c1-recipient-" + identity,
+            "subject": subject,
+            "role": "viewer",
+        },
+        exercise_messages=2,
+        max_send_attempts=3,
+    )
 
 
 def _execution_settings(config, execution, *, now, lookup) -> Settings:

@@ -37,6 +37,40 @@ class RequestPermission(Permission):
     max_requests: PositiveLimit
 
 
+class StatusAppPermission(RequestPermission):
+    """One actual user-directed onboarding plus one dated nonmarket broadcast."""
+
+    origin: Literal["user_direct"] = "user_direct"
+    provider: Literal["feishu"] = "feishu"
+    app_id: Annotated[str, Field(pattern=r"^[A-Za-z0-9_-]{1,128}$")]
+    recipient_open_id: Annotated[str, Field(pattern=r"^ou_[A-Za-z0-9_-]{1,128}$")]
+    host_binding: StableId
+    morning_due_at: UtcDatetime
+    credentials_ref: NonEmpty = "private:oil-agent-feishu-trial"
+    max_requests: Annotated[int, Field(strict=True, ge=1, le=20)] = 20
+    max_send_attempts: Annotated[int, Field(strict=True, ge=1, le=3)] = 3
+    max_new_fee: Literal[0] = 0
+
+    @model_validator(mode="after")
+    def dated_scope(self):
+        if not self.valid_from < self.morning_due_at < self.expires_at:
+            raise ValueError("A status scope requires its future morning and expiry")
+        if self.expires_at != self.morning_due_at + timedelta(minutes=15):
+            raise ValueError("Status scope expires fifteen minutes after its dated morning")
+        if self.expires_at - self.valid_from > timedelta(hours=24):
+            raise ValueError("Status scope cannot exceed one day")
+        return self
+
+    def delivery_window(self, purpose):
+        if purpose == "onboarding":
+            return self.valid_from, min(
+                self.valid_from + timedelta(minutes=15), self.morning_due_at
+            )
+        if purpose == "morning_status":
+            return self.morning_due_at, self.expires_at
+        raise ValueError("Unknown status purpose")
+
+
 class SourcePermission(RequestPermission):
     source_id: StableId
     provider: StableId
@@ -57,6 +91,37 @@ class ApprovedIdentity(DTO):
     recipient_id: StableId
     subject: NonEmpty
     role: Role = Role.VIEWER
+
+
+class StatusPermission(StatusAppPermission):
+    """Derived tenant/person grant sharing the immutable application request budget."""
+
+    app_request_approval_id: StableId
+    tenant_key: Annotated[str, Field(pattern=r"^[A-Za-z0-9_-]{1,128}$")]
+    identity: ApprovedIdentity
+
+    @property
+    def identities(self):
+        return (self.identity,)
+
+    @model_validator(mode="after")
+    def exact_person(self):
+        if self.identity.role != Role.VIEWER or self.identity.subject != (
+            self.tenant_key + ":" + self.app_id + ":" + self.recipient_open_id
+        ):
+            raise ValueError("Status permission requires the exact approved personal binding")
+        return self
+
+    def matches_app_request(self, app):
+        return bool(
+            type(app) is StatusAppPermission
+            and self.app_request_approval_id == app.approval_id != self.approval_id
+            and all(
+                getattr(self, name) == getattr(app, name)
+                for name in StatusAppPermission.model_fields
+                if name != "approval_id"
+            )
+        )
 
 
 class IdentityPermission(RequestPermission):
@@ -143,6 +208,7 @@ class C1Permission(RequestPermission):
     max_requests: Annotated[int, Field(strict=True, ge=1, le=20)] = 20
     max_send_attempts: Annotated[int, Field(strict=True, ge=1, le=3)] = 3
     first_send_messages: Literal[1] = 1
+    exercise_messages: Literal[1, 2] = 1
     max_new_fee: Literal[0] = 0
 
     @property

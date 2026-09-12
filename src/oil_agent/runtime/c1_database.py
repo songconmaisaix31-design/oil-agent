@@ -27,6 +27,7 @@ PROJECT = "oil-agent-feishu-trial"
 VOLUME = PROJECT + "_c1-data"
 NETWORK = PROJECT + "_backend"
 CONTAINER = PROJECT + "-postgres-1"
+STDIO_CONTAINER_ID = "5ab6d8fb192e33242f51a6b80e3e768eb4421fbd81de80c5627d02a161583b76"
 IMAGE = "postgres:16-alpine@sha256:e013e867e712fec275706a6c51c966f0bb0c93cfa8f51000f85a15f9865a28cb"
 POSTGRES_COMMAND = [
     "postgres",
@@ -78,6 +79,7 @@ class DatabaseInput(BaseModel):
     port: int = Field(strict=True, ge=55436, le=55436)
     password: SecretStr = Field(repr=False)
     container_id: str | None = Field(default=None, pattern=r"^[a-f0-9]{64}$")
+    transport: Literal["native", "stdio"] = "native"
 
 
 def require(condition, field="resource_scope"):
@@ -259,6 +261,8 @@ def operate(action, value):
     )
     require(path_equal(value.worktree, ROOT), "worktree")
     require((value.container_id is None) == (action in {"check", "start"}), "container_id")
+    if value.transport == "stdio":
+        require(value.container_id == STDIO_CONTAINER_ID, "container_id")
     raw = read_compose()
     executable = shutil.which("docker.exe")
     require(executable is not None, "docker_executable")
@@ -337,11 +341,14 @@ def operate(action, value):
             host["PortBindings"] == {"5432/tcp": [{"HostIp": "127.0.0.1", "HostPort": "55436"}]}
         )
         if item["State"]["Status"] == "running":
-            require(item["NetworkSettings"]["Ports"] == host["PortBindings"])
+            require(
+                item["NetworkSettings"]["Ports"]
+                == ({"5432/tcp": []} if value.transport == "stdio" else host["PortBindings"])
+            )
         require(
             not host.get("Privileged")
             and not host.get("CapAdd")
-            and not host.get("Binds")
+            and host.get("Binds") in (None, [], [VOLUME + ":/var/lib/postgresql/data:rw"])
             and not host.get("VolumesFrom")
             and not host.get("Devices")
             and host["NetworkMode"] == NETWORK

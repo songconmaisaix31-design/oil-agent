@@ -262,6 +262,7 @@ def _build_c1_runtime(settings: Settings) -> Runtime:
             authorize=runtime.authorize_recipient,
             c1_display_only=True,
             authorize_request=runtime.authorize_c1_request,
+            observe_request=runtime.observe_c1_request,
         )
         return runtime
     except Exception:
@@ -283,6 +284,7 @@ def _build_c1_tenant_lookup_runtime(settings: Settings) -> Runtime:
                 app_secret=SecretStr(_required_environment("OIL_C1_APP_SECRET")),
             ),
             authorize_request=runtime.authorize_c1_app_request,
+            observe_request=runtime.observe_c1_request,
         )
         return runtime
     except Exception:
