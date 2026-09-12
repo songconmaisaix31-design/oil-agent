@@ -112,6 +112,17 @@ The first platform acceptance is real evidence, not proof of phone display,
 login/callback confirmation, live news/model integration or production readiness.
 E's independent real-record readback and actual one-shot host registration are
 the remaining execution steps. Do not manually run the morning notification.
+E's real registration on I `b2c85b8fc1affdbcf50592f0b01cd6f15142e515`
+created the exact dated task, but the existing XML byte comparison rejected
+Windows' omission of default fields (`STATUS_TASK_EFFECT_UNKNOWN`, followed
+by `STATUS_TASK_MISMATCH`). The existing task is preserved without re-registering,
+overwriting or running it. E owns the minimal semantic/default-normalization
+repair; actual verification and the finite keep-awake request remain pending.
+This is a reproduced deployment defect, not missing external authorization.
+E repaired the verifier at `99ef76fcb4559673542afd9756aa563417bb6233`:
+the nine affected host checks passed, including readback of the existing exact
+task as `STATUS_TASK_DEFINITION_VERIFIED`. No registration, overwrite or execution
+was repeated. I integration and actual keep-awake activation follow this repair.
 
 ## Previous phase: minimal autonomous Feishu notification exercise
 
