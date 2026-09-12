@@ -4,6 +4,119 @@ Provider replies and market content in this report are synthetic. Actual local
 file/ACL observations are labeled separately. No source license, production
 account, model, Feishu recipient, phone receipt or deployed server is accepted.
 
+## E PostgreSQL resource preflight: unavailable engine, no startup
+
+On 2026-09-12, E verified the retained repository
+`C:/Users/DW/orca/workspaces/oil-agent/oil-v01-e`, branch
+`songconmaisaix31-design/oil-v01-e`, clean worktree and accepted delivery
+`fe4b76c2f8b1f17130bd442812cbc046eed1f325`. This finite task inspected ownership
+and the narrow SQL test prerequisites; it did not start or test a database.
+
+### Resource identity and actual read-only observation
+
+The existing board, `deploy/compose.yaml`, `deploy/compose.e-test.yaml` and prior
+E evidence consistently identify the retained development test resource:
+
+| Field | Recorded E scope; current engine state is not verified |
+| --- | --- |
+| Compose project / service | `oil-agent-e` / `postgres` |
+| Container name | `oil-agent-e-postgres-1` |
+| Exact container ID | `b3c3a345428590922eb8e628a996dd634cb3333e5f0c86f588eede8fb7101cab` |
+| Retained volume | `oil-agent-e_postgres-data` mounted at `/var/lib/postgresql/data` |
+| Compose files | This E worktree's `deploy/compose.yaml` and `deploy/compose.e-test.yaml` |
+| Local port / database / user | `127.0.0.1:55434` / `oil_e_test` / `oil_e_test` |
+| Image | `postgres:16-alpine@sha256:e013e867e712fec275706a6c51c966f0bb0c93cfa8f51000f85a15f9865a28cb` |
+| Resource limits in Compose | 128 MiB, 0.5 CPU, 64 PIDs, 64 MiB shared memory |
+
+Historical evidence says the exact container was running when the engine pipe
+disappeared; its last interrupted UUID-schema cleanup remained unverified.
+Historical stopped states must not be substituted for that later unknown state.
+
+The actual bounded commands ran through `uv run --locked python -`, with
+`subprocess.run(..., capture_output=True, timeout=15)` for each Docker command:
+
+1. `docker context inspect desktop-linux --format '{{json .Endpoints.docker.Host}}'`
+   returned exit **0**, confirming only the configured local endpoint
+   `npipe:////./pipe/dockerDesktopLinuxEngine`.
+2. `docker --host npipe:////./pipe/dockerDesktopLinuxEngine container inspect
+   --format <selected nonsecret fields> b3c3a345428590922eb8e628a996dd634cb3333e5f0c86f588eede8fb7101cab`
+   returned exit **1**: `open //./pipe/dockerDesktopLinuxEngine: The system cannot
+   find the file specified`. Selected fields were ID/name/image, four Compose
+   ownership labels, state/exit/OOM, named mounts and port bindings; environment
+   values were excluded. The Python wrapper exited 0 after reporting that actual
+   Docker failure; it was not a successful container verification.
+
+No retry, volume inspection through the unavailable engine, global enumeration,
+daemon restart, container start/stop, removal or cleanup followed. Current
+container labels/state, retained volume and interrupted-schema cleanup remain
+**UNVERIFIED**. Ownership above is historical/configuration evidence, not fresh
+engine proof. M received this result and the proposal before any startup.
+
+### Exact SQL scope and fixture prerequisite
+
+The existing target is `tests/unit/storage/test_c1_storage.py`: five single
+cases plus six authorization-change variants, totaling the previously collected
+**11**. They cover concurrent atomic outbox preparation, rollback, shared
+twenty-request/three-send caps, user/permission/grant/host/expiry/person changes,
+UNKNOWN recovery/fencing and accepted-send/callback separation. No cases were
+collected again or executed in this preflight.
+
+The exact existing test command is:
+
+```powershell
+uv run --locked pytest tests/unit/storage/test_c1_storage.py -q --tb=short --junitxml=e2e/runtime-artifacts/c1-postgres.xml
+```
+
+This command is **NOT READY FOR E EXECUTION**: its existing `repository` fixture
+in `tests/unit/storage/conftest.py` requires `OIL_TEST_DATABASE_URL` bound to
+`127.0.0.1:55431/oil_c_test`, user `oil_c_test`, and rejects the E database.
+An absent URL skips; skips are not SQL evidence. E will not inject an E URL into
+that C-only guard, weaken the guard, or inspect/start/use C's resource.
+
+The narrow E-resource proposal is an E-owned integration adapter that reuses
+the unchanged eleven C test assertions and `c1` fixture, binding `repository`
+to the existing `e_repository` fixture. That fixture requires
+`OIL_E_TEST_DATABASE_URL` with driver `postgresql+psycopg`, exact E local scope
+`127.0.0.1:55434/oil_e_test` and user `oil_e_test`; it creates only a fresh
+`e_acceptance_<UUID>` schema, applies real migrations, bounds connection setup
+to five seconds and statements to five seconds, and removes only that test's
+new schema. An E adapter is **not yet implemented**. This is a test-harness
+preparation gap, separate from the unavailable engine and live authorization.
+
+### Proposed next resource actions, not executed
+
+After the operator/M makes the existing local engine available, recheck the
+same exact container's ID/project/service/worktree/config labels, mount/image,
+port and state. Inspect only the named volume with:
+
+```powershell
+docker --host npipe:////./pipe/dockerDesktopLinuxEngine volume inspect oil-agent-e_postgres-data --format '{{.Name}} {{.Driver}} {{json .Labels}}'
+```
+
+Confirm `127.0.0.1:55434` belongs to the same E resource (or is free if stopped),
+retain all old data/schema evidence, and require the explicitly supplied E
+development test credential without printing or harvesting environment values.
+If and only if the verified container is stopped, the proposed narrow startup
+is:
+
+```powershell
+docker --host npipe:////./pipe/dockerDesktopLinuxEngine start b3c3a345428590922eb8e628a996dd634cb3333e5f0c86f588eede8fb7101cab
+```
+
+There is no full Compose startup, recreation, migration of retained business
+schemas, new volume or trial host in this proposal. Only after resource proof
+and the E test-fixture adapter exist can the eleven assertions run against fresh
+E test schemas; report actual results and inspect exact resource state before
+any bounded owner stop. Existing interrupted schemas and volumes must remain
+untouched. Ordinary synthetic development tests do not require a live phone
+window, but they cannot establish a real trial host or execution permission.
+
+The phone window has expired and is not renewed. Product source/model/Feishu
+requests, sends, model tokens and added product cost remain **0**; PostgreSQL
+C1 verification, platform/phone receipt and production remain **NOT EXECUTED**.
+Only this existing E evidence file changed; no business code, test guard,
+credential, Docker resource or unique board was modified.
+
 ## C1 final candidate accepted: bounded code and local package evidence only
 
 E independently accepts I candidate and reported single-build source
