@@ -20,6 +20,20 @@ class RecordClaim:
 
 
 class IngestionRepository:
+    def latest_source_record(self, source_id, external_id):
+        """AB history seam: committed exact family only; never assign/commit a revision here."""
+        with self.sessions() as session:
+            row = session.scalar(
+                select(SourceRecordRow)
+                .where(
+                    SourceRecordRow.source_id == source_id,
+                    SourceRecordRow.external_id == external_id,
+                )
+                .order_by(SourceRecordRow.revision.desc())
+                .limit(1)
+            )
+            return SourceRecord.model_validate(row.payload) if row else None
+
     def pending_record_exists(self):
         with self.sessions() as session:
             return (
