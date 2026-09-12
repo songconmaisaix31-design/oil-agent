@@ -263,6 +263,66 @@ license check. The public guide does not supply an approved input-argument or
 retention contract. HTTP backend observations verify local configuration wiring;
 actual certificate/server behavior remains NOT EXECUTED.
 
+### Candidate 4: model client and reusable rules, domain failure found
+
+Exact integrated I candidate **`05231c5a86e56c2a2e6238aeb92ce8a3920de02f`** includes
+AB model/rules `85c9fb3e69b657308366e4d50248b0a4816d8bc5` and previous E tests.
+E fast-forwarded its clean branch to this exact SHA. **RULE ACCEPTANCE FAIL**:
+the fixed Chinese rule incorrectly treats procedure/training text as an occurred
+urgent event. This is an implementation defect assigned to AB, not an external
+authorization problem. The following failing regression assertions are preserved.
+
+```text
+uv run --locked pytest tests/unit/intelligence tests/integration/test_rules_acceptance.py -q --tb=short --junitxml=e2e/runtime-artifacts/v11-candidate4-rules.xml
+```
+
+Result: **2 failed, 82 passed, 0 skipped, 1.50 seconds**, exit 1. Breakdown: 69 AB
+cases pass; 13 of 15 new E cases pass. The same unchanged approved synthetic rule
+accepts two materially different new Chinese event descriptions without `ClaimReview`,
+keeps exact evidence and missing occurrence-time uncertainty, and suppresses routine,
+denied, planned, different-facility, absent/expired/out-of-provenance cases. Its
+facility/event/occurrence/impact/currentness criteria nevertheless wrongly match:
+
+- `今天澄湾油库说明发生火灾才会停止装车的应急流程。`
+- `今天澄湾油库开展发生火灾后停止装车的安全培训。`
+
+Both must stay nonurgent under the same policy; both currently return `urgent`.
+E did not add per-message exclusion templates or weaken production assertions.
+Exact fixed policy and stimuli are in `test_rules_acceptance.py`; AB owns the fix.
+General natural-language accuracy is not claimed from these finite cases.
+
+Five independent actual Responses-client cases pass using an isolated HTTP double:
+completed response, lost response, refusal, unexpected tool output and malformed
+JSON. Each reserves once and records usage once without retry. Known mock usage
+is `(22, 8)`; lost/malformed response retains `(None, None)` rather than zero, and
+provider cost remains unknown. This client subset passes locally; real provider
+integration and factory binding to canonical approved rules remain NOT EXECUTED.
+
+An additional exact E source-check CI observation:
+[34663681247](https://github.com/songconmaisaix31-design/oil-agent/actions/runs/34663681247)
+on `6fd342f0ddce579f9c019593aa770c2e022dfea8` had **4 failed, 94 passed**, 21.23
+seconds. Besides the three known production/fixture sender failures, E's quote
+restart test retained a tenant-only identity after app-bound fixture migration.
+E corrected that single test binding and executed:
+
+```text
+uv run --locked pytest tests/integration/test_postgres_operations.py::test_T11_T19_persisted_quote_preview_import_cutoff_and_restart -q --tb=short --junitxml=e2e/runtime-artifacts/v11-candidate4-quote.xml
+```
+
+**1 passed, 0 skipped, 1.31 seconds**, exit 0, actual E PostgreSQL. The isolated
+quote-binding omission is fixed; it does not erase the historical CI failure or
+the three still-pending trial sender migrations. E's database was stopped and
+retained afterward, exit 0/OOM=false; no further PG work starts until the next
+coordinated slot. This brief test was already launched when updated non-PG slot
+steering arrived. No other containers or volumes changed.
+
+Ruff check/format and diff-check PASS. Product source calls, model calls/tokens,
+Feishu requests/sends and paid product cost: **0**. E's five model cases use five
+synthetic HTTP requests, with mock token figures separated from real usage. No
+source/model endpoint, account, phone, deployed server or real rule approval was
+used. Full acceptance remains FAIL, with two new AB policy defects and three
+known sender-test migrations awaiting the C operational candidate.
+
 ## Verified checkpoint, 2026-09-11 UTC
 
 - Dependencies: reviewed C `41a00ded1f949aee8099b549d5d419f0487dd0f9`,

@@ -97,7 +97,7 @@ async def test_T11_T19_persisted_quote_preview_import_cutoff_and_restart(
     from oil_agent.contracts.dto import ExternalIdentity
 
     _, _, other = e_repository.issue_session(
-        ExternalIdentity(provider="feishu", subject="e-tenant:ou_e_b")
+        ExternalIdentity(provider="feishu", subject="e-tenant:cli_synthetic_e:ou_e_b")
     )
     with pytest.raises(ServiceError) as error:
         e_repository.import_preview(other, preview.preview_id)
