@@ -60,6 +60,110 @@ PTYs are positively reported exited by the execution host; resume their original
 provider sessions, preserving all code/history. No general audit or repeated full
 synthetic acceptance is part of C1 preparation.
 
+### C1 completed local preparation: independently accepted, no live sending
+
+The project-private configuration now exists at
+`C:\Users\DW\AppData\Local\oil-agent\private\feishu-c1\config.json`.
+C created it without overwriting an existing file. M independently checked path
+and ACL metadata without printing contents: no reparse point, current-user owner,
+protected directory ACL with only the current Windows user and SYSTEM; the file
+inherits those same two entries. No platform IDs, host approval or start time
+were fabricated. Application remains NOT_CREATED / NOT_CONFIGURED.
+
+The user edits this JSON locally after actual application creation: change
+`application_state` to `CREATED`, enter `app_id` and `app_secret`, and leave
+`tenant_key`, `recipient_open_id` and `host_binding` null until exact local
+confirmation. The display name and alias are already fixed. Credentials must not
+be copied into chat, Git, frontend artifacts or ordinary logs.
+
+Actual non-sending preview files also exist in that same private directory:
+`c1-preview.html` and `c1-preview.json`. They use D's shared exercise renderer,
+system-generated preview ID/time and the approved text, without login,
+confirmation actions or links. Preview metadata is not a platform send receipt.
+
+The fixed local entry is `uv run --locked python -m
+oil_agent.runtime.c1_private` from the integrated I worktree. `check` and
+`inject-check` actually returned exit 2 with WAITING_FOR_APPLICATION_CREATION,
+NOT_CONFIGURED, only missing field names and start NOT_AUTHORIZED. The child
+receives only allowlisted C1 values; no dotenv execution, arbitrary factory,
+global environment mutation, database connection or provider request occurs.
+The fixed `preview` mode is also integrated: it returned exit 0 and
+PREVIEW_EXISTS_NOT_SENT without overwriting either existing preview artifact.
+
+Owner increments include C private helper `611c7a9`, D offline preview `584c9a3`,
+C exercise contract `fda37c8`, D channel `5355446`, C private preview helper
+`76fdb93` and C runtime `30e90df`. I's pushed code candidate is
+`f86c29e3bc99f9f761ebb32236b2dd37a7800357` on
+`songconmaisaix31-design/oil-v01-i`, including all owner increments and the
+limited existing-factory branch. M independently verified C/D/I remote heads.
+E independently accepts actual private checks at the unchanged helper version
+`ab86e486c9c07e1961d822615ba003409344bf8f` and 17 changed helper tests; earlier
+E selections passed 40 preparation/contract/preview and 37 channel cases.
+D's offline rendering at 320/390 pixels reported no external requests or
+actions. These overlapping local checks are not an additive total or actual
+phone/live-service acceptance. E accepts exact code `f86c29e` for local preparation
+only; its evidence commit is `88c8b33c0e97baa323e1b1a48d3acc6b7458ac0f` in the
+existing `e2e/runtime-checks.md`. No unresolved local-preparation defect remains.
+
+Final I checks on `f86c29e`: `uv run --locked pytest
+tests/integration/test_bootstrap_factory.py -k offline_factory -q --tb=short`
+passed 10, retaining the original three ordinary guards; 13 existing PostgreSQL
+cases were intentionally unselected. `uv run --locked pytest
+tests/unit/runtime/test_c1_runtime.py tests/unit/runtime/test_permissions.py
+tests/contracts -q --tb=short` passed 46. Scoped Ruff and diff checks passed.
+One `uv build` produced wheel and source distribution. E independently inspected
+ten scoped archive entries: wheel/sdist entries agree byte-for-byte and match
+candidate Git content after CRLF-to-LF normalization only. Initial raw comparison
+to E's Windows worktree differed on line endings; no artifact or source was
+rewritten, and raw byte equality with Git LF blobs is not claimed.
+No full synthetic CI, frontend suite/build or Docker operation was repeated.
+
+E's final command was `uv run --locked pytest
+tests/integration/test_bootstrap_factory.py tests/unit/runtime/test_c1_runtime.py
+-k 'offline_factory or explicit_active_attempt or expired_host or unconfigured_c1'
+-q --tb=short --junitxml=e2e/runtime-artifacts/c1-local-final.xml`: 15 passed,
+13 existing PostgreSQL factory cases deliberately deselected, zero failures or
+skips. E also verified owner ancestry, unchanged accepted helper/channel content
+and scoped Ruff. The actual authorization/private-path and preview evidence above
+is retained; test doubles do not replace SQL, platform or phone evidence.
+
+E first reproduced PRIVATE_PATH_UNVERIFIED when the old helper rejected the two
+legitimate preview files C had created. C `76fdb93` added only those exact names
+to the protected directory's file allowlist. I integrated it and E reran the
+actual failing checks at `ab86e486`, obtaining the correct waiting state/exit 2.
+No private file was removed or overwritten and no ACL was weakened.
+
+Reproduced implementation blockers are distinct from missing authorization:
+ordinary trial construction required news rules, OAuth redirect and callback
+secrets, while the old card required links/actions and lacked a per-HTTP budget
+hook. I preserved three passing regression assertions for those ordinary-flow
+guards. C/D own the minimum explicit nonmarket exercise/runtime/channel repair;
+I owns conditional factory assembly. No fake event, callback or approval is used.
+
+- CODE NOT YET IMPLEMENTED: the production factory remains unimplemented before
+  formal delivery; it is not a C1 prerequisite. The reproduced C1 coupling and
+  helper preview defects now have integrated owner repairs; acceptance remains
+  limited to the explicitly recorded local checks.
+- EXTERNAL AUTHORIZATION MISSING: the app has not been created; exact tenant,
+  personal open ID and existing test host are not bound, entitlement coverage is
+  not confirmed, and the user has not triggered the 30-minute window.
+- IMPLEMENTED, VERIFICATION NOT EXECUTED: C's 11 PostgreSQL storage tests were
+  collected only, without an approved injected database. No database was started
+  and no SQLite result substitutes for PostgreSQL transactions/concurrency.
+  Thirteen existing PostgreSQL factory cases were also unselected. Platform
+  acceptance and physical phone observation remain untested. Login, signed
+  callback and identity receipt are outside this round. Before real sending,
+  verify the new durable path on an approved isolated PostgreSQL environment.
+
+Feishu product requests 0, message attempts 0, accepted message IDs none and new
+paid product cost 0. Development-agent billing is unmeasured. No API failure or
+empty success response is inferred from not executing a request. No continuous
+monitoring or service was started; no Docker or unknown resource was touched.
+C/D finished their bounded tasks and their original resumed sessions were
+retained; AB remained idle. I/E complete only evidence/governance adoption and
+an unchanged-code/remote check before retaining their sessions. No further
+development or testing loop starts without a concrete defect or authorized work.
+
 The user accepts `8af1c001b087c7a37973f2b5e4a8d545ec7d3027` as the code
 baseline for **bounded rule repairs and controlled trial preparation passed**.
 This is not actual deployment, live-service or production acceptance. Final
@@ -117,8 +221,8 @@ remain 0; development-agent/CI billing is unmeasured. The minimum intake still
 lacks the specific source, model/rules/budgets, test-person and runtime approvals.
 Only each dependent live action pauses. The existing E Docker observation below
 remains unverified; no repeated container probe is needed merely for this phase
-change. Current authorized work is this governance adoption by I and E; other
-tracks remain retained until approved live work or a reproduced defect exists.
+change. That phase-entry governance adoption was completed before the newer C1
+local-preparation authorization above; the C1 section is the current scope.
 
 ## Completed increment: contextual guards and controlled trial preparation
 
