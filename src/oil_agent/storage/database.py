@@ -19,7 +19,10 @@ def create_db_engine(settings: Settings) -> Engine:
     return create_engine(
         settings.database_url.get_secret_value(),
         pool_pre_ping=True,
-        connect_args={"connect_timeout": 3, "options": "-c timezone=UTC -c statement_timeout=5000"},
+        connect_args={
+            "connect_timeout": 15 if c1_pool else 3,
+            "options": "-c timezone=UTC -c statement_timeout=5000",
+        },
         hide_parameters=True,
         **c1_pool,
     )
