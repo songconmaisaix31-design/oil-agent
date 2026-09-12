@@ -1,7 +1,142 @@
 # E runtime verification
 
-All evidence is local and synthetic. No source license, production account, model,
-Feishu recipient, actual phone receipt or deployed server has been accepted.
+Provider replies and market content in this report are synthetic. Actual local
+file/ACL observations are labeled separately. No source license, production
+account, model, Feishu recipient, phone receipt or deployed server is accepted.
+
+## C1 independent acceptance: LOCAL PREPARATION ONLY
+
+E accepts integrated code **`f86c29e3bc99f9f761ebb32236b2dd37a7800357`** for
+the bounded local preparation scope. This includes private structured loading,
+offline preview, explicit exercise contracts, guarded channel construction and
+the tested runtime control flow. It does **not** accept PostgreSQL transaction/
+concurrency behavior, a live sender, platform message acceptance, actual phone
+display, real login or an interaction receipt. No real start window exists.
+
+E reused its clean retained branch/worktree, ordinarily fast-forwarding through
+I `723100b637a6f514d19f3dddde903f0636be3696`,
+`3b41c8b91e2d1bf0d67769bdf81bf0b27f502907`,
+`ab86e486c9c07e1961d822615ba003409344bf8f` and finally `f86c29e`.
+Explicit ancestor checks passed for M
+`7ba4c2f8115775b5e1bbdc5db2e806bb56ef08b0`, C private helper
+`611c7a99866de5fa21f6c2f292b31548949bd809`, D preview
+`584c9a3b49c549a4602bc32b0a29d0e7261d7425`, C exercise DTO
+`fda37c87719c4ef9840fe866308707314c3832e2`, D guarded channel
+`5355446d00e23dc64b1cd133ec191cfa0467bad8`, C preview/ACL fix
+`76fdb934525815131fea1bffe79e11630d717c2e` and C runtime
+`30e90dfee3c885c17c9cf48690a7381111ac4483`.
+The public I branch independently matched the full final candidate SHA. E made
+no domain repair, changed no existing assertion and added no duplicate intake.
+
+### Actual private file and preview observations
+
+Only the authorized directory
+`C:/Users/DW/AppData/Local/oil-agent/private/feishu-c1` and its three named files
+were inspected. `Get-Item`/`Get-Acl` metadata showed current-user ownership,
+exactly two current-user/SYSTEM FullControl rules and no reparse point for the
+directory, `config.json`, `c1-preview.html` and `c1-preview.json`. File sizes were
+268, 1618 and 924 bytes respectively. Configuration last-write time was
+2026-09-12T06:28:17.8253613Z; preview files were last written at
+2026-09-12T06:32:58.5309379Z. E did not print configuration contents/values or
+rewrite any private file, run `prepare`/`preview`, or inspect unrelated credentials.
+
+The initial integrated candidate `723100b` reproduced a concrete implementation
+gap: both commands below returned `PRIVATE_PATH_UNVERIFIED`, exit **2**. The fixed
+ACL script, run in verify mode only, reported `PRIVATE_PATH_UNVERIFIED:unknown_file`.
+Its old allowlist rejected the legitimate newly created preview files. This was
+reported to M/C immediately, separately from missing application credentials.
+No files or permissions were removed/widened to make the check pass.
+
+After I integrated C's exact three-file allowlist at `ab86e48`, E reran:
+
+```powershell
+./.venv/Scripts/python.exe -m oil_agent.runtime.c1_private check
+./.venv/Scripts/python.exe -m oil_agent.runtime.c1_private inject-check
+```
+
+Both returned the expected **exit 2** with redacted status only:
+`WAITING_FOR_APPLICATION_CREATION`, `application_state=NOT_CREATED`,
+`configuration_status=NOT_CONFIGURED`, `start_trigger=NOT_AUTHORIZED`,
+`product_requests=0`, and missing field names `app_id`, `app_secret`, `tenant_key`,
+`recipient_open_id`, `host_binding`. This closes the actual old-path rejection.
+It describes an application not created, rather than a configured application
+awaiting credential disclosure. The fixed isolated child consumes only allowed
+C1 fields and cannot turn that status into a runtime, server or sender.
+
+E ran a one-off `uv run --locked python -` static verifier over only the two
+authorized preview files. It parsed the JSON, checked the generated test ID and
+aware creation time in memory, reconstructed D's shared `create_c1_preview` using
+those metadata, and matched the complete card/HTML without printing values.
+Independent literal assertions confirmed the approved Chinese title/body,
+`演练／非真实行情`, `本阶段只验证消息到达。`, generation-time wording, forwarding
+disabled, and `本地预览 · 未发送 · 非飞书客户端截图`. HTML parsing rejected action/
+input/link/script/media elements and URL/event-handler attributes; static checks
+rejected resource URLs/CSS imports and required the restrictive CSP. Result:
+**PRIVATE_PREVIEW_PASS**, exit 0. This is static file evidence, not a browser,
+Feishu client screenshot, send timestamp or phone observation; no requests ran.
+
+### Focused commands and evidence
+
+All executions used the existing locked environment; no full suite, CI polling,
+Docker, server, database service, live transport or new host was started. Scopes
+below overlap across increments and must not be summed as a final suite count.
+
+| Exact command/scope | Actual E result |
+| --- | --- |
+| At `723100b`: `uv run --locked pytest tests/unit/runtime/test_c1_preparation.py tests/unit/runtime/test_c1_contract.py tests/unit/channels/test_c1_preview.py -q --tb=short` | 40 passed, zero failures/skips, 1.19 seconds; did not establish the actual private-path status |
+| At `3b41c8b`: `uv run --locked pytest tests/unit/channels/test_c1.py tests/unit/channels/test_channels.py -q --tb=short -k 'c1 or trial or unknown or revoked'` | 37 passed, 55 deliberately deselected, zero failures/skips, 0.19 seconds; explicit HTTP doubles only |
+| At `ab86e48`: `uv run --locked pytest tests/unit/runtime/test_c1_preparation.py -q --tb=short` | 17 passed, zero failures/skips, 0.13 seconds; private-path recheck recorded above |
+| At `f86c29e`: `uv run --locked pytest tests/integration/test_bootstrap_factory.py tests/unit/runtime/test_c1_runtime.py -k 'offline_factory or explicit_active_attempt or expired_host or unconfigured_c1' -q --tb=short --junitxml=e2e/runtime-artifacts/c1-local-final.xml` | 15 passed, 13 existing PostgreSQL factory cases deliberately deselected, zero failures/skips, 3.52 seconds; existing Starlette/AnyIO deprecation warning |
+| At `f86c29e`: `uv run --locked pytest tests/unit/storage/test_c1_storage.py --collect-only -q` | 11 tests collected, 0.06 seconds; **NONE EXECUTED** |
+| Scoped Ruff over changed runtime/service/storage/bootstrap and their focused test files | PASS |
+| Git ancestor checks, diff-check and unchanged previously verified private/channel/contract files from `ab86e48` | PASS |
+
+I performed one wheel/sdist build at the accepted candidate. E did not repeat it;
+E read only those named artifacts from
+`TEMP/oil-agent-i-ctx-8f37913d12ee/dist` and inspected ten scoped C1 source/helper
+entries, including `runtime/c1_acl.ps1`, with `zipfile`/`tarfile` in memory.
+The first raw comparison to E's `bootstrap.py` worktree bytes failed due to
+Windows line endings. Follow-up comparison to the exact candidate Git blobs
+showed all ten entries equal after **only CRLF-to-LF normalization**, and wheel
+and sdist entries byte-identical to each other. No artifacts or source files
+were rewritten, installed or executed; raw equality to Git LF blobs is not claimed.
+
+### Accepted boundaries and remaining limitations
+
+The focused results preserve strict data-only parsing, duplicate/unknown-key and
+untrusted-command refusal, fixed isolated child injection, redacted failures,
+no-overwrite preview preparation, and ordinary rules/OAuth/callback requirements.
+C1 construction requires its explicit permission and C1 secret with no ordinary
+secret fallback; it wires one exact app-scoped test recipient and both runtime
+authorization hooks. It constructs no source/model, identity, callback, report,
+quote or assessment service. Production remains rejected. Original ordinary-mode
+factory guard assertions were retained and passed within the ten offline cases.
+
+Contract/control-flow tests cover one declared identity/host, the exact explicit
+start trigger, at most 30 minutes, first-one message, at most three attempts,
+twenty total API requests and zero new fee. Source inspection shows stable
+exercise/outbox identity, current grant/user/start checks, lease fencing, shared
+request reservations before token/send HTTP, and no requeue of UNKNOWN or accepted
+delivery. Runtime control-flow tests use an explicit repository double, not SQL.
+The eleven unexecuted PostgreSQL cases cover atomic outbox creation/rollback,
+20-request/3-send reservation caps, changed authorization and lease recovery;
+they are **implemented-awaiting-PostgreSQL-verification**, not passed concurrency
+or restart evidence. The thirteen existing PostgreSQL factory cases were also not
+executed. No SQLite substitute was used, and no database URL was searched for.
+
+No unresolved implementation defect was found in the bounded local preparation
+checks after the owner ACL repair. Missing real inputs are separate: the Feishu
+application is not created/configured, exact tenant/person/host bindings are blank,
+and the user has not triggered `开始手机测试`. The nominal ceilings do not create
+a start window or establish free-service coverage. PostgreSQL durability, actual
+provider counting/zero-fee coverage, a real platform message ID, phone display and
+operator observations remain unverified. Login/callback confirmation, sources,
+models, ongoing polling, public ingress and production are outside C1.
+
+Product source requests **0**, model requests/tokens **0**, Feishu API requests
+**0**, sends **0**, paid product cost **0**. Development-agent billing is unmeasured.
+M retains the unique V01-TODO intake; final governance/evidence adoption requires
+only I integration and E's final equality/remote audit if code remains unchanged.
 
 ## Current phase: independent real-integration v1.1 acceptance
 
