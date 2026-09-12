@@ -16,11 +16,12 @@ from oil_agent.runtime.c1_config import (
     PreparationError,
     _unique_object,
 )
-from oil_agent.runtime.permissions import C1Permission
+from oil_agent.runtime.permissions import C1AppRequestPermission, C1Permission
 from oil_agent.runtime.settings import Settings
 
 MAX_EXECUTION_BYTES = 32768
 EXECUTION_EXITS = {
+    "C1_TENANT_LOOKUP_COMPLETED": 0,
     "C1_ACCEPTED": 0,
     "C1_UNKNOWN": 3,
     "C1_NOT_AUTHORIZED": 2,
@@ -33,14 +34,28 @@ EXECUTION_EXITS = {
     "C1_FAILED_FINAL": 2,
 }
 EXECUTION_FIELDS = frozenset(
-    (*FIELD_NAMES, "application_state", "permission", "database_url", "execution", "product_entry")
+    (
+        *FIELD_NAMES,
+        "application_state",
+        "permission",
+        "app_request_permission",
+        "database_url",
+        "execution",
+        "product_entry",
+    )
 )
 
 
-class C1ExecutionInput(BaseModel):
+class C1TenantLookupInput(BaseModel):
+    """Explicit app read permission and database only; no tenant or person binding."""
+
     model_config = ConfigDict(extra="forbid", frozen=True, hide_input_in_errors=True)
-    permission: C1Permission = Field(repr=False)
+    app_request_permission: C1AppRequestPermission = Field(repr=False)
     database_url: SecretStr = Field(repr=False)
+
+
+class C1ExecutionInput(C1TenantLookupInput):
+    permission: C1Permission = Field(repr=False)
 
 
 class C1Receipt(BaseModel):
@@ -53,44 +68,66 @@ class C1Receipt(BaseModel):
     api_requests: None = None  # Delivery does not carry the durable request count.
 
 
-def parse_execution(raw: bytes) -> C1ExecutionInput:
+def parse_execution(raw: bytes, *, mode="send-once") -> C1TenantLookupInput:
     try:
         if not raw or len(raw) > MAX_EXECUTION_BYTES:
             raise ValueError()
         data = json.loads(raw.decode("utf-8"), object_pairs_hook=_unique_object)
-        return C1ExecutionInput.model_validate(data)
+        schema = {"send-once": C1ExecutionInput, "tenant-lookup": C1TenantLookupInput}[mode]
+        return schema.model_validate(data)
     except Exception:
         raise PreparationError("C1_INVALID_EXECUTION", ("execution",)) from None
 
 
-def read_execution(stream) -> tuple[bytes, C1ExecutionInput]:
+def read_execution(stream, *, mode="send-once") -> tuple[bytes, C1TenantLookupInput]:
     if stream.isatty():
         raise PreparationError("C1_NOT_AUTHORIZED", ("permission",))
     raw = stream.buffer.read(MAX_EXECUTION_BYTES + 1)
-    return raw, parse_execution(raw)
+    return raw, parse_execution(raw, mode=mode)
 
 
 def execution_settings(config, execution, *, now=None) -> Settings:
+    return _execution_settings(config, execution, now=now, lookup=False)
+
+
+def tenant_lookup_settings(config, execution, *, now=None) -> Settings:
+    return _execution_settings(config, execution, now=now, lookup=True)
+
+
+def _execution_settings(config, execution, *, now, lookup) -> Settings:
     """Validate supplied scope before construction, including unchecked model copies."""
     try:
         config = C1Preparation.model_validate(config.model_dump(mode="python"))
-        execution = C1ExecutionInput.model_validate(execution.model_dump(mode="python"))
+        schema = C1TenantLookupInput if lookup else C1ExecutionInput
+        execution = schema.model_validate(execution.model_dump(mode="python"))
     except Exception:
         raise PreparationError("C1_INVALID_EXECUTION", ("execution",)) from None
-    missing = tuple(field for field in FIELD_NAMES if getattr(config, field) is None)
+    required = ("app_id", "app_secret", "host_binding") if lookup else FIELD_NAMES
+    missing = tuple(field for field in required if getattr(config, field) is None)
     if config.application_state != "CREATED" or missing:
         raise PreparationError("C1_NOT_CONFIGURED", missing or ("application_state",))
-    permission = execution.permission
-    if not permission.active(now or datetime.now(UTC)):
+    app = execution.app_request_permission
+    permission = None if lookup else execution.permission
+    now = now or datetime.now(UTC)
+    if permission and not permission.active(now):
         raise PreparationError("C1_NOT_AUTHORIZED", ("permission",))
+    if not app.active(now) or (lookup and not app.tenant_read_ref):
+        raise PreparationError("C1_NOT_AUTHORIZED", ("app_request_permission",))
+    if permission and not permission.matches_app_request(app):
+        raise PreparationError("C1_BINDING_MISMATCH", ("app_request_permission",))
     expected = {
-        "app_id": permission.app_id,
-        "tenant_key": permission.tenant_key,
-        "recipient_open_id": permission.identity.subject.removeprefix(
-            permission.tenant_key + ":" + permission.app_id + ":"
-        ),
-        "host_binding": permission.host_binding,
+        "app_id": app.app_id,
+        "host_binding": app.host_binding,
     }
+    if permission:
+        expected.update(
+            {
+                "tenant_key": permission.tenant_key,
+                "recipient_open_id": permission.identity.subject.removeprefix(
+                    permission.tenant_key + ":" + permission.app_id + ":"
+                ),
+            }
+        )
     mismatch = tuple(field for field, value in expected.items() if getattr(config, field) != value)
     if mismatch:
         raise PreparationError("C1_BINDING_MISMATCH", mismatch)
@@ -101,12 +138,14 @@ def execution_settings(config, execution, *, now=None) -> Settings:
     }
     values.update(
         database_url=execution.database_url,
-        c1_display_only=True,
+        c1_display_only=not lookup,
+        c1_tenant_lookup_only=lookup,
+        c1_app_request_permission=app,
         c1_permission=permission,
         c1_host_binding=config.host_binding,
         data_provenance="fixture",
         fixture_dataset="feishu-c1",
-        outbound_mode="trial",
+        outbound_mode="dry_run" if lookup else "trial",
     )
     try:
         return Settings(**values)

@@ -12,6 +12,7 @@ from sqlalchemy.engine import make_url
 
 from oil_agent.contracts.dto import NonEmpty, Provenance, StableId
 from oil_agent.runtime.permissions import (
+    C1AppRequestPermission,
     C1Permission,
     IdentityPermission,
     ModelPermission,
@@ -46,6 +47,8 @@ class Settings(BaseSettings):
     model_permission: ModelPermission | None = None
     identity_permission: IdentityPermission | None = None
     c1_display_only: bool = False
+    c1_tenant_lookup_only: bool = False
+    c1_app_request_permission: C1AppRequestPermission | None = None
     c1_permission: C1Permission | None = None
     c1_host_binding: StableId | None = None
     trial_send_permission: TrialSendPermission | None = None
@@ -84,13 +87,15 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def safe_defaults(self):
-        if self.c1_display_only:
+        if self.c1_display_only or self.c1_tenant_lookup_only:
+            app = self.c1_app_request_permission
             if (
-                not self.c1_permission
-                or self.c1_host_binding != self.c1_permission.host_binding
+                not app
+                or self.c1_display_only == self.c1_tenant_lookup_only
+                or self.c1_host_binding != app.host_binding
                 or self.data_provenance != Provenance.FIXTURE
                 or self.fixture_dataset != "feishu-c1"
-                or self.outbound_mode != "trial"
+                or self.outbound_mode != ("trial" if self.c1_display_only else "dry_run")
                 or self.identity_enabled
                 or self.external_sources_enabled
                 or self.model_calls_enabled
@@ -101,7 +106,13 @@ class Settings(BaseSettings):
                 or self.first_report_policy is not None
             ):
                 raise ValueError("C1 requires its own exact nonmarket display-only permission")
-        elif self.c1_permission or self.c1_host_binding:
+            if self.c1_display_only and (
+                not self.c1_permission or not self.c1_permission.matches_app_request(app)
+            ):
+                raise ValueError("C1 sending requires the exact shared app request owner")
+            if self.c1_tenant_lookup_only and (self.c1_permission or not app.tenant_read_ref):
+                raise ValueError("C1 lookup requires explicit tenant read permission only")
+        elif self.c1_permission or self.c1_host_binding or self.c1_app_request_permission:
             raise ValueError("C1 bindings require explicit display-only mode")
         if self.environment == "production" and (
             not self.cookie_secure or not self.public_origin.startswith("https://")

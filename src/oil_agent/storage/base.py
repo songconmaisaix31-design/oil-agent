@@ -47,6 +47,8 @@ class RepositoryBase:
         self.actor_scope_gate = lambda user, session: True
         self.local_provisioning_allowed = lambda: True
         self.c1_permission_provider = lambda: None
+        self.c1_app_permission_provider = lambda: None
+        self.c1_lookup_permission_provider = lambda: None
 
     def payload_scope(self, column):
         scope = self.data_scope()

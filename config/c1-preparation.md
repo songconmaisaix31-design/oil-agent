@@ -95,6 +95,7 @@ one, <=3 send attempts, <=20 HTTP requests, zero new fee and <=30 minutes.
 The private JSON helper cannot create this object or invent its timestamps.
 
 I constructs Settings(c1_display_only=True, c1_permission=approved_start,
+c1_app_request_permission=approved_app_window,
 c1_host_binding=approved_host, data_provenance="fixture",
 fixture_dataset="feishu-c1", outbound_mode="trial") and Runtime with only D's
 C1 channel. It must not install identity/ack/source/assessment/report services or
@@ -129,7 +130,7 @@ private `send-once`, while fully configured `c1_product` still returned preparat
 NOT_AUTHORIZED. Two initial entry regressions failed before the repair; the
 original preparation assertions are preserved.
 
-The only new command is:
+The explicit send command is:
 
 ```powershell
 .\.venv\Scripts\python.exe -B -m oil_agent.runtime.c1_private send-once
@@ -137,7 +138,8 @@ The only new command is:
 
 It requires noninteractive structured stdin from the explicitly authorized local
 foreground caller: one JSON object containing `permission` (the complete existing
-C1Permission) and `database_url` (an explicitly approved PostgreSQL URL).
+C1Permission), `app_request_permission` (the shared C1AppRequestPermission) and
+`database_url` (an explicitly approved PostgreSQL URL).
 The transport is bounded to 32768 bytes, rejects duplicate/unknown fields and
 creates no approval file or registry. Do not put credentials or this object in
 command-line arguments, chat, Git or logs. The command never prompts for, invents
@@ -170,7 +172,7 @@ are not measured by this entry: the existing durable request ledger must be
 examined during approved execution, and reservations must not be equated with
 received HTTP requests. Unknown usage is never reported as zero.
 
-Exit 0 means C1_ACCEPTED only; it is not phone display or acknowledgment. Exit 3
+For send-once, exit 0 means C1_ACCEPTED only; it is not phone display or acknowledgment. Exit 3
 means C1_UNKNOWN. Exit 2 covers denied/invalid/incomplete execution, safe failed
 attempts and C1_NO_DELIVERY_CLAIMED. The latter cannot distinguish an existing
 terminal delivery from an unavailable claim and does not assert a new send.
@@ -182,3 +184,103 @@ tests and an actual isolated child with an expired synthetic permission.
 No real private values, database or provider were used. I assembly/E acceptance,
 the 11 previously collected PostgreSQL transaction regressions, real approved
 bindings/start and platform/phone receipt remain separate pending gates.
+
+## Pre-binding tenant read and shared app window
+
+The accepted `fe4b76c2f8b1f17130bd442812cbc046eed1f325` sender required a complete
+tenant/person permission and had no guarded lookup entry. Three initial synthetic
+regressions failed: absent pre-binding DTO/entry and acceptance of a send scope
+without a shared app owner. A fourth regression reproduced multiple first-message
+identities for two full permissions within the same app window.
+
+The required shared owner is `runtime.permissions.C1AppRequestPermission`, derived
+from the existing RequestPermission. Fields are `approval_id`, `authorization_ref`,
+`budget_ref`, `valid_from`, `expires_at`, `start_trigger` (the existing explicit
+user-start literal), `provider` (feishu), `app_id`, `credentials_ref`, `host_binding`,
+`max_requests` (1..20), `max_new_fee` (0), and optional `tenant_read_ref`.
+There is no tenant or person field. Lookup requires a nonempty, explicitly supplied
+`tenant_read_ref`; standalone send-only app scopes can omit it. The existing start
+window remains at most 30 minutes and is never constructed or renewed by this code.
+
+`C1Permission.app_request_approval_id` is now required. Its linked app owner must
+match provider, app, credential reference, host, exact window/start, budget reference,
+request cap and fee. Its own immutable approval ID remains distinct and requires
+the exact tenant/person/viewer binding. Omitted or replaced app owners fail closed;
+there is no old send-only request bucket fallback. Existing synthetic send fixtures
+add the app owner/link; their original assertions remain, except the intentional
+PermissionRow count increases from one to two (full recipient scope plus app owner).
+
+All lookup token/query and later delivery token/send operations charge the **same**
+app approval's existing BudgetRow scope and ProviderCallRow ledger. Full recipient
+permission, stored revision/payload, active user/grant and fenced DeliveryClaim are
+additional checks in the send transaction. Three message-send reservations at most
+are counted under that same app owner. The unique exercise subject is derived from
+the app owner; a different full scope cannot create a second first message for it.
+Scopes and host are rechecked at reservation and before commit; immutable scope
+revocation remains in PermissionRow. No new tables, migration or registry exist.
+Prior rows are not rewritten: old unlinked inputs cannot execute via a legacy path.
+
+The new explicit foreground command (not currently authorized for real execution):
+
+```powershell
+.\.venv\Scripts\python.exe -B -m oil_agent.runtime.c1_private tenant-lookup
+```
+
+Noninteractive, duplicate-free JSON stdin is limited to 32768 bytes and contains
+only `app_request_permission` and `database_url` (`C1TenantLookupInput`). The fixed
+private loader/ACL/handle/size checks remain unchanged. App ID, secret and host must
+already be configured and match supplied scope; tenant and person are not required.
+This command does not populate missing fields or infer host/start/read permission.
+Its only child is `python -I -B -m oil_agent.runtime.c1_product tenant-lookup`, using
+the existing environment allowlist. It never selects code from private data.
+
+I glue: branch on `Settings.c1_tenant_lookup_only` before ordinary fixture/trial
+assembly. C sets `outbound_mode="dry_run"`, `data_provenance="fixture"`,
+`fixture_dataset="feishu-c1"`, `c1_host_binding`, `c1_app_request_permission`, and
+`c1_permission=None`; all identity, source, model and send approvals stay absent.
+Construct Runtime with `RuntimeServices(c1_tenant_lookup=...)` only, injecting D's
+`FeishuTenantLookup(settings, authorize_request=runtime.authorize_c1_app_request)`.
+The callback is async `(operation: str) -> str`, accepts exactly `tenant_token` /
+`tenant_query`, and returns the committed reservation identifier. D's lookup method
+is keyword-only `lookup(*, context: CallContext) -> str`; C calls it through bounded
+`Runtime.lookup_c1_tenant() -> str`. Runtime installs repository app/read providers
+internally. The fixed product factory remains `oil_agent.bootstrap.build_runtime`.
+I owns that glue; this C increment imports no missing D implementation.
+
+Query output is only fixed status/known field names. `C1_TENANT_LOOKUP_COMPLETED`
+(exit 0) means the injected lookup returned a well-formed tenant in memory; it is
+not sending, user authentication, rotation verification or identity/host approval.
+The identifier is never output or automatically written to private configuration.
+Lost/malformed/ambiguous results are C1_UNKNOWN (exit 3), with no automatic retry.
+The engine is disposed after the one bounded foreground flow. Preparation check
+and inject-check retain their original behavior and never request a token.
+
+Durable reservations can be counted by the shared approval in ProviderCallRow;
+they do not prove actual remote arrivals. The foreground result does not measure
+arrival counts; those remain unknown, never zero by inference. Send receipt
+`api_requests` remains null. This local development increment makes zero product
+calls and reads/writes no real private configuration.
+
+Focused tests cover schema/link/window/caps, changed construction scope, disabled
+ordinary paths, keyword-only D handoff, strict input, isolated expired subprocesses,
+redacted output and no retry. `tests/unit/storage/test_c1_storage.py` adds real-PG
+cases for query-to-send shared quota, revoked/replaced scope, reservation rollback,
+concurrent cap enforcement and unique first-message scope. In this no-database
+turn these PostgreSQL cases are collected only; actual transaction/concurrency
+acceptance remains a separate E gate. I factory integration, E acceptance, approved
+real bindings and a new explicit unexpired start/read scope remain outstanding;
+the prior expired window is not reopened and production is not accepted.
+
+Result-to-private-binding is **NOT IMPLEMENTED** in this increment, rather than an
+external-authorization failure. The query probe discards the selected tenant after
+validation. The smallest separate follow-up would carry a strict internal selected
+result through the existing captured child/parent boundary, match its app scope,
+then perform only a separately authorized null-only `tenant_key` update using the
+existing private-file safeguards. That follow-up must preserve nonempty conflicts,
+never emit identifiers to ordinary output, and create no receipt/approval files.
+No such update, DTO or private write is performed here.
+
+Current local evidence: the four initial regression failures were repaired;
+115 focused runtime/contract/preparation tests passed, scoped Ruff passed, and
+21 PostgreSQL cases were collected without execution. No full suite, dependency
+installation, database connection/start, container action or real request occurred.

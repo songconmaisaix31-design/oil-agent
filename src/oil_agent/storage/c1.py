@@ -20,19 +20,56 @@ from oil_agent.storage.models import (
 
 
 def exercise_identity(permission):
-    return "c1-" + uuid5(NAMESPACE_URL, "oil-agent-c1:" + permission.approval_id).hex
+    return "c1-" + uuid5(NAMESPACE_URL, "oil-agent-c1:" + permission.app_request_approval_id).hex
 
 
 class C1Repository:
+    def current_c1_app_scope(self, permission=None, *, lookup=False):
+        app = self.c1_app_permission_provider()
+        if (
+            app is None
+            or not app.active(self.clock())
+            or (lookup and app != self.c1_lookup_permission_provider())
+            or (
+                permission is not None
+                and (
+                    permission != self.c1_permission_provider()
+                    or not permission.matches_app_request(app)
+                )
+            )
+        ):
+            reject(ErrorCode.FORBIDDEN, "C1 shared app scope or host changed")
+        return app
+
+    def reserve_c1_app_request(self, app, operation):
+        """Pre-binding fixed read operations; reservation is not remote-arrival proof."""
+        with self.sessions.begin() as session:
+            if (
+                app != self.current_c1_app_scope(lookup=True)
+                or not app.tenant_read_ref
+                or operation not in {"tenant_token", "tenant_query"}
+            ):
+                reject(ErrorCode.FORBIDDEN, "C1 tenant read scope changed")
+            self.bind_permission(session, app)
+            result = self.reserve_provider_call(
+                app, "c1_" + operation, daily_limit=app.max_requests, session=session
+            )
+            if app != self.current_c1_app_scope(lookup=True):
+                reject(ErrorCode.FORBIDDEN, "C1 tenant read scope changed during reservation")
+            return result
+
     def create_c1_exercise(self, permission):
         if permission != self.c1_permission_provider():
             reject(ErrorCode.FORBIDDEN, "C1 start is not the current runtime permission")
         with self.sessions.begin() as session:
             self.bind_permission(session, permission)
+            self.bind_permission(session, self.current_c1_app_scope(permission))
             subject_id = exercise_identity(permission)
             lock_key(session, "c1:" + subject_id)
             subject = session.get(SubjectRow, subject_id)
             if subject:
+                if subject.identity_key != fingerprint({"c1": permission.approval_id}):
+                    reject(ErrorCode.FORBIDDEN, "C1 app window already has its first-message scope")
                 row = session.get(VersionRow, (subject_id, 1))
                 if subject.kind != "exercise" or not row:
                     reject(ErrorCode.REVISION_MISMATCH, "C1 identity is not an exercise")
@@ -103,6 +140,11 @@ class C1Repository:
         user = session.get(UserRow, permission.identity.actor_id)
         if not self.permission_is_current(permission, owner=user):
             return False
+        app = self.c1_app_permission_provider()
+        if not permission.matches_app_request(app) or not self.permission_is_current(
+            app, owner=user
+        ):
+            return False
         grant = session.get(
             AuthorizationRow, (intent.subject_id, 1, permission.identity.recipient_id)
         )
@@ -143,23 +185,39 @@ class C1Repository:
                 or row.lease_until <= self.clock()
                 or row.attempt > permission.max_send_attempts
                 or operation not in {"tenant_token", "message_send"}
-                or not self.c1_live_grant(session, claim.intent)
             ):
                 reject(ErrorCode.FORBIDDEN, "C1 delivery authorization expired or changed")
             self.bind_permission(session, permission)
+            app = self.current_c1_app_scope(permission)
+            self.bind_permission(session, app)
+            # Recipient/grant revocation cannot commit between validation and reservation.
+            session.get(
+                UserRow, permission.identity.actor_id, with_for_update=True, populate_existing=True
+            )
+            session.get(
+                AuthorizationRow,
+                (claim.intent.subject_id, 1, permission.identity.recipient_id),
+                with_for_update=True,
+                populate_existing=True,
+            )
+            if not self.c1_live_grant(session, claim.intent):
+                reject(ErrorCode.FORBIDDEN, "C1 recipient or revision authorization changed")
             # Token-refresh resends within one channel invocation also count as sends.
             if operation == "message_send":
                 sends = session.scalar(
                     select(func.count())
                     .select_from(ProviderCallRow)
                     .where(
-                        ProviderCallRow.approval_id == permission.approval_id,
+                        ProviderCallRow.approval_id == app.approval_id,
                         ProviderCallRow.kind == "c1_message_send",
                     )
                 )
                 if sends >= permission.max_send_attempts:
                     reject(ErrorCode.QUOTA_EXHAUSTED, "C1 send attempt budget exhausted")
             # Each wire operation uses the SAME existing approval/day ledger.
-            return self.reserve_provider_call(
-                permission, "c1_" + operation, daily_limit=permission.max_requests, session=session
+            result = self.reserve_provider_call(
+                app, "c1_" + operation, daily_limit=app.max_requests, session=session
             )
+            if app != self.current_c1_app_scope(permission) or row.lease_until <= self.clock():
+                reject(ErrorCode.FORBIDDEN, "C1 scope changed during request reservation")
+            return result
