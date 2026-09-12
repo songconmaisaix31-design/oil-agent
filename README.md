@@ -45,6 +45,16 @@ approval and real false-positive/false-negative evaluation. Model output cannot
 grant severity, provenance or send permission. Ordinary messages remain silent;
 an urgent delivery exercise requires its own label and exact approved recipients.
 
+Contextual guards separate complete casualty-only negative predicates from
+affirmative event/impact evidence. Freshness uses the approved elapsed-age bound,
+including a short midnight crossing; denial, planning, exercises and stale-news
+protections remain. See the [R16 repair evidence](src/oil_agent/intelligence/R16-HANDOFF.md).
+
+The [controlled trial preparation](deploy/controlled-trial.md) adds an opt-in
+overlay, internal isolated database, explicit public IPv4 pins, loopback HTTPS
+and read-only cold/retained-resource checks. Preparation does not apply host
+firewall rules, activate public ingress, start a trial or send a message.
+
 The implemented chain is Jin10 transport -> model extraction -> approved rules ->
 PostgreSQL/checkpoint/outbox -> authorized Feishu -> authenticated acknowledgement.
 Current synthetic-provider tests exercise the real adapters and PostgreSQL runtime;
@@ -104,13 +114,18 @@ are not relabeled as a newer browser run. [V01-TODO.md](V01-TODO.md) is the deli
 
 ## Current delivery and remaining gates
 
-Accepted trial code is `63627eee09bc9fb10e32b68f979f7715db199791` on
+Independently accepted code is `239baa69b06bf9ede8c71391d12a2cb89e1a1064` on
 `songconmaisaix31-design/oil-v01-i`. Independent E review and
-[CI 34665612094](https://github.com/songconmaisaix31-design/oil-agent/actions/runs/34665612094)
-confirm 343 core and 150 integration tests passed, with zero failures/errors/skips.
-All 13 factory PostgreSQL cases and the preserved denial/session regressions pass;
+[CI 34669549557](https://github.com/songconmaisaix31-design/oil-agent/actions/runs/34669549557)
+confirm 375 core and 237 integration tests passed, with zero failures/errors/skips.
+The unchanged R16 regressions, all 13 factory PostgreSQL cases and preserved
+denial/session regressions pass;
 23 frontend tests, generated schema, TypeScript/Vite, shell and both Linux image
 builds also pass. I's focused full Ruff check and Python packaging passed.
+[Deployment CI 34669549519](https://github.com/songconmaisaix31-design/oil-agent/actions/runs/34669549519)
+passed 70 overlapping preparation cases and actual Nginx configuration/key loading
+in a network-isolated container. This is synthetic code/preparation acceptance;
+real trial network, TLS trust, callbacks and phone receipt remain untested.
 
 Earlier failures and exact producer commits remain in the integration/E reports.
 Final report/governance adoption does not change this application code. The unique
