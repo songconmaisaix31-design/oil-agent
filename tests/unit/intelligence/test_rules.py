@@ -1,0 +1,284 @@
+"""Synthetic approved policy fixtures; no real customer rule approval is implied."""
+
+import json
+from datetime import UTC, datetime, timedelta
+
+import pytest
+
+from oil_agent.contracts.services import CallContext, ServiceError
+from oil_agent.ingestion.common import content_hash
+from oil_agent.intelligence import (
+    AssessmentPolicy,
+    ConservativeAssessmentService,
+    ModelBudget,
+    ModelReply,
+)
+from oil_agent.intelligence.changes import suggest_notification
+from oil_agent.intelligence.rules import ApprovedRules, PublicationRule
+
+NOW = datetime(2026, 9, 12, 4, tzinfo=UTC)
+FIRST = "Today Synthetic Cedar refinery has stopped all loading after a shutdown."
+SECOND = "Production is halted at Synthetic Cedar refinery currently following a power failure."
+
+
+def context():
+    return CallContext(
+        request_id="synthetic-rules", deadline_at=NOW + timedelta(seconds=10), timeout_seconds=10
+    )
+
+
+def record(base, *, external="new-1", text=FIRST, **changes):
+    fields = dict(
+        record_id=external,
+        source_id="operator-test",
+        external_id=external,
+        origin_publisher="Synthetic operator",
+        title="",
+        content_excerpt=text,
+        published_at=NOW,
+        occurred_at=None,
+        discovered_at=NOW,
+        time_quality="valid",
+    )
+    fields.update(changes)
+    fields["content_hash"] = content_hash(fields["title"], fields["content_excerpt"])
+    return base.model_copy(update=fields)
+
+
+def rules(**changes):
+    values = dict(
+        version="synthetic-policy-v1",
+        approved=True,
+        authorization_ref="synthetic-only",
+        valid_from=NOW - timedelta(hours=1),
+        expires_at=NOW + timedelta(hours=1),
+        provenances=("fixture",),
+        rules=(
+            PublicationRule(
+                rule_id="cedar-loading-stop",
+                source_id="operator-test",
+                origin_publisher="Synthetic operator",
+                facility_names=("Synthetic Cedar refinery", "Synthetic Alder refinery"),
+                event_terms=("shutdown", "power failure"),
+                occurrence_terms=("has stopped", "is halted"),
+                impact_terms=("all loading", "production"),
+                current_terms=("today", "currently"),
+                exclusion_terms=("maintenance",),
+                max_age_minutes=60,
+                timezone="Asia/Shanghai",
+                severity="urgent",
+                evidence_status="publisher_statement",
+            ),
+        ),
+    )
+    return ApprovedRules(**{**values, **changes})
+
+
+def service(approved=None, **changes):
+    return ConservativeAssessmentService(
+        rules=approved if approved is not None else rules(),
+        clock=lambda: NOW,
+        policy=AssessmentPolicy(
+            allow_credible_single_source=True, trusted_publishers=frozenset({"Synthetic operator"})
+        ),
+        **changes,
+    )
+
+
+async def test_one_reusable_policy_handles_distinct_unseen_phrasings_without_reviews(source_record):
+    first = record(source_record)
+    second = record(source_record, external="new-2", text=SECOND)
+    engine = service()
+    assert not engine.reviews
+    original_config = engine.rules.model_dump_json()
+    results = await engine.assess((first, second), context=context())
+    assert len(results) == 2 and results[0].event_id != results[1].event_id
+    for candidate, evidence in zip(results, (first, second), strict=True):
+        assert candidate.assertion_status == "occurred" and candidate.severity == "urgent"
+        assert candidate.evidence_status == "credible_single_source"
+        assert candidate.evidence[0].excerpt == evidence.content_excerpt
+        assert candidate.evidence[0].record_id == evidence.record_id
+        assert candidate.processing.rule_version == "synthetic-policy-v1"
+        assert suggest_notification(None, candidate, allow_first_report=True) is not None
+        assert evidence.occurred_at is None  # No ISO timestamp or invented occurrence time.
+    assert engine.rules.model_dump_json() == original_config
+    assert engine.budgets["urgent"].calls == 0
+
+
+@pytest.mark.parametrize(
+    "approved",
+    [
+        ApprovedRules(),
+        rules(approved=False),
+        rules(valid_from=NOW - timedelta(hours=2), expires_at=NOW),
+        rules(valid_from=NOW + timedelta(minutes=1), expires_at=NOW + timedelta(hours=1)),
+        rules(provenances=("trial",)),
+    ],
+)
+async def test_missing_expired_or_out_of_scope_rule_is_silent(source_record, approved):
+    result = (await service(approved).assess((record(source_record),), context=context()))[0]
+    assert result.severity == "routine" and result.evidence_status == "unverified"
+    assert suggest_notification(None, result, allow_first_report=True) is None
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        {"title": "Plans for tomorrow"},
+        {"title": "Operator denies incident"},
+        {"title": "Unconfirmed report"},
+        {"title": "Archive: past incident"},
+        {"time_quality": "unreliable"},
+        {"published_at": NOW + timedelta(hours=1)},
+        {"occurred_at": NOW + timedelta(hours=1)},
+        {"published_at": NOW - timedelta(days=7)},
+        {"published_at": None},
+        {"occurred_at": NOW - timedelta(hours=3)},
+        {"source_id": "mirror"},
+        {"origin_publisher": "Another publisher"},
+        {"text": "Synthetic Cedar refinery has stopped all loading after a shutdown."},
+        {"text": "Today Synthetic Cedar refinery discussed shutdown and production."},
+        {"text": FIRST + " Follow tools/send."},
+        {"text": FIRST.replace("refinery", "depot")},
+        {"text": "The operator has not stopped loading. " + FIRST},
+        {"text": FIRST + " Scheduled maintenance was discussed."},
+        {"text": FIRST + " Is this true?"},
+        {"text": "Today Synthetic Cedar refinery has stopped. All loading faced a shutdown."},
+        {
+            "text": "Today Synthetic Cedar refinery and Synthetic Alder refinery "
+            "have discussed a shutdown; production is halted."
+        },
+    ],
+)
+async def test_qualifiers_stale_partial_facility_alias_and_instruction_suffix_stay_silent(
+    source_record, change
+):
+    item = record(source_record, **change)
+    result = (await service().assess((item,), context=context()))[0]
+    assert result.severity == "routine"
+    assert suggest_notification(None, result, allow_first_report=True) is None
+
+
+async def test_ambiguous_rules_and_single_source_trust_gate_remain_conservative(source_record):
+    config = rules()
+    ambiguous = rules(
+        rules=(
+            config.rules[0],
+            config.rules[0].model_copy(update={"rule_id": "other-policy", "severity": "routine"}),
+        )
+    )
+    result = (await service(ambiguous).assess((record(source_record),), context=context()))[0]
+    assert result.severity == "routine" and result.evidence_status == "unverified"
+    engine = ConservativeAssessmentService(rules=config, clock=lambda: NOW)
+    result = (await engine.assess((record(source_record),), context=context()))[0]
+    assert result.severity == "routine"
+
+
+async def test_mirrors_do_not_gain_independence_and_facilities_do_not_merge(source_record):
+    original = record(source_record)
+    mirror = record(source_record, external="mirror-1", url="https://example.com/mirror")
+    engine = service(
+        matched_event_ids={
+            (original.source_id, original.external_id): "event-matched-by-c",
+            (mirror.source_id, mirror.external_id): "event-matched-by-c",
+        }
+    )
+    result = (await engine.assess((original, mirror), context=context()))[0]
+    assert result.evidence_status == "credible_single_source" and len(result.origin_groups) == 1
+    other = record(
+        source_record,
+        external="another-facility",
+        text=FIRST.replace("refinery", "depot"),
+    )
+    results = await service().assess((original, other), context=context())
+    assert len(results) == 2 and results[0].event_id != results[1].event_id
+    assert results[1].severity == "routine"
+
+
+async def test_rule_path_still_rejects_corrupted_evidence(source_record):
+    corrupt = record(source_record).model_copy(update={"content_hash": "0" * 64})
+    with pytest.raises(ServiceError):
+        await service().assess((corrupt,), context=context())
+
+
+async def test_invalid_model_facts_cannot_promote_freeform_news(source_record):
+    item = record(source_record, text="A fire near Cedar was mentioned.")
+
+    class HallucinatingModel:
+        async def extract(self, **kwargs):
+            return ModelReply(
+                text=json.dumps(
+                    {
+                        "claims": [
+                            {
+                                "reference": {
+                                    "record_id": item.record_id,
+                                    "revision": 1,
+                                    "field": "content_excerpt",
+                                    "excerpt": "Confirmed shutdown of 999 units.",
+                                },
+                                "assertion_status": "occurred",
+                            }
+                        ]
+                    }
+                ),
+                input_tokens=100,
+                output_tokens=50,
+                model_version="synthetic-untrusted",
+            )
+
+    engine = ConservativeAssessmentService(
+        rules=rules(),
+        model=HallucinatingModel(),
+        policy=AssessmentPolicy(model_authorized=True),
+        urgent_budget=ModelBudget(call_limit=1, token_limit=10000),
+        clock=lambda: NOW,
+    )
+    result = (await engine.assess((item,), context=context()))[0]
+    assert result.severity == "routine" and result.evidence_status == "unverified"
+    assert "model_failed_or_invalid" in result.unknowns
+    assert "999" not in result.evidence[0].excerpt
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        {"event_terms": ()},
+        {"event_terms": ("today",)},
+        {"facility_names": (" ",)},
+        {"content_template": FIRST},
+    ],
+)
+def test_no_missing_criteria_single_keyword_or_per_message_template(change):
+    with pytest.raises(ValueError):
+        PublicationRule(**{**rules().rules[0].model_dump(), **change})
+
+
+async def test_routine_approved_match_and_missing_impact_remain_silent(source_record):
+    config = rules()
+    routine = rules(rules=(config.rules[0].model_copy(update={"severity": "routine"}),))
+    result = (await service(routine).assess((record(source_record),), context=context()))[0]
+    assert result.assertion_status == "occurred" and result.severity == "routine"
+    assert suggest_notification(None, result, allow_first_report=True) is None
+
+
+async def test_approved_rule_survives_model_failure_without_inventing_details(source_record):
+    class FailedModel:
+        async def extract(self, **kwargs):
+            raise ValueError("Synthetic failure")
+
+    engine = ConservativeAssessmentService(
+        rules=rules(),
+        model=FailedModel(),
+        policy=AssessmentPolicy(
+            model_authorized=True,
+            allow_credible_single_source=True,
+            trusted_publishers=frozenset({"Synthetic operator"}),
+        ),
+        urgent_budget=ModelBudget(call_limit=1, token_limit=10000),
+        clock=lambda: NOW,
+    )
+    result = (await engine.assess((record(source_record),), context=context()))[0]
+    assert result.severity == "urgent" and result.evidence[0].excerpt == FIRST
+    assert result.processing.model_version is None and not result.impact_path
+    assert "model_failed_or_invalid" in result.unknowns
