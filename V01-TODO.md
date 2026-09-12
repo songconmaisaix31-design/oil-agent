@@ -2,6 +2,32 @@
 
 ## Current phase: controlled real integration
 
+### Resumed after user-started Docker: targeted SQL and C1 assembly
+
+The user reports starting Docker and requests continued parallel development.
+The starting integration delivery is
+`4ec6c480dc971d44d176c3539bcbcade4ee7f802`; its adapter/routing integration passed
+independent E review. The old missing-engine observation must be refreshed on
+the exact previously identified E resource, not treated as current failure.
+This instruction does not start a Feishu window or authorize provider requests.
+
+| Owner | Current bounded task | Boundary and acceptance |
+| --- | --- | --- |
+| E | Reconfirm exact E PostgreSQL identity/isolation, then execute the existing 21 C1 SQL cases on fresh disposable E schemas. | Preserve all old data and resources; actual PostgreSQL transactions/concurrency, no SQLite substitute. Report any failure before owner repair. Record evidence in the existing runtime checks. |
+| C | Review the existing C1 private-entry to isolated-trial-database assembly on the already confirmed Windows host. Resolve technical configuration mappings; identify only concrete execution blockers. | Read existing project configuration/code only, no credentials or platform calls. No feature expansion or new approval registry. Any reproduced runtime defect stays with C; deployment glue goes to E/I through M. |
+| I | Integrate verified owner increments and this board on the existing branch, then request E final review. | Original assertions, provenance, exact identity and twenty-request/three-send gates remain intact. |
+
+Only the existing E test database may be used for the SQL task. Match container
+ID/name/project/service/worktree, volume, loopback port, database and user before
+connecting. A missing or mismatched resource does not authorize replacement,
+unknown-volume cleanup or a shared Docker restart. The user-started engine is
+not evidence that the container is running. Keep synthetic tests separate from
+the future C1 trial database. C's assembly review must produce concrete field
+mapping or a reproduced blocker, not a second plan. Retain AB/D when no bounded
+task exists; preserve all original sessions and ownership. No full-suite replay,
+production factory expansion, source/model call, message, new phone window,
+service purchase or public network opening is authorized by this increment.
+
 ### Bounded increment: C1 PostgreSQL test adapter
 
 The user's new multi-agent development instruction resumes the existing C/E/I
