@@ -8,6 +8,7 @@ an IP/port boundary for current TLS-verifying clients, not a TLS inspection prox
 import argparse
 import ipaddress
 import json
+import re
 import shlex
 import ssl
 import subprocess
@@ -114,7 +115,7 @@ def verify_firewall(pins, read=read_command):
             raise ValueError("Trial firewall hooks must precede other host rules")
 
 
-def verify_network(read=read_command):
+def verify_network(read=read_command, allowed_attachments=()):
     values = json.loads(read(["docker", "network", "inspect", NETWORK]))
     if len(values) != 1:
         raise ValueError("Exactly one dedicated trial network required")
@@ -128,9 +129,10 @@ def verify_network(read=read_command):
         or network.get("Labels", {}).get("oil-agent.scope") != "e-controlled-trial"
     ):
         raise ValueError("Network identity or isolation differs from the trial contract")
-    # Pre-start only. Never adopt a network with unknown/existing attachments.
-    if network.get("Containers"):
-        raise ValueError("Pre-start inspection requires an unattached trial network")
+    # Cold start requires no attachments; retained checks name the exact allowed IDs.
+    if not set(network.get("Containers", {})).issubset(allowed_attachments):
+        raise ValueError("Trial network contains an unapproved attachment")
+    return network
 
 
 def verify_tls(origin, certificate, key, now=None):
@@ -162,7 +164,7 @@ def verify_tls(origin, certificate, key, now=None):
     # Public trust/chain and phone trust are separate live acceptance gates.
 
 
-def verify_compose(config, pins, origin, certificate, key):
+def verify_compose(config, pins, origin, certificate, key, *, legacy_bind_json=False):
     """Inspect resolved configuration in memory; never print secret environment values."""
     if config.get("name") != "oil-agent-e-trial":
         raise ValueError("Unexpected Compose project")
@@ -297,9 +299,176 @@ def verify_compose(config, pins, origin, certificate, key):
             mount.get("type") != "bind"
             or not mount.get("read_only")
             or Path(mount.get("source", "")) != Path(path)
-            or mount.get("bind", {}).get("create_host_path") is not False
+            # Compose v2's bool/omitempty serializer omits false; v5's OptOut
+            # serializer retains false and omits true. Select by actual CLI major.
+            or mount.get("bind", {}).get("create_host_path", False if legacy_bind_json else None)
+            is not False
         ):
             raise ValueError("TLS mount must use the exact inspected read-only file")
+
+
+def verify_retained(config, container_ids, pins_overlay, read=read_command):
+    """Only explicitly recorded stopped E IDs; no enumeration, activation or cleanup."""
+    if (
+        len(container_ids) != 7
+        or len(set(container_ids)) != 7
+        or any(not re.fullmatch(r"[0-9a-f]{64}", item) for item in container_ids)
+    ):
+        raise ValueError("Supply all seven distinct full recorded trial container IDs")
+    root = Path(__file__).resolve().parents[1]
+    expected_files = {
+        str(root / "deploy/compose.yaml"),
+        str(root / "deploy/compose.e-trial.yaml"),
+        str(Path(pins_overlay)),
+    }
+    containers = {}
+    for identifier in container_ids:
+        # Verify labels before reading this explicitly named container's configuration.
+        labels = json.loads(
+            read(
+                [
+                    "docker",
+                    "container",
+                    "inspect",
+                    "--format",
+                    "{{json .Config.Labels}}",
+                    identifier,
+                ]
+            )
+        )
+        name = labels.get("com.docker.compose.service")
+        files = {
+            str(Path(value))
+            for value in labels.get("com.docker.compose.project.config_files", "").split(",")
+        }
+        if (
+            labels.get("com.docker.compose.project") != "oil-agent-e-trial"
+            or name not in config["services"]
+            or name in containers
+            or labels.get("com.docker.compose.oneoff", "False").lower() != "false"
+            or Path(labels.get("com.docker.compose.project.working_dir", "")) != root / "deploy"
+            or files != expected_files
+        ):
+            raise ValueError("Retained container ownership/configuration paths do not match")
+        container = json.loads(
+            read(["docker", "container", "inspect", "--format", "{{json .}}", identifier])
+        )
+        state = container["State"]
+        if (
+            container.get("Id") != identifier
+            or container.get("Name") != f"/oil-agent-e-trial-{name}-1"
+            or container["Config"].get("Labels") != labels
+            or state.get("Status") != "exited"
+            or state.get("ExitCode") != 0
+            or any(state.get(key) for key in ("Running", "Paused", "Restarting", "OOMKilled"))
+        ):
+            raise ValueError("Retained resources must be confirmed cleanly stopped")
+        service = config["services"][name]
+        actual = container["Config"]
+        environment = dict(item.split("=", 1) for item in actual.get("Env", []) if "=" in item)
+        image = json.loads(
+            read(["docker", "image", "inspect", "--format", "{{json .}}", service["image"]])
+        )
+        expected_command = service.get("command")
+        if expected_command is None:
+            expected_command = image["Config"].get("Cmd")
+        if (
+            actual.get("Image") != service["image"]
+            or actual.get("Cmd") != expected_command
+            or any(
+                environment.get(key) != value
+                for key, value in service.get("environment", {}).items()
+            )
+        ):
+            raise ValueError("Retained application environment/image/command has changed")
+        if container.get("Image") != image.get("Id") or actual.get("Entrypoint") != image[
+            "Config"
+        ].get("Entrypoint"):
+            raise ValueError("Retained image bytes or entrypoint differ from the selected image")
+        host = container["HostConfig"]
+        if (
+            host.get("Privileged")
+            or host.get("CapAdd")
+            or host.get("NetworkMode") == "host"
+            or "no-new-privileges:true" not in host.get("SecurityOpt", [])
+        ):
+            raise ValueError("Retained privilege boundaries differ")
+        if name != "postgres" and (
+            not host.get("ReadonlyRootfs") or host.get("CapDrop") != ["ALL"]
+        ):
+            raise ValueError("Retained filesystem/capability boundaries differ")
+        if name in SERVICES and (
+            host.get("Dns") != service["dns"]
+            or host.get("Sysctls") != service["sysctls"]
+            or {
+                entry.rsplit(":", 1)[0]: [entry.rsplit(":", 1)[1]]
+                for entry in (host.get("ExtraHosts") or [])
+            }
+            != service.get("extra_hosts", {})
+        ):
+            raise ValueError("Retained DNS/IP/IPv6 configuration differs")
+        if (
+            host.get("Memory") != service["mem_limit"]
+            or host.get("PidsLimit") != service["pids_limit"]
+        ):
+            raise ValueError("Retained resource bounds differ")
+        expected_ports = (
+            {"8443/tcp": [{"HostIp": "127.0.0.1", "HostPort": "18443"}]}
+            if name == "gateway"
+            else {}
+        )
+        if (host.get("PortBindings") or {}) != expected_ports:
+            raise ValueError("Retained port publication differs")
+        expected_networks = {config["networks"][key]["name"] for key in service["networks"]}
+        if set(container["NetworkSettings"]["Networks"]) != expected_networks:
+            raise ValueError("Retained network membership differs")
+        if name == "postgres":
+            mounts = container.get("Mounts", [])
+            if (
+                len(mounts) != 1
+                or mounts[0].get("Type") != "volume"
+                or mounts[0].get("Name") != "oil-agent-e-trial_trial-data"
+                or mounts[0].get("Destination") != "/var/lib/postgresql/data"
+            ):
+                raise ValueError("Retained database volume differs")
+        elif name == "gateway":
+            mounts = {
+                item["Destination"]: item
+                for item in container.get("Mounts", [])
+                if item.get("Type") != "tmpfs"
+            }
+            expected_mounts = {item["target"]: item for item in service["volumes"]}
+            if set(mounts) != set(expected_mounts) or any(
+                item.get("Type") != "bind"
+                or item.get("RW") is not False
+                or Path(item.get("Source", "")) != Path(expected_mounts[target]["source"])
+                for target, item in mounts.items()
+            ):
+                raise ValueError("Retained TLS/proxy read-only mounts differ")
+        elif container.get("Mounts") and any(
+            item.get("Type") != "tmpfs" for item in container["Mounts"]
+        ):
+            raise ValueError("Unexpected retained application data mount")
+        containers[name] = container
+    egress_ids = {containers[name]["Id"] for name in SERVICES}
+    egress = verify_network(read, allowed_attachments=egress_ids)
+    backend = json.loads(read(["docker", "network", "inspect", "oil-agent-e-trial_backend"]))[0]
+    if (
+        backend.get("Name") != "oil-agent-e-trial_backend"
+        or backend.get("Driver") != "bridge"
+        or backend.get("Internal") is not True
+        or backend.get("EnableIPv6") is not False
+        or backend.get("Options", {}).get("com.docker.network.bridge.name") != BACKEND
+        or backend.get("Labels", {}).get("com.docker.compose.project") != "oil-agent-e-trial"
+        or backend.get("Labels", {}).get("com.docker.compose.network") != "backend"
+        or not set(backend.get("Containers", {})).issubset(container_ids)
+    ):
+        raise ValueError("Retained internal network identity differs")
+    for container in containers.values():
+        for network_name, attachment in container["NetworkSettings"]["Networks"].items():
+            expected = egress if network_name == NETWORK else backend
+            if attachment.get("NetworkID") != expected.get("Id"):
+                raise ValueError("Retained attachment points at a replaced network")
 
 
 def prepare(pins, directory):
@@ -323,7 +492,9 @@ def unique_object(pairs):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("action", choices=("prepare", "check"), nargs="?", default="check")
+    parser.add_argument(
+        "action", choices=("prepare", "check", "check-retained"), nargs="?", default="check"
+    )
     parser.add_argument("--pins", type=Path, required=True, help="Explicit nonsecret host/IP JSON")
     parser.add_argument("--output-dir", type=Path)
     parser.add_argument("--origin")
@@ -331,6 +502,9 @@ def main():
     parser.add_argument("--tls-key", type=Path)
     parser.add_argument("--env-file", type=Path, help="Explicit project-scoped Compose injection")
     parser.add_argument("--pins-overlay", type=Path)
+    parser.add_argument(
+        "--container-id", action="append", default=[], help="Full recorded stopped trial ID"
+    )
     args = parser.parse_args()
     try:
         pins = validate_pins(json.loads(args.pins.read_text(), object_pairs_hook=unique_object))
@@ -369,10 +543,21 @@ def main():
                     "json",
                 ]
             )
-            verify_compose(json.loads(raw), pins, args.origin, args.tls_cert, args.tls_key)
+            version = read_command(["docker", "compose", "version", "--short"]).strip().lstrip("v")
+            major = int(version.split(".")[0])
+            if major not in (2, 5):
+                raise ValueError("Unverified Compose serialization version")
+            config = json.loads(raw)
+            verify_compose(
+                config, pins, args.origin, args.tls_cert, args.tls_key, legacy_bind_json=major == 2
+            )
             verify_firewall(pins)
-            verify_network()
-            print("Pre-start IPv4 boundaries match; live TLS/provider acceptance still pending")
+            if args.action == "check-retained":
+                verify_retained(config, args.container_id, args.pins_overlay)
+                print("Recorded stopped resources match; no recovery or resume was executed")
+            else:
+                verify_network()
+                print("Pre-start IPv4 boundaries match; live TLS/provider acceptance still pending")
     except (
         ValueError,
         OSError,
