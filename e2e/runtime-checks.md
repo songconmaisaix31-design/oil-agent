@@ -345,6 +345,43 @@ candidate, so full acceptance is still FAIL. AB's corrective rule commit and C's
 operational implementation must arrive through exact later I candidates before E
 can change those results.
 
+### Candidate 6: initial operational trial sender migration
+
+Exact I C operational candidate **`bf9c46764f2fea4ac8499620c6628de1e3abcaed`** was
+normally merged after E `a3411db`; E merge HEAD was
+`2a9316496cfd5abdbdf95542fcf1f7497009135c`. It introduces C `0003_trial` and the
+operational approval/session/data-scope hooks. This entry records the first focused
+sender subset; broader mixed-scope/budget/session acceptance continues on subsequent
+exact integrated candidates containing the same C implementation.
+
+The three original sender scenarios now use explicit synthetic fixture-exercise
+trial permissions and a session obtained through C state/approval gates and the
+actual D OAuth adapter with isolated HTTP responses. E provisions only exact
+approved app-bound identities. All fixture records retain their dataset and
+provenance; production validation is unchanged. The accepted-message variant now
+also passes its actual synthetic provider message ID through D's signed callback
+and C's durable acknowledgement/replay path.
+
+```text
+uv run --locked pytest tests/integration/test_postgres_channel.py -q --tb=short --junitxml=e2e/runtime-artifacts/v11-candidate6-channel.xml
+```
+
+**3 passed, 0 failed, 0 skipped, 3.31 seconds**, exit 0, actual migrated E PostgreSQL.
+Accepted is not resent; lost response remains UNKNOWN; user revocation during
+token acquisition prevents the message request. The accepted case becomes ACKED
+once and accepts idempotent callback replay. The three earlier configuration-test
+failures are **resolved in this local subset**, pending the eventual full integrated
+suite. Ruff check/format PASS; existing Starlette/AnyIO warning remains.
+
+Per scenario, OAuth performs two synthetic HTTP requests; accepted/unknown each
+perform two sender HTTP requests and revoked performs only token acquisition:
+**11 synthetic HTTP requests total**, product source/model/Feishu requests/tokens
+and paid product cost **0**. The C ledger records bounded OAuth exchanges/send
+attempts separately; those operation counts are not total platform HTTP usage.
+No actual tenant or phone is verified. E PostgreSQL remains in the explicitly
+allocated lightweight test slot for the next bounded operational tests; no full
+Compose or image work is authorized in that concurrent PG slot.
+
 ## Verified checkpoint, 2026-09-11 UTC
 
 - Dependencies: reviewed C `41a00ded1f949aee8099b549d5d419f0487dd0f9`,
