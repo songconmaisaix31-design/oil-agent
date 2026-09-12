@@ -263,7 +263,8 @@ async def test_only_explicit_discovered_arguments_are_sent(schema, args, offset)
     assert not any(c["method"] == "tools/call" for c in p.calls)
 
 
-async def test_disabled_or_missing_token_and_budget_denial_make_no_provider_calls():
+@pytest.mark.parametrize("receipt", [False, None, "", " "])
+async def test_disabled_or_missing_token_and_budget_denial_make_no_provider_calls(receipt):
     p = Provider(page(item()))
     src = source(p)
     for settings in [
@@ -274,7 +275,7 @@ async def test_disabled_or_missing_token_and_budget_denial_make_no_provider_call
             await source(p, settings=settings).fetch(None, context=context())
 
     async def denied(*args):
-        return False
+        return receipt
 
     src.authorize = denied
     with pytest.raises(ServiceError):
