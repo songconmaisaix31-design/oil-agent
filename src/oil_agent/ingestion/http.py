@@ -65,7 +65,7 @@ class PinnedHttpClient:
         *,
         headers: Mapping[str, str],
         context: CallContext,
-        authorize: Callable[[], Awaitable[object]],
+        authorize: Callable[[], Awaitable[str]],
         complete: Callable[[bytes], bool] | None = None,
     ) -> HttpResponse:
         if len(body) > self.bounds.max_request_bytes:
@@ -82,7 +82,8 @@ class PinnedHttpClient:
         self.attempts += 1
         try:
             async with asyncio.timeout(remaining(context)):
-                if await authorize() is False:
+                reservation = await authorize()
+                if not isinstance(reservation, str) or not reservation.strip():
                     raise ServiceError(ErrorCode.FORBIDDEN, "Provider request not authorized")
                 host = _validate_url(self.bounds.endpoint, self.bounds.allowed_hosts)
                 addresses = await self.resolver(host)

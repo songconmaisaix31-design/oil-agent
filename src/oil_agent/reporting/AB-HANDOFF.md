@@ -432,3 +432,11 @@ R-01/R-02 implementation is delivered for I/E integration and real testing; appr
 source/model/rules/budgets/project credential injection remain missing authorization.
 No Docker, real source/model/platform requests or customer sends occurred; actual
 product calls/tokens/cost remain 0 and future provider cost remains unknown.
+
+R1 authorization receipt follow-up: PinnedHttpClient now requires the nonblank
+string reservation ID promised by C, rather than only rejecting a literal False.
+Missing/empty callback returns cannot authorize a network attempt. The 40 source
+transport tests include False/None/empty/blank denial before DNS or HTTP, and scoped
+Ruff passed. Full non-PostgreSQL validation passed 310 tests with 63 deselected and
+the same upstream warning. This small follow-up changes no external authorization,
+DTO or constructor shape; product calls remain 0.
