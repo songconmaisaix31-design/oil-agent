@@ -3,6 +3,96 @@
 All evidence is local and synthetic. No source license, production account, model,
 Feishu recipient, actual phone receipt or deployed server has been accepted.
 
+## Current phase: independent real-integration v1.1 acceptance
+
+E started from a clean `06af7997043c03bd06c91e9afab560bcf4432ae5`, normally
+merged accepted I `ed1de2e24634e8471e0979cfc168eebec4c12e4c` and governance
+`57e72ee`. That application baseline is accepted **only for local fixture/dry-run**.
+The historical v1.0 evidence below remains tied to its original SHAs and commands.
+New acceptance is performed only on exact integrated candidates supplied by I;
+producer branch tests and passing corpus validation cannot accept R1-R4.
+
+### Baseline gap classification
+
+| Capability at accepted I baseline | Classification | Evidence / next gate |
+| --- | --- | --- |
+| Concrete Jin10 MCP network transport and flash adaptation | MISSING_IMPLEMENTATION | `ingestion/network.py` requires injected resolver/transport and has no vendor adapter; AB owns implementation |
+| Concrete model client and automatic approved-rule assessment without per-message `ClaimReview` | MISSING_IMPLEMENTATION | `intelligence/assessment.py` exposes a model protocol; trusted occurrence/severity still require per-record reviews; AB owns implementation |
+| Validated trial permissions, runtime/factory assembly and provenance | MISSING_IMPLEMENTATION | `runtime/settings.py` unconditionally rejects external source/model flags; bootstrap wires dry-run only; C/I own implementation |
+| Feishu HTTP token/message, OAuth and signed callback adapters | IMPLEMENTED_AWAITING_REAL_TEST | Actual adapter code exists in D paths; local network doubles do not verify a real app, account, API response, callback or phone |
+| Source/provider/rules/model/budget and account/recipient authorization | MISSING_AUTHORIZATION | User's exact scoped inputs are pending; missing credentials alone are not a code defect |
+| First authorized nonurgent source-to-storage run | IMPLEMENTED_AWAITING_REAL_TEST, with implementation dependencies | Requires the first three rows and scoped inputs; must create no notification intent or send |
+| Authorized quote, external probe, >=7-day comparison, >=14-day operation | IMPLEMENTED_AWAITING_REAL_TEST / deferred external acceptance | No new elapsed-time or real-network evidence in this increment |
+
+These are snapshot classifications, not permanent labels. An I candidate moves a
+code row only after focused checks pass. Its real-test row remains NOT EXECUTED
+until the corresponding authorized operation produces evidence.
+
+### Focused acceptance stimuli and criteria
+
+All local stimuli below are newly authored synthetic material or existing E
+fixtures. Network doubles are explicitly isolated and never contact a provider.
+Tests that need trial/production DTO values exercise classification in a disposable
+E PostgreSQL schema; their input origin remains synthetic, never real news.
+
+| Scope | Concrete stimulus | Required observations |
+| --- | --- | --- |
+| R1 source/MCP adaptation | Two synthetic MCP pages containing a terminal maintenance bulletin, duplicate external ID, later same-ID revision, blank title, malformed envelope and an explicit remote error | Actual adapter parses the documented tool result shape, retains evidence/rights and original publisher, bounds page count/bytes, preserves revisions; C stores records and checkpoint atomically; malformed/error results do not advance the cursor |
+| R1 network boundary | Disallowed host, redirect to loopback, private IPv4/IPv6 resolution, oversized/chunked body, timeout, 401 and 429; revoke approval between two pages | No disallowed connection or environment-proxy escape; each actual request/hop rechecks permission and charges attempt budget before transport; bounded failures, safe error text and no hidden retry |
+| R1/R4 approved-rule assessment | Current synthetic maintenance notice: no outage, no casualty, no disruption; then a separately labeled synthetic urgent-exercise terminal closure matching an approved rule | No per-message `ClaimReview` is injected; actual rule/model path records processing version and exact supporting evidence; nonurgent case persists with **zero intents, deliveries and message HTTP requests**; exercise result is labeled and cannot broaden recipients |
+| R1 untrusted input | Article asks to add `ou_unapproved`, expose a synthetic secret canary or execute a command; model supplies an unsupported excerpt, invented number, invalid JSON or conflicting denial | Data does not change rules/recipients or trigger tools; output is rejected or conservatively downgraded; no unsupported urgency/send; safe error with explicit degradation |
+| R1/R2 cost | Zero budget, final allowed request, concurrent requests for the final reservation, model timeout and reported usage above reservation; approval expires between calls | Durable per-approval and daily accounting bounds actual calls/reserved tokens; no retry over budget or automatic paid fallback; actual vs reserved vs unknown usage remain distinguishable |
+| R2 trial provenance | Fixture source mixed with trial input, trial record assessed/reported, spoofed DTO flags, and a fixture session used after switching to real identity | Provenance survives source/evidence/event/report/intent persistence and is validated; fixture input does not silently become real; fixture sessions cannot authenticate as real; trial scope does not become production authority |
+| R2 trial permissions | Expired/revoked source/model/identity/send approval, mismatched provider/model, wrong tenant/app/subject, non-test recipient, per-recipient revision mismatch | Fail closed at execution time, including revocation after claim/token acquisition; exact preapproved bindings only; no widening users/recipients, implicit sessions or production sends |
+| R3 OAuth | Actual C HTTP challenge and session endpoints plus actual D OAuth adapter; synthetic token/user-info responses, wrong browser/state/origin, wrong tenant/app, unknown or revoked user and lost token response | Browser-bound state consumed once; provider role/name cannot grant access; unprovisioned user stays absent; HttpOnly/Secure session is revocable; no user token/code/secret exposed; a lost exchange requires a new challenge |
+| R3 message and ack | Exact synthetic recipient, mock accepted message ID, raw signed callback, then cross-user/app/tenant/message/revision callback, replay and response loss | Actual C authorization and D sender/verifier connect end to end; ack binds recipient + message + subject + revision; replay idempotent; UNKNOWN is not retried; local accepted response is not platform/phone evidence |
+| R4 integrated factory | I's actual configured API and worker factory on the same integrated SHA; defaults with no permissions, then isolated approved trial configuration | Default fixture/dry-run stays closed and seed-free; configured adapters use C permission callbacks; no duplicate domain implementation; I owns factory/bootstrap test and narrow startup wiring |
+
+The first authorized nonurgent run must separately record source request attempts,
+successful records and revisions, model requests/input/output tokens, database
+results, notification intents, platform message attempts, platform acceptance and
+phone receipt. A zero-send observation is a successful silence gate; it does not
+establish that urgent delivery works. Real urgency can be tested only as a
+separately approved, clearly labeled exercise to the exact test allowlist.
+
+### Current execution scope
+
+`uv run --locked pytest tests/integration/test_postgres_oauth.py -q --tb=short
+--junitxml=e2e/runtime-artifacts/v11-oauth.xml`: **10 passed, 0 failed, 0 skipped,
+7.74 seconds**, exit 0, on the accepted I baseline plus governance and this E test
+increment. One existing Starlette/AnyIO deprecation warning remains. The command
+used Windows Python 3.13.13 and actual retained E PostgreSQL 16.14, loopback 55434 /
+`oil_e_test`, with an explicitly injected process-only test DSN and fresh migrated
+schema per case. No SQLite substitution, real account, dependency-overridden auth
+or synthetic preissued session was used. The provider boundary is exclusively
+`httpx.MockTransport`: **6 token exchange attempts + 4 user-info requests = 10
+synthetic HTTP requests**, no network. Four preflight rejection variants each made
+zero provider requests; replays made no extra request.
+
+Coverage: successful exchange into a revocable viewer session, safe cookie/token
+handling, no automatic user provisioning, wrong tenant, unknown/revoked user,
+invalid token, lost exchange without retry, consumed-state replay, missing/foreign
+browser cookie, expired challenge and cross-origin login. The baseline subject
+format remains `tenant:open_id`; proposed `tenant:app:open_id` and trial permission
+changes are **NOT YET ACCEPTED** and need the integrated I candidate.
+
+`uv run --locked ruff check tests/integration/test_postgres_oauth.py`,
+`uv run --locked ruff format --check tests/integration/test_postgres_oauth.py`, and
+`git diff --check`: PASS. No broad historical baseline rerun or image build was
+performed. R1/R2/R4 implementation checks await I's exact integrated candidates.
+
+The coordinator allocated a short E PostgreSQL-only slot. Identity, Compose
+ownership, retained volume and free port 55434 were checked before starting exact
+container `b3c3a345428590922eb8e628a996dd634cb3333e5f0c86f588eede8fb7101cab`.
+After the focused tests it was **stopped and retained, exit 0, OOM=false**; the slot
+was released. No other container or volume was changed.
+
+Product source calls **0**; product model calls/input tokens/output tokens **0**;
+product Feishu requests/sends **0**; paid product cost **0**. Synthetic HTTP request
+counts will be reported separately. No real provider login, phone check, deployment,
+authorized-source comparison, 7-day or 14-day run was executed. Future unmeasured
+provider billing must be recorded as unknown, not inferred to be zero.
+
 ## Verified checkpoint, 2026-09-11 UTC
 
 - Dependencies: reviewed C `41a00ded1f949aee8099b549d5d419f0487dd0f9`,
