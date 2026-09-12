@@ -12,6 +12,7 @@ import binascii
 import hashlib
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
+from types import SimpleNamespace
 from zoneinfo import ZoneInfo
 
 from oil_agent.contracts.dto import AckPayload, Delivery, ReportBuildRequest, VerifiedAck
@@ -29,6 +30,7 @@ from oil_agent.contracts.services import (
     SourceAdapter,
 )
 from oil_agent.runtime.authorization import RuntimeAuthorization
+from oil_agent.runtime.c1 import C1Runtime
 from oil_agent.runtime.settings import Settings
 from oil_agent.storage.base import new_id
 
@@ -48,7 +50,7 @@ class RuntimeServices:
     source_poll_seconds: dict[str, int] = field(default_factory=dict)
 
 
-class Runtime(RuntimeAuthorization):
+class Runtime(C1Runtime, RuntimeAuthorization):
     async def latest_source_record(self, source_id: str, external_id: str):
         """AB receives committed immutable history in this runtime's exact data scope."""
         record = await self.db(self.repository.latest_source_record, source_id, external_id)
@@ -96,8 +98,17 @@ class Runtime(RuntimeAuthorization):
             self.settings.fixture_dataset,
         )
         self.repository.actor_scope_gate = self.actor_allowed
+        self.repository.c1_permission_provider = lambda: (
+            self.settings.c1_permission
+            if self.settings.c1_display_only
+            and self.settings.c1_permission
+            and self.settings.c1_host_binding == self.settings.c1_permission.host_binding
+            and self.settings.c1_permission.active(self.repository.clock())
+            else None
+        )
         self.repository.local_provisioning_allowed = lambda: (
             self.settings.data_provenance == "fixture"
+            and not self.settings.c1_display_only
             and self.settings.identity_permission is None
             and self.settings.outbound_mode == "dry_run"
         )
@@ -239,11 +250,20 @@ class Runtime(RuntimeAuthorization):
             raise ServiceError(code, "Assessment failed output validation") from None
 
     async def send_pending(self, *, subject_type="event"):
-        config = await self.db(self.repository.business_config)
+        c1 = self.settings.c1_display_only
+        if c1 != (subject_type == "exercise"):
+            raise ServiceError(ErrorCode.FORBIDDEN, "Delivery lane does not match C1 mode")
+        c1_permission = self.current_c1_permission() if c1 else None
+        config = (
+            SimpleNamespace(notification_channel="feishu", outbound_mode="c1")
+            if c1
+            else await self.db(self.repository.business_config)
+        )
         if config.notification_channel not in self.services.channels:
             self.missing("Configured notification channel")
         if config.notification_channel != "dry_run" and not (
-            self.trial_config_allowed(config)
+            c1
+            or self.trial_config_allowed(config)
             or (config.outbound_mode == "production" and self.settings.production_ready)
         ):
             raise ServiceError(ErrorCode.FORBIDDEN, "Sending permission is not valid")
@@ -253,6 +273,7 @@ class Runtime(RuntimeAuthorization):
             subject_type=subject_type,
             provenance=self.settings.data_provenance,
             fixture_dataset=self.settings.fixture_dataset,
+            max_attempts=c1_permission.max_send_attempts if c1 else 3,
         )
         completed = []
         for claim in claims:
@@ -270,7 +291,7 @@ class Runtime(RuntimeAuthorization):
                 completed.append(await self.db(self.repository.finish_delivery, claim, result))
                 continue
             try:
-                if claim.intent.channel == "feishu":
+                if claim.intent.channel == "feishu" and not c1:
                     if config.outbound_mode == "trial":
                         permission = self.settings.trial_send_permission
                         await self.db(
@@ -286,8 +307,12 @@ class Runtime(RuntimeAuthorization):
                             self.settings.production_budget_units,
                         )
                 result = await self.bounded(
-                    lambda ctx, claim=claim: self.services.channels[claim.intent.channel].send(
-                        claim.intent, context=ctx
+                    lambda ctx, claim=claim: (
+                        self.c1_channel_send(claim, context=ctx)
+                        if c1
+                        else self.services.channels[claim.intent.channel].send(
+                            claim.intent, context=ctx
+                        )
                     ),
                     context=self.context(seconds=20, attempt=claim.attempt),
                 )
@@ -315,6 +340,12 @@ class Runtime(RuntimeAuthorization):
                     updated_at=self.repository.clock(),
                     error_code=code.value,
                 )
+            if (
+                c1
+                and result.state == "failed_retryable"
+                and claim.attempt >= c1_permission.max_send_attempts
+            ):
+                result = Delivery.model_validate(result.model_dump() | {"state": "failed_final"})
             completed.append(await self.db(self.repository.finish_delivery, claim, result))
         await self.db(self.repository.health, "delivery:" + subject_type)
         return tuple(completed)

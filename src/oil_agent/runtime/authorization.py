@@ -29,6 +29,8 @@ class RuntimeAuthorization:
         }
 
     def actor_allowed(self, user, session):
+        if self.settings.c1_display_only:
+            return False  # C1 display approval cannot authenticate any business API.
         permission = self.settings.identity_permission
         if permission is None:
             return (
@@ -87,7 +89,8 @@ class RuntimeAuthorization:
 
     def local_test_identity(self):
         return (
-            self.settings.environment == "test"
+            not self.settings.c1_display_only
+            and self.settings.environment == "test"
             and self.settings.data_provenance == Provenance.FIXTURE
             and self.settings.identity_permission is None
         )
@@ -111,6 +114,8 @@ class RuntimeAuthorization:
 
     def resolve_session(self, token):
         """Real integration rejects every old/null-scope fixture session."""
+        if self.settings.c1_display_only:
+            return None
         try:
             permission = None
             if (
