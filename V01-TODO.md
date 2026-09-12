@@ -2,7 +2,63 @@
 
 ## Current phase: controlled real integration
 
-### Active C1: local preparation, configuration incomplete
+### Active C1: local code accepted; phone test not executed
+
+E's final independent disposition is **LOCAL CODE / TEST / SELECTED PACKAGE
+EVIDENCE ONLY**, recorded in `d4d1225811fd44f6fc7c39259beaabc85ab0e144`.
+Tested I delivery is `bfe0209f882f2ffb92fcfc4ab1f651e4541a36cd`; exact clean
+code/test/build source is `e98d4a69a2e317b8f573f1c868571dd66fccd1e3`.
+I and E independently passed the 65 entry/offline-factory cases and 19 Windows
+temporary-file binding cases. Thirteen PostgreSQL factory cases were
+deliberately unselected, no selected case was skipped, and the existing AnyIO
+deprecation warning remains. The binding cases mock ACL verification and are
+not real protected-file write evidence. No original assertion was weakened.
+
+Verified commands (existing dependencies, no network installation):
+
+```powershell
+uv run --offline --locked --no-sync pytest tests/integration/test_c1_entry.py tests/integration/test_bootstrap_factory.py -k 'c1_entry or offline_factory' -q --tb=short
+uv run --offline --locked --no-sync pytest tests/unit/runtime/test_c1_tenant_binding.py -q --tb=short
+uv build --offline --out-dir C:/Users/DW/AppData/Local/Temp/oil-agent-i-ctx-8394797ac280/dist
+```
+
+I performed the build once, from the exact source above. E read eight selected
+runtime/channel/factory members in each existing wheel and source archive,
+without extraction or modification: 16/16 matched after LF normalization,
+0/16 matched raw Git bytes because the archived files use CRLF. This is selected
+source/package correspondence, not raw-byte identity or installed acceptance.
+Post-build delivery changes are evidence/handoff documentation only. All
+verified increments were pushed to the original branches; sessions are retained.
+
+The implemented path now includes fixed app-only tenant transport, one shared
+window request budget for lookup and later sending, one first-message subject,
+an isolated fixed product entry, and explicit null-only private tenant mapping.
+No real private configuration was changed this round. The App ID comparison and
+two local injection checks below are the only current real configuration
+observations; no token authentication or platform/phone effect is inferred.
+
+Remaining gaps stay separate:
+
+- **NOT IMPLEMENTED:** the production factory before formal delivery, and the
+  narrow E-owned fixture adapter for running C's SQL assertions against E's
+  database. Production is not a C1 prerequisite.
+- **IMPLEMENTED, VERIFICATION NOT EXECUTED:** 21 C1 SQL cases, real protected-file
+  mapping, platform acceptance and phone display. The exact Docker engine pipe
+  is unavailable; no shared service restart or unknown-resource action occurred.
+- **MISSING CONFIRMED SCOPE / CONFIGURATION:** tenant/person/host bindings,
+  required platform permissions and an approved isolated database. The current
+  machine was presented for user confirmation, but no answer is inferred.
+  The prior phone window expired; a new explicit start is still required.
+- **EVIDENCE LIMIT:** the receipt's live API count remains `null` / unknown;
+  durable reservations are not proof of remote arrival. Report these separately.
+  In-place write failure may leave modified/unconfirmed bytes, without automatic
+  requery or a crash-atomicity claim.
+
+Actual product source/model/Feishu calls, sends and model tokens this round are
+zero; no paid service was added. Development-session billing is not available
+from the product ledger. No source record, platform message ID, phone observation,
+web login, callback or signed confirmation receipt exists for this round.
+No business service, continuous monitoring or new test window was started.
 
 The user reports having obtained application credentials and has edited the
 project-private configuration locally. C's latest read-only check on
