@@ -4,6 +4,39 @@
 
 ### Active C1: local code accepted; phone test not executed
 
+The user reopened the official API Explorer and supplied one exact `open_id`
+for the self-binding step. At 11:26 UTC on 2026-09-12, D reverified the Explorer
+application against the protected local configuration, selected `open_id` in
+the existing member picker and copied the sole candidate through its UI.
+The copied value matched the user's exact input in memory and passed the ID
+format check; the native clipboard sequence was stable during the bounded
+read. No identity value or comparison digest is recorded in repository files.
+This resolves the earlier browser and candidate-identity prerequisites below.
+It proves a user-confirmed local binding input, not product login, a signed
+identity receipt, token authentication, message acceptance or phone display.
+At 11:29:39 UTC, C completed the existing private configuration's null-only
+`recipient_open_id` mapping using source
+`e690b61358e4216dfca574a6d58b9c9251edaf0d`, whose relevant executable inputs
+match integrated `3c7ee50383235587063fe938fc7d27fe50d90783`. C reported real
+path/owner/ACL, exclusive handle, single-link/non-reparse, bounded strict schema,
+approved host and exact copied-identity checks passed. Only the recipient field
+changed; other field bytes, formatting, file identity and owner/group/DACL were
+preserved according to C's before/after checks. No repository code changed.
+The existing `check` and `inject-check` each returned expected exit 2 with empty
+stderr, `CREATED`, `NOT_CONFIGURED`, missing only `tenant_key`, and
+`NOT_AUTHORIZED`. Actual isolated child injection succeeded.
+At 11:34 UTC, E independently verified the actual protected file, strict schema,
+approved host, nonempty application fields and exact recipient match. Effective
+directory/file access is limited to the current user and SYSTEM; the directory
+has inheritance disabled, and the file inherits that restricted access. E ran
+each existing helper mode once with the real isolated child and obtained the
+same expected exit 2, missing-only-`tenant_key` and `NOT_AUTHORIZED` result.
+The configuration bytes and file identity were unchanged across E's own checks.
+C's preservation of the original pre-write bytes remains C-reported evidence.
+Acceptance is **REAL LOCAL RECIPIENT CONFIGURATION / LOADING ONLY**; no phone
+window, token acquisition or product call was started. UI background counts
+remain unknown, and no platform/phone/login/callback acceptance is implied.
+
 At 10:59 UTC on 2026-09-12, D's computer-use self-binding attempt ended
 without copying an identity or modifying private configuration. After the Orca
 runtime restarted, M rebound the existing Run and resumed the same D Task in
@@ -100,11 +133,13 @@ Remaining gaps stay separate:
 - **IMPLEMENTED, VERIFICATION NOT EXECUTED:** 21 C1 SQL cases, real tenant-result
   mapping, platform acceptance and phone display. The exact Docker engine pipe
   is unavailable; no shared service restart or unknown-resource action occurred.
-- **MISSING CONFIRMED SCOPE / CONFIGURATION:** tenant/person bindings,
+- **MISSING CONFIRMED SCOPE / CONFIGURATION:** tenant binding,
   required platform permissions and an approved isolated database. The current
   test host is now explicitly confirmed, locally mapped by C and checked by E.
   Bot enablement and self-only application availability are user-confirmed;
-  exact recipient identity and platform API permission are still unverified.
+  the exact recipient is now user-confirmed, UI-copied and locally mapped by C.
+  E has independently verified the actual recipient post-state and loading;
+  platform API permission remains unverified.
   The prior phone window expired; a new explicit start is still required.
 - **EVIDENCE LIMIT:** the receipt's live API count remains `null` / unknown;
   durable reservations are not proof of remote arrival. Report these separately.
