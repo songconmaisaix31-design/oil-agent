@@ -56,10 +56,11 @@ Current bounded execution decisions and findings:
   and `transport_failure`, keyed by the existing reservation ID. Existing audit
   records distinguish reservations, local dispatches, responses and uncertainty;
   a local dispatch is not evidence of platform receipt.
-- C's actual dedicated database start created the exact project container,
-  volume and internal network. The container is healthy, but the runtime port
+- C's initial dedicated database start created the exact project container,
+  volume and internal network. At that initial checkpoint it was healthy, but the
+  runtime port
   binding is absent and the strict helper returned `C1_DB_EFFECT_UNKNOWN`.
-  No migration or database-connectivity acceptance is claimed. E independently
+  No migration or database-connectivity acceptance was claimed then. E independently
   reproduced Windows connection refusal and exchanged a PostgreSQL SSL-request
   byte through fixed Docker exec/BusyBox `nc`; this is protocol feasibility only,
   without authentication or SQL. E evidence is pushed at
@@ -71,11 +72,11 @@ Current bounded execution decisions and findings:
   narrows the C1 SQL pool. I integrates this repair; C then performs authenticated
   database identity checks and existing migrations, followed by E's independent
   runtime verification. No new general gateway, service or scheduler is authorized.
-- The earlier C private/closed-card and D card/request-observation increments are
+- The earlier C private/closed-card and D card/request-observation increments were
   integrated at `d27368a37af85be7ab3ec87a1a948dd8c24b9dc8` and independently checked
-  by E. The autonomous runner, durable request recorder and actual stdio runtime
-  still require their corresponding integration and real execution evidence.
-  Platform requests, sends and new exercise windows remain zero at this checkpoint.
+  by E. That checkpoint preceded the autonomous runner, durable request recorder
+  and actual stdio runtime described below. Platform requests, sends and new
+  exercise windows were zero and remain gated on a fresh user local start.
 
 **Actual local database preparation:** C ran the integrated fixed `c1_local
 db-prepare` at I `fd49c75b6f7c1f254a1ef265175f10287711a3a8`, with the relevant
@@ -89,17 +90,59 @@ Earlier actual failures were separately reproduced and repaired: internal-only
 Docker port publication, exact named-volume representation, and local Docker
 startup exceeding the old three-second connect budget. The C1-only connection
 budget is now 15 seconds with a 17-second queue acquisition budget; other defaults
-remain 3/5 seconds. This is C's actual local execution evidence, pending E's
-independent final-runtime check; it is not platform or phone acceptance.
+remain 3/5 seconds. This is C's actual local execution evidence; E's independent
+final-runtime check is recorded below. Neither is platform or phone acceptance.
 
-The autonomous C runner/local-control increment is pushed at
-`2b3b8d54fd9abbeedd7babb9051a8f01d6d0ffbe`; I is completing the fixed product-child
-and observer wiring. E's bounded timeout/streaming regression and evidence are
-pushed at `82cadafde1ff2c8191de557d8a4978854b8b5476`. Final queue execution,
-current connection cleanup and selected PostgreSQL concurrency still require
-independent acceptance. Actual external requests remain gated on the user's
-fresh local start. No platform message IDs, phone observations or identity
-interaction receipts exist for this two-message exercise yet.
+The autonomous C runner/local-control increment
+`2b3b8d54fd9abbeedd7babb9051a8f01d6d0ffbe` and E timeout/streaming regressions
+`82cadafde1ff2c8191de557d8a4978854b8b5476` are integrated. I completed only the
+fixed product-child and request-observer glue in executable checkpoint
+`75a6fc4b7e0cd00fc82fdb49a4cc8cc615b67c9a`. The clean, normally pushed I branch
+`songconmaisaix31-design/oil-v01-i` is at
+`cc4c13b8f990c136ff222e2a3a0da1ec34537d38`; its later merges only updated this
+board and C preparation notes. I verified exact owner blobs and unchanged
+unrelated files. Focused connection, runner/local/stdio, timeout and existing
+entry/factory selections passed (1, 27, 5 and 29 cases respectively; 60 cases
+not selected, one existing AnyIO warning). Scoped lint/format/diff checks,
+fixed-interpreter import resolution and one final offline wheel/sdist build
+passed. These are code and build results, not live provider acceptance.
+
+E independently passed five affected PostgreSQL cases against executable
+`75a6fc4`: concurrent task identity/shared caps, durable request observations,
+UNKNOWN/stopped refusal, real queue timing and reconstruction without resend.
+The real Procrastinate run produced two succeeded jobs using a synthetic
+channel; the due time was exactly first acceptance plus 120 seconds and the
+observed synthetic receipt gap was 120.384224 seconds (flow wall 120.822 seconds,
+process wall 124.562 seconds). E corrected one test-harness constructor error
+without changing assertions, then ran only the remaining three cases. The
+original E database inventory and resource metadata remained unchanged. This
+proves bounded local queue execution, not actual Feishu delivery.
+
+E's final bounded acceptance is pushed at
+`b97b9ae669ece59cdc4a49b24f80486376f9b4c6`, changing only
+`tests/integration/test_c1_two_task_postgres.py` and `e2e/runtime-checks.md`.
+Against actual I `cc4c13b`, isolated `c1_local db-status` returned `C1_DB_READY`
+and `status` returned `C1_NOT_STARTED`, both exit 0 with no stderr. Readonly SQL
+verified database/user `oil_c1_trial`, migration head `0003_trial`, queue
+readability, and zero jobs/provider calls/permissions/exercise subjects/request
+observations. The final stdio path used actual hard/idle arguments 1800/1800;
+listener, `nc` and `timeout` counts returned to zero by
+2026-09-12T16:31:08.183897Z. Protected file bytes, identity, ACL and selected
+resource metadata remained unchanged. Full thirty-minute expiry, OS-crash
+cleanup and actual private start/stop/resume were not executed. E reported no
+reproduced domain defect; its existing report contains exact commands/times and
+separates artifact checks, real database execution and synthetic channel data.
+
+Actual external requests remain gated on the user's fresh local start. No
+platform message IDs, phone observations or identity interaction receipts exist
+for this two-message exercise yet. Product Feishu/source/model requests and new
+service fees are zero; development-agent billing is unavailable. The remaining
+action is the user's interactive local `c1_local start` in the reviewed I
+environment documented in `config/c1-preparation.md`. It must first establish
+the still-absent tenant binding within the same approved request budget. No
+additional permission, recipient or window may be inferred from these local
+checks. I's final evidence-only integration must preserve executable `75a6fc4`;
+the existing E acceptance applies to those exact executable bytes.
 
 ## Previous phase: event business, daily analysis and operating usability
 
