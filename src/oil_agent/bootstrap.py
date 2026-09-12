@@ -27,6 +27,8 @@ from oil_agent.ingestion.mcp import load_json
 from oil_agent.intelligence import ConservativeAssessmentService
 from oil_agent.intelligence.assessment import AssessmentPolicy
 from oil_agent.intelligence.budget import ModelBudget
+from oil_agent.intelligence.deepseek import ENDPOINT as DEEPSEEK_ENDPOINT
+from oil_agent.intelligence.deepseek import DeepSeekResponsesClient, DeepSeekSettings
 from oil_agent.intelligence.openai import ENDPOINT as MODEL_ENDPOINT
 from oil_agent.intelligence.openai import OpenAIResponsesClient, OpenAISettings
 from oil_agent.intelligence.rules import ApprovedRules
@@ -202,18 +204,28 @@ def _wire_assessment(runtime: Runtime) -> None:
     urgent_budget = ModelBudget()
     if settings.model_calls_enabled:
         permission = settings.model_permission
-        if permission.provider != "openai":
-            raise ValueError("Trial model assembly requires the approved OpenAI provider")
+        if permission.provider == "openai":
+            client_type, settings_type = OpenAIResponsesClient, OpenAISettings
+            endpoint, host, key_field = MODEL_ENDPOINT, "api.openai.com", "OIL_OPENAI_API_KEY"
+        elif permission.provider == "deepseek":
+            client_type, settings_type = DeepSeekResponsesClient, DeepSeekSettings
+            endpoint, host, key_field = (
+                DEEPSEEK_ENDPOINT,
+                "api.deepseek.com",
+                "OIL_DEEPSEEK_API_KEY",
+            )
+        else:
+            raise ValueError("Trial model assembly requires an approved supported provider")
         calls = min(permission.max_requests, settings.daily_model_calls, 10000)
-        model = OpenAIResponsesClient(
-            OpenAISettings(
+        model = client_type(
+            settings_type(
                 model=permission.model,
                 authorization_ref=permission.authorization_ref,
-                api_key=SecretStr(_required_environment("OIL_OPENAI_API_KEY")),
+                api_key=SecretStr(_required_environment(key_field)),
                 authorized=True,
                 urgent=True,
             ),
-            http=PinnedHttpClient(HttpBounds(MODEL_ENDPOINT, ("api.openai.com",), calls)),
+            http=PinnedHttpClient(HttpBounds(endpoint, (host,), calls)),
             authorize_model_request=runtime.authorize_model_request,
             record_model_usage=runtime.record_model_usage,
         )
