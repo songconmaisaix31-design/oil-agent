@@ -1,0 +1,62 @@
+name: Controlled trial preparation only
+
+on:
+  push:
+    paths:
+      - deploy/**
+      - scripts/controlled_trial.py
+      - scripts/trial-start.sh
+      - tests/integration/test_controlled_trial_deploy.py
+      - .github/workflows/controlled-trial.yml
+  pull_request:
+    paths:
+      - deploy/**
+      - scripts/controlled_trial.py
+      - scripts/trial-start.sh
+      - tests/integration/test_controlled_trial_deploy.py
+      - .github/workflows/controlled-trial.yml
+
+permissions:
+  contents: read
+
+jobs:
+  preparation:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13.13'
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: '0.11.26'
+      - run: uv sync --locked
+      - run: uv run --locked ruff check scripts/controlled_trial.py tests/integration/test_controlled_trial_deploy.py
+      - run: uv run --locked pytest tests/integration/test_controlled_trial_deploy.py tests/integration/test_deploy_safety.py -q --tb=short --junitxml=e2e/controlled-trial.xml
+      - run: bash -n scripts/trial-start.sh
+      - name: Check actual Nginx TLS configuration without any network
+        shell: bash
+        run: |
+          set -eu
+          openssl req -x509 -newkey rsa:2048 -nodes -days 1 \
+            -subj '/CN=synthetic-trial.example.invalid' \
+            -keyout "$RUNNER_TEMP/oil-trial-key.pem" \
+            -out "$RUNNER_TEMP/oil-trial-cert.pem" >/dev/null 2>&1
+          # Authored disposable test key only; not a real certificate or credential.
+          chmod 644 "$RUNNER_TEMP/oil-trial-key.pem" "$RUNNER_TEMP/oil-trial-cert.pem"
+          docker pull nginx:1.28-alpine@sha256:a8b39bd9cf0f83869a2162827a0caf6137ddf759d50a171451b335cecc87d236
+          docker run --rm --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges:true --user 101:101 \
+            --tmpfs /tmp:size=32m,mode=1777 --add-host api:127.0.0.1 \
+            --mount "type=bind,src=$GITHUB_WORKSPACE/deploy/nginx.e-trial.conf,dst=/etc/nginx/nginx.conf,readonly" \
+            --mount "type=bind,src=$RUNNER_TEMP/oil-trial-cert.pem,dst=/run/oil-tls/cert.pem,readonly" \
+            --mount "type=bind,src=$RUNNER_TEMP/oil-trial-key.pem,dst=/run/oil-tls/key.pem,readonly" \
+            --entrypoint nginx \
+            nginx:1.28-alpine@sha256:a8b39bd9cf0f83869a2162827a0caf6137ddf759d50a171451b335cecc87d236 -t
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: controlled-trial-preparation
+          path: e2e/controlled-trial.xml
+          retention-days: 7
