@@ -50,6 +50,26 @@ assessment; model memory is not a live news source. Report model connectivity,
 platform acceptance, actual phone display and host scheduling independently.
 No login, callback or production-factory work is required for this increment.
 
+The latest instruction makes actual personal Feishu notification the first
+completion condition. D has published status cards and the existing sender
+hooks at `d7958ae21d3ba3879926d898ff7b3f004e8c22a8`; AB has published the
+bounded DeepSeek adapter at `0559e85804232ab0d21cd19bf1c1a6d899b3be60`.
+These owner checks remain simulated, with zero actual provider requests so far.
+C's status contracts are published at `b67f714154ce9e0cf16b477fb9e3b0ad6e72dbfd`;
+runtime assembly and independent integrated acceptance are still in progress.
+
+The existing private configuration may receive one initially null
+`personal_status_scope` field through C's protected, byte-preserving update;
+do not change existing identity bindings or invent `exercise_start`. I owns
+the necessary `c1_product` fixed modes `status-onboarding` and `status-morning`.
+E's one-shot host launch is `OilAgent-StatusMorning-20260913` at 07:58 Shanghai;
+the product queue enforces the 08:00 due time and absolute 08:15 expiry.
+The actual host has a two-hour idle sleep and disabled wake timers. M authorized
+a process-local keep-awake request only for this dated scope, while on mains,
+with release on stop or by 08:15; do not change the global power plan.
+Task registration and the keep-awake process must use the accepted integrated
+entry. Configuration and synthetic launcher checks do not prove deployment.
+
 ## Previous phase: minimal autonomous Feishu notification exercise
 
 The user now prioritizes actual program execution and two real messages to the
