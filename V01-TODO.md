@@ -4,6 +4,94 @@
 
 ### Active C1: local code accepted; phone test not executed
 
+The user reopened the official API Explorer and supplied one exact `open_id`
+for the self-binding step. At 11:26 UTC on 2026-09-12, D reverified the Explorer
+application against the protected local configuration, selected `open_id` in
+the existing member picker and copied the sole candidate through its UI.
+The copied value matched the user's exact input in memory and passed the ID
+format check; the native clipboard sequence was stable during the bounded
+read. No identity value or comparison digest is recorded in repository files.
+This resolves the earlier browser and candidate-identity prerequisites below.
+It proves a user-confirmed local binding input, not product login, a signed
+identity receipt, token authentication, message acceptance or phone display.
+At 11:29:39 UTC, C completed the existing private configuration's null-only
+`recipient_open_id` mapping using source
+`e690b61358e4216dfca574a6d58b9c9251edaf0d`, whose relevant executable inputs
+match integrated `3c7ee50383235587063fe938fc7d27fe50d90783`. C reported real
+path/owner/ACL, exclusive handle, single-link/non-reparse, bounded strict schema,
+approved host and exact copied-identity checks passed. Only the recipient field
+changed; other field bytes, formatting, file identity and owner/group/DACL were
+preserved according to C's before/after checks. No repository code changed.
+The existing `check` and `inject-check` each returned expected exit 2 with empty
+stderr, `CREATED`, `NOT_CONFIGURED`, missing only `tenant_key`, and
+`NOT_AUTHORIZED`. Actual isolated child injection succeeded.
+At 11:34 UTC, E independently verified the actual protected file, strict schema,
+approved host, nonempty application fields and exact recipient match. Effective
+directory/file access is limited to the current user and SYSTEM; the directory
+has inheritance disabled, and the file inherits that restricted access. E ran
+each existing helper mode once with the real isolated child and obtained the
+same expected exit 2, missing-only-`tenant_key` and `NOT_AUTHORIZED` result.
+The configuration bytes and file identity were unchanged across E's own checks.
+C's preservation of the original pre-write bytes remains C-reported evidence.
+Acceptance is **REAL LOCAL RECIPIENT CONFIGURATION / LOADING ONLY**; no phone
+window, token acquisition or product call was started. UI background counts
+remain unknown, and no platform/phone/login/callback acceptance is implied.
+
+At 10:59 UTC on 2026-09-12, D's computer-use self-binding attempt ended
+without copying an identity or modifying private configuration. After the Orca
+runtime restarted, M rebound the existing Run and resumed the same D Task in
+its original worktree. D's fresh desktop discovery found no external browser;
+`orca computer list-windows --app Tabbit --json` returned `app_not_found`.
+The explicitly authorized attempt to open the official API Explorer with the
+existing Windows HTTPS handler was rejected before execution by automatic
+approval review, with only `blocked by policy` as its reason. This is a local
+execution restriction, not missing application credentials or a product-code
+defect. No alternate shell or browser API was used to evade the rejection.
+
+The prior browser URL/application match is historical and was not reverified
+after the restart. Exact self selection, clipboard copy and C's recipient
+mapping remain **NOT EXECUTED**. The immediate manual prerequisite is to open
+the existing browser at `https://open.feishu.cn/api-explorer`; D can then resume
+the approved current-application/self-only UI step. Existing bot/self-only
+availability and host confirmations remain accepted, without another scope
+question. No message, token acquisition, source/model call or new phone window
+was initiated. Browser background request counts remain **UNKNOWN**; these
+observations do not establish compliance with the twenty-request live budget.
+No paid service was added; development-session cost is not available from the
+product ledger. D's source remains `da65fb1f2f80a455c058e3107a3df3964c22fbd5`;
+the integrated product source remains `9dfd0a54063b1b9c909d6dd322bbfb23567e27a3`.
+This increment records the attempted real setup and its limitation only;
+no code fix, repeated mock acceptance, database/service change or container
+operation is warranted by this observation. D's session and work are retained.
+
+At 10:31 UTC on 2026-09-12, the user confirmed that the existing application's
+bot is enabled and its availability is restricted to the user alone. Record
+both facts as **USER CONFIRMED**; do not ask for that scope again. This is not
+independent platform verification, an exact application-scoped `recipient_open_id`
+binding, verification of the send API permission/version release, or a new phone
+test start. D owns guidance for the next exact self-binding step; private values
+remain local, and tenant/database technical mapping stays with the agents.
+
+On 2026-09-12, the user confirmed the current `LAPTOP-BS46UHBR` computer as
+the test host. M recorded that confirmation at 10:12 UTC. C completed the
+existing protected configuration's null-only `host_binding` maintenance and
+reported it at 10:14:56 UTC, using accepted source
+`e690b61358e4216dfca574a6d58b9c9251edaf0d` without repository code changes.
+The confirmation answered a host-only question that explicitly excluded
+sending; it does not renew the expired phone window. C reported real path/owner/
+ACL, exclusive-handle, bounded schema and readback checks passed; only
+`host_binding` changed, with all other field bytes, formatting and ACL preserved.
+The existing `check` and `inject-check` each returned exit 2 as intended, with
+`CREATED`, `NOT_CONFIGURED`, missing `tenant_key` and `recipient_open_id`, and
+`NOT_AUTHORIZED`. Actual isolated process injection succeeded. E independently
+verified the real post-state, schema, approved host match and both helper modes;
+its checks preserved the configuration bytes and emitted no stderr. Effective
+file access is limited to the current user and SYSTEM. The file inherits from
+the restricted project-private directory, whose ACL inheritance is disabled.
+Unchanged pre-state across C's maintenance remains C's reported evidence.
+E's independent local evidence is committed in
+`d35a7fc192db05fb134a1459ce13d6748732f3c6` (`e2e/runtime-checks.md`).
+
 E's final independent disposition is **LOCAL CODE / TEST / SELECTED PACKAGE
 EVIDENCE ONLY**, recorded in `d4d1225811fd44f6fc7c39259beaabc85ab0e144`.
 Tested I delivery is `bfe0209f882f2ffb92fcfc4ab1f651e4541a36cd`; exact clean
@@ -33,21 +121,25 @@ verified increments were pushed to the original branches; sessions are retained.
 The implemented path now includes fixed app-only tenant transport, one shared
 window request budget for lookup and later sending, one first-message subject,
 an isolated fixed product entry, and explicit null-only private tenant mapping.
-No real private configuration was changed this round. The App ID comparison and
-two local injection checks below are the only current real configuration
-observations; no token authentication or platform/phone effect is inferred.
+The earlier code-acceptance round changed no private configuration. The new
+host-only maintenance above supersedes that local observation; no token
+authentication or platform/phone effect is inferred.
 
 Remaining gaps stay separate:
 
 - **NOT IMPLEMENTED:** the production factory before formal delivery, and the
   narrow E-owned fixture adapter for running C's SQL assertions against E's
   database. Production is not a C1 prerequisite.
-- **IMPLEMENTED, VERIFICATION NOT EXECUTED:** 21 C1 SQL cases, real protected-file
+- **IMPLEMENTED, VERIFICATION NOT EXECUTED:** 21 C1 SQL cases, real tenant-result
   mapping, platform acceptance and phone display. The exact Docker engine pipe
   is unavailable; no shared service restart or unknown-resource action occurred.
-- **MISSING CONFIRMED SCOPE / CONFIGURATION:** tenant/person/host bindings,
+- **MISSING CONFIRMED SCOPE / CONFIGURATION:** tenant binding,
   required platform permissions and an approved isolated database. The current
-  machine was presented for user confirmation, but no answer is inferred.
+  test host is now explicitly confirmed, locally mapped by C and checked by E.
+  Bot enablement and self-only application availability are user-confirmed;
+  the exact recipient is now user-confirmed, UI-copied and locally mapped by C.
+  E has independently verified the actual recipient post-state and loading;
+  platform API permission remains unverified.
   The prior phone window expired; a new explicit start is still required.
 - **EVIDENCE LIMIT:** the receipt's live API count remains `null` / unknown;
   durable reservations are not proof of remote arrival. Report these separately.
@@ -61,7 +153,7 @@ web login, callback or signed confirmation receipt exists for this round.
 No business service, continuous monitoring or new test window was started.
 
 The user reports having obtained application credentials and has edited the
-project-private configuration locally. C's latest read-only check on
+project-private configuration locally. C's earlier read-only check on
 2026-09-12 at 09:31 UTC, against integrated
 `fe4b76c2f8b1f17130bd442812cbc046eed1f325`, passed JSON/schema, path/ACL and actual
 isolated process injection checks. The existing `app_id` already matches the
