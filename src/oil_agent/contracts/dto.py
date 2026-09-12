@@ -97,6 +97,48 @@ class C1Exercise(ProvenancedDTO):
         return self
 
 
+STATUS_ONBOARDING_TITLE = "【油品预警助手｜上线通知】"
+STATUS_ONBOARDING_BODY = (
+    "此消息由项目程序发送，用于确认飞书通知通道。当前处于试运行阶段；"
+    "真实行情监控尚未开启，不构成交易建议。"
+)
+STATUS_MORNING_TITLE = "【油品预警助手｜试运行晨报】"
+STATUS_MORNING_BODY = (
+    "本次为定时试运行播报。当前尚无经验证的实时新闻或行情数据，无法给出市场事件研判。"
+    "真实来源与模型接入状态以本次实际检查结果为准，不构成采购或交易建议。"
+)
+STATUS_MESSAGE_PAIRS = {
+    "onboarding": (STATUS_ONBOARDING_TITLE, STATUS_ONBOARDING_BODY),
+    "morning_status": (STATUS_MORNING_TITLE, STATUS_MORNING_BODY),
+}
+
+
+class StatusNotification(ProvenancedDTO):
+    """Closed factual application status, never a market assessment or sourced report."""
+
+    status_id: StableId
+    revision: Literal[1] = 1
+    purpose: Literal["onboarding", "morning_status"]
+    created_at: UtcDatetime
+    due_at: UtcDatetime
+    expires_at: UtcDatetime
+    title: NonEmpty
+    body: NonEmpty
+    nonmarket: Literal[True] = True
+    is_fixture: Literal[False] = False
+    provenance: Literal[Provenance.TRIAL] = Provenance.TRIAL
+    fixture_dataset: None = None
+    evidence: tuple[()] = ()
+
+    @model_validator(mode="after")
+    def closed_status(self):
+        if (self.title, self.body) != STATUS_MESSAGE_PAIRS[self.purpose]:
+            raise ValueError("Status requires its exact approved nonmarket copy")
+        if not self.due_at <= self.created_at < self.expires_at:
+            raise ValueError("Status must be created inside its dated delivery window")
+        return self
+
+
 class GapState(StrEnum):
     NONE = "none"
     PAGINATION_LIMIT = "pagination_limit"
@@ -296,7 +338,7 @@ class ExternalIdentity(DTO):
 
 class RecipientAuthorization(DTO):
     recipient_id: StableId
-    subject_type: Literal["event", "report", "exercise"]
+    subject_type: Literal["event", "report", "exercise", "status"]
     subject_id: StableId
     revision: Revision
     authorized_at: UtcDatetime
@@ -305,6 +347,8 @@ class RecipientAuthorization(DTO):
 
 
 class NotificationKind(StrEnum):
+    ONBOARDING = "onboarding"
+    MORNING_STATUS = "morning_status"
     EXERCISE = "exercise"
     FIRST_REPORT = "first_report"
     UPDATE = "update"
@@ -319,7 +363,7 @@ class NotificationIntent(ProvenancedDTO):
 
     intent_id: StableId
     delivery_id: StableId
-    subject_type: Literal["event", "report", "exercise"]
+    subject_type: Literal["event", "report", "exercise", "status"]
     subject_id: StableId
     revision: Revision
     kind: NotificationKind
@@ -342,6 +386,19 @@ class NotificationIntent(ProvenancedDTO):
             raise ValueError("Recipient authorization must match the exact object revision")
         if self.is_fixture and self.channel != "dry_run" and not scope.is_test_recipient:
             raise ValueError("Fixtures must use dry_run or an authorized test recipient")
+        status_kind = self.kind in {NotificationKind.ONBOARDING, NotificationKind.MORNING_STATUS}
+        if (self.subject_type == "status") != status_kind:
+            raise ValueError("Status kinds require an explicit nonmarket status subject")
+        if status_kind and (
+            self.is_fixture
+            or self.provenance != Provenance.TRIAL
+            or self.fixture_dataset is not None
+            or self.revision != 1
+            or self.evidence
+            or not scope.is_test_recipient
+            or (self.title, self.body) != STATUS_MESSAGE_PAIRS[self.kind]
+        ):
+            raise ValueError("Status is closed trial content for one approved test recipient")
         if (self.subject_type == "exercise") != (self.kind == NotificationKind.EXERCISE):
             raise ValueError("Exercise kind requires an explicit exercise subject")
         if self.subject_type == "exercise" and (
