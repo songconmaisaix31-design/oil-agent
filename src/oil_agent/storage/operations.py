@@ -72,7 +72,8 @@ class OperationsRepository:
             return counters, health
 
     def create_due_reminders(self, *, delay_seconds=1800):
-        if not self.business_config().reminders_enabled:
+        config = self.business_config()
+        if not config.reminders_enabled:
             return 0
         with self.sessions.begin() as session:
             lock_key(session, "reminders")
@@ -132,6 +133,10 @@ class OperationsRepository:
                 if scope is not None and (item.provenance, item.fixture_dataset) != scope:
                     continue
                 if not self.recipient_scope_gate(item, user):
+                    continue
+                if config.outbound_mode == "trial" and not self.trial_item_gate(
+                    item, user, "reminder"
+                ):
                     continue
                 self._intent(session, subject, item, grant, user, "reminder")
                 count += 1
