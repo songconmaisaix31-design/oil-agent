@@ -78,6 +78,33 @@ new database activation scope; do not create the future C1 database, enable
 outbound access or start a phone window as part of code preparation. I integrates
 each verified increment; E reviews the final candidate independently.
 
+C preparation is `task_05c25c905346` / `ctx_991696c616e6`; E deployment
+preparation is `task_3e9b871c8e0e` / `ctx_9d11fada8b73`. Their exclusive new
+files are C's `src/oil_agent/runtime/c1_database.py` and
+`tests/unit/runtime/test_c1_database.py`, and E's `deploy/compose.c1-db.yaml`
+and `tests/integration/test_c1_database_deploy.py`. Notes remain in the existing
+owner documents. I's SQL-evidence integration is `task_83e2cc960e73` /
+`ctx_42faa36f4dd8`, independently of the unfinished database helper.
+
+The internal-only C1 network contract remains unchanged. The historical E test
+deployment used an additional host network after an internal-only publication
+problem; this does not establish current C1 packet behavior. Docker's internal
+network and port-publishing documentation permits some host communication and
+does not by itself prove this Windows Desktop candidate works or always fails.
+An ordinary secondary egress bridge is not an accepted correction. Current C1
+host reachability remains **IMPLEMENTED CONFIGURATION, ACTUAL VERIFICATION NOT
+EXECUTED**. The helper must reject absent actual binding/network evidence and
+failed database connections. A later finite activation probe must inspect actual
+publication and network membership and verify the loopback database identity;
+rendered Compose is not deployment or firewall acceptance.
+
+For the helper's new runtime `yaml` import, I has the explicit temporary glue
+assignment for `pyproject.toml` and `uv.lock` only to declare the already locked
+PyYAML package as a direct runtime dependency. These paths otherwise belong to
+C; C must not edit them concurrently. No package upgrades, additional libraries
+or general dependency cleanup are authorized. I must preserve the existing
+resolved third-party package versions/artifacts and validate the metadata/build.
+
 ### Bounded increment: C1 PostgreSQL test adapter
 
 The user's new multi-agent development instruction resumes the existing C/E/I
