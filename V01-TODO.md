@@ -7,9 +7,9 @@
 The user's new multi-agent development instruction resumes the existing C/E/I
 sessions on the accepted delivery `f04f64f55cc12e7fea4cfa5d56ee768816bad561`.
 It does not start a phone window or authorize provider calls. The concrete
-implementation gap is the already recorded mismatch between C's database-only
-fixture and E's isolated migrated PostgreSQL fixture; 21 current C1 SQL cases
-remain unexecuted through the E harness.
+implementation gap was the recorded mismatch between C's database-only fixture
+and E's isolated migrated PostgreSQL fixture. E has implemented the adapter;
+21 current C1 SQL cases still remain unexecuted through the E harness.
 
 | Owner | Bounded work and exclusive edits | Acceptance / next owner |
 | --- | --- | --- |
@@ -17,6 +17,32 @@ remain unexecuted through the E harness.
 | C | Read-only review of the 21 existing storage assertions, clock/config initialization and database ownership requirements; return a precise contract handoff to E through M. Domain fixes require a reproduced failure and a separate owner assignment. | Preserve original assertions and C database guards; no repository or private-configuration edits in this task. |
 | I | After the E commit, integrate only this adapter/evidence and M governance on the existing integration branch. | Check exact source changes and applicable targeted checks; hand the final candidate to E for independent delivery review. |
 | M | Maintain this board and dispatch/acceptance records only. | Retain all sessions; AB/D have no task in this increment. |
+
+The existing Run is `run_64e3991f76b9`. E is executing
+`task_7c47961827c9` / `ctx_6e13f25bb2a2` in `oil-v01-e`; C completed
+`task_505e05b63fc7` / `ctx_a1ab0dd1210a` in `oil-v01-c`. Both original
+terminals were reused and actual task activity was observed. I remains retained
+until the owner commit is ready; no new worker, branch or worktree was created.
+C's read-only handoff confirmed 12 original functions expanding to 21 cases,
+shared function-scoped repository routing, assignable frozen UTC clock and
+independent transactional sessions. E's real migrations already insert the
+default configuration; the adapter must not insert it twice or create sessions
+through `e_actors`. No domain defect or SQL execution was claimed. C is retained.
+
+E's implementation commit is `a76571dcf2f8b2b276d72e527a06c78d08fc4a18`.
+It adds only `tests/integration/test_postgres_c1.py` and updates the existing
+runtime evidence. Before repair the original C fixture rejected E scope with
+one setup error and zero engine constructions. The adapter now collects all
+21 cases, preserves original callable/fixture/parameter identities, and routes
+only its module to E's existing migrated repository. Ruff and the effective
+fixture-routing audit passed. Missing E configuration produced 21 explicit
+skips, not SQL passes; wrong database scope still failed before connecting.
+Original tests, both existing fixtures, product sources and locks are unchanged.
+One exact E container inspection failed because `dockerDesktopLinuxEngine` is
+absent. No retry or resource mutation followed. This resolves the missing
+adapter implementation only; actual SQL, live C1 database permission and all
+Feishu/phone acceptance remain unexecuted. I integration and E final delivery
+review are the next steps for this exact increment.
 
 Do not rerun full synthetic acceptance, change product code or production flags,
 read private credentials, start Docker, restart shared services or clean old
@@ -154,9 +180,10 @@ authentication or platform/phone effect is inferred.
 
 Remaining gaps stay separate:
 
-- **NOT IMPLEMENTED:** the production factory before formal delivery, and the
-  narrow E-owned fixture adapter for running C's SQL assertions against E's
-  database. Production is not a C1 prerequisite.
+- **NOT IMPLEMENTED:** the production factory before formal delivery.
+  Production is not a C1 prerequisite. The narrow E-owned C1 SQL adapter is now
+  implemented in the bounded increment above; its actual SQL execution remains
+  a separate unverified item.
 - **IMPLEMENTED, VERIFICATION NOT EXECUTED:** 21 C1 SQL cases, real tenant-result
   mapping, platform acceptance and phone display. The exact Docker engine pipe
   is unavailable; no shared service restart or unknown-resource action occurred.
