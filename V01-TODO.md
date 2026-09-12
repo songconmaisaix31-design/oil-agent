@@ -2,6 +2,49 @@
 
 ## Active bounded increment: contextual guards and controlled trial preparation
 
+### Final code outcome: independently accepted synthetic repair and preparation
+
+E accepts I code `239baa69b06bf9ede8c71391d12a2cb89e1a1064` within this
+bounded increment. [Full CI 34669549557](https://github.com/songconmaisaix31-design/oil-agent/actions/runs/34669549557)
+passed 375 core and 237 integration tests on separate real PostgreSQL services,
+zero failures/errors/skips; 23 frontend tests, schema, TypeScript/Vite, shell and
+both Linux image builds passed. [Deployment CI 34669549519](https://github.com/songconmaisaix31-design/oil-agent/actions/runs/34669549519)
+passed 70 overlapping checks plus actual Nginx syntax/key loading with network
+none. I and E independently downloaded JUnit; M independently verified exact
+run/job success and origin SHA. E's evidence-only commit is
+`6cf292b347f801d442db68734708b51e89ebdc41`.
+
+R-16 is repaired by AB `dea13fa81825f1160ef44187885a98c569375edb` after E
+first reproduced eight failures. The original E test files remain unchanged and
+now pass; incident/impact negation, planning, exercise/training/procedure, archive,
+stale/future/ambiguous controls and PostgreSQL recipient/revision corrections
+remain covered. The helper handles bounded casualty-only predicates, not general
+Chinese language understanding. R-17 preparation and its Linux compatibility
+defect are resolved by E `c557665` and `3afa038214309188d26db2448eb5be076d42e7ed`:
+opt-in trial overlay, internal separate database, explicit destination pins,
+loopback TLS/callback routing, bounded logs and read-only cold/retained preflight.
+Runtime activation, packet filtering, trusted TLS and physical recovery are not
+accepted by these configuration tests.
+
+Only final report/governance adoption remains after this accepted code; it must
+preserve application/test/deployment bytes and receive I integration plus E's
+last equivalence/remote audit. All earlier checkpoints below are historical.
+
+| Remaining item | Classification | Actual evidence / next required action |
+| --- | --- | --- |
+| Source/model/rules/budget and Feishu/runtime inputs (R-05/R-06) | 缺外部授权 | No new approval or secret supplied; the single minimum intake below remains pending. Only matching live actions pause. |
+| Real source authentication, MCP discovery/parameters and incremental records (R-01/R-07) | 已有实现待实测 | NOT EXECUTED; 0 product source requests, no real incremental record accepted. Every MCP wire request, including initialization/discovery/pages/retries, must reserve budget. |
+| Approved model, actual usage and ordinary-message silence (R-02/R-07) | 已有实现待实测 | NOT EXECUTED; 0 model requests/tokens. Synthetic rules/cost-counter tests are separate from real accuracy and billing evidence. |
+| Feishu platform acceptance for labeled exercise (R-04) | 已有实现待实测 | NOT EXECUTED; 0 platform requests/sends. Exact approved test recipient and exercise label still required. |
+| Phone viewing (R-04) | 已有实现待实测 | NOT EXECUTED; no phone display or notification observation. |
+| Real login and human acknowledgement (R-04) | 已有实现待实测 | NOT EXECUTED; no authenticated real user confirmation. |
+| Trial host egress/TLS/callbacks/stop and recovery (R-03/R-17) | 已有实现待实测 | Preparation code passed; no host firewall/network activation or live trial startup/recovery. User-approved runtime and private injection required. |
+| Legacy E container and interrupted schema cleanup (R-14) | 已有实现待实测 | Actual targeted Docker check failed because the Linux engine pipe is absent. Exact known E resource remains unverified; no shared daemon restart, stop, deletion or cross-track operation. |
+| Production factory (R-13) | 代码尚未实现 | Still deliberately rejects startup; no relabeling or gate bypass. |
+
+Paid product-call cost is 0; development-agent/CI billing is unmeasured. No new
+services were bought, no public port activated, and no recipients expanded.
+
 The user accepts `cd6e8d9d87acbde9b844b4568ab2df72e00bab8d` as the
 simulated-integration baseline for real-integration code only. Real source,
 model, phone and production acceptance remain NOT EXECUTED. The earlier
@@ -52,10 +95,9 @@ factory/environment seam in `deploy/compose.yaml` and integrated startup notes
 in `docs/runbook.md`. No simultaneous edits to those seams. No production
 factory work, project rebuild, new services purchase or public ingress activation.
 
-Current gaps for this increment: R-16 `已有实现待实测` contextual guard repair
-AB `dea13fa` integrated by I at `f8c549b`, pending independent E/complete CI;
-R-17 `代码尚未实现` remaining deployment compatibility/retained-resource repair
-after E `c557665` preparation; R-14 `已有实现待实测` exact E container final state. R-05/R-06
+R-16/R-17 implementation and original failed assertions are now accepted at
+`239baa6`, superseding the intermediate pending/failure records below. R-14
+remains `已有实现待实测` for exact E container final state. R-05/R-06
 remain `缺外部授权`; only their corresponding live actions pause. MCP initialize,
 discovery, pagination and every explicit retry count against the approved request
 budget; never silently increase cost or hide degraded monitoring. Real source,
