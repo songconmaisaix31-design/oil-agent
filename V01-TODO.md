@@ -88,13 +88,32 @@ implementation. No additional workers/worktrees/branches are needed.
 | ID | Classification | Gap / owner | Evidence and next gate |
 | --- | --- | --- | --- |
 | R-01 | 已有实现待实测 | Concrete news network transport and adapter / AB | Implemented in d2f2d17fc0687dd75e56b21394830563df59e534: pinned HTTPS transport, Jin10 MCP negotiation/schema/flash adaptation; 79 ingestion checks including 37 synthetic MCP/HTTP cases passed; I/E integration and approved real call pending |
-| R-02 | 代码尚未实现 | Concrete model client and approved-rule assessment / AB | ModelClient protocol exists; trusted ClaimReview currently required per record; implement bounded client and configured rules while preserving evidence validation |
-| R-03 | 代码尚未实现 | Trial assembly and classification / C + I | First construction/history increment aa7d638 is integrated in I26e3391; runtime reservations, send/session/data-scope activation and trial factory are still being implemented |
+| R-02 | 已有实现待实测 | Concrete model client and approved-rule assessment / AB | OpenAI Responses candidate and reusable approved rubric implemented at 85c9fb3e69b657308366e4d50248b0a4816d8bc5; 69 intelligence tests passed; I candidate 05231c5 awaits independent E review and approved real model/rules |
+| R-03 | 代码尚未实现 | Final trial assembly / I | C operational permissions, scoped sessions, budgets and data isolation delivered at ce3a66673afc15eef20337ac7acf300bacab36d3 (88 C tests including actual PostgreSQL passed); I factory integration, D generated types and E full-chain acceptance are in progress |
 | R-04 | 已有实现待实测 | Feishu send/OAuth/signed callback / D + E | Existing code repaired at cfda44473a0c260b51f9762624166a6b419a6ce0: app-bound identity, trial test-recipient checks and labels; 98 Python/18 web checks passed; I/E candidate and actual tenant login/phone receipt/ack remain unverified |
 | R-05 | 缺外部授权 | Source/model/provider/rules/budget and project credential injection / user | One minimal external-input request is pending; no unrelated credential search or paid calls |
 | R-06 | 缺外部授权 | Feishu app/tenant, exact test-recipient allowlist, redirect/callback/public URL and test phone / user | No customer-scope expansion; credentials must not enter chat, public Git or logs |
 | R-07 | 已有实现待实测 | Real non-urgent source-to-model-to-storage chain and zero-alert result / AB + C + I + E | Requires R-01/R-02/R-03 and approved inputs; a marked urgent exercise is separate evidence |
 | R-08 | 已有实现待实测 | Authorized real quote sample, external deployment probes and 7/14-day operation | Outside this increment's first chain; preserve prior gates and do not claim production acceptance |
+| R-09 | 代码尚未实现 | Four known E integration-test binding migrations / E | CI 34663681247 reports 94 passed/4 failed: three contradictory fixture-production sender cases and one stale tenant-only identity in the quote operation test; migrate to scoped trial exercise/identity without weakening assertions |
+
+Current construction decisions: rule identity is exactly authorization_ref@version,
+with @ excluded from either component, and the loaded rule must match both model
+and send permission references. Rules use reusable bounded source/facility/event/
+occurrence/impact/currentness criteria, not a complete-message template or a
+per-message ClaimReview. They remain conservative literal-text rubrics; approved
+real examples and false-positive/false-negative evaluation remain outstanding.
+I reads only fixed project credential variables after matching enable/permission
+configuration, never arbitrary paths/environment names from credentials_ref.
+Trial process-env startup must parse OIL_FIXTURE_DATASET=null explicitly (C fixed).
+
+Further bounded evidence: E independently passed source candidate 85fdcff with 86
+non-PostgreSQL checks plus 3 real PostgreSQL checks, including actual HTTPX/HTTPCore
+framing over an isolated network backend and transactional cursor/revision recovery.
+This is LIMITED_LOCAL_PASS, not real TLS/provider acceptance. Model candidate
+05231c5 and source reservation-guard successor 54b9c1d are pushed for E review;
+AB source guard code is 412aded9d5207fd542615facc5dd7fde55703752. Full candidate
+acceptance remains FAIL pending R-03/R-09 and the subsequent complete checks.
 
 Minimal external inputs were requested once: (1) approved source/interface/license,
 (2) approved model provider/model and this run's budget, (3) alert rules and
