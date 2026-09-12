@@ -4,6 +4,72 @@ Provider replies and market content in this report are synthetic. Actual local
 file/ACL observations are labeled separately. No source license, production
 account, model, Feishu recipient, phone receipt or deployed server is accepted.
 
+## C1 entry harness correction: 26 focused synthetic cases pass
+
+On 2026-09-12, E checked its retained branch/worktree was clean at
+`618e173cbb5549b55662349cbe9f9b29394e2f9e`, verified the authorized ancestors,
+and ordinarily fast-forwarded to I's committed candidate
+`56e1be163ab8c6faeefc6e858b9186a4b9c2c7d6`. That candidate includes C
+`7167c63d61a9501c9a69e4a112d9c4a64e86911b`, E's original RED history and M
+`0a38be78b606e62f6de36a17a98a81d1ecbd4ebd`. No domain source was changed.
+This section records a test-harness repair, not final acceptance of I's next
+integrated candidate, a real send, or a new business authorization.
+
+Three harness mismatches were observed sequentially, without masking failures:
+
+1. Unchanged E tests reproduced **1 failed, 25 passed** on exact I `56e1be1`:
+   product calls were empty. E set `sys.argv` then called `c1_product.main()`;
+   the actual API intentionally treats no arguments as preparation, while the
+   module boundary forwards `sys.argv[1:]` explicitly. Both positive and nine
+   negative product cases now call `main(["send-once"])`, and the misleading
+   `sys.argv` override was removed. This tests the supported execution path.
+2. With explicit invocation, **1 failed, 25 passed** remained: the operation
+   sequence included an additional `authorize` after `prepare`. The assertion
+   now requires `factory, authorize, prepare, authorize, send, dispose`, thereby
+   verifying permission before preparation effects and again before sending.
+   No production authorization check was removed or bypassed.
+3. With that sequence required, the single positive case still failed at
+   `assert result == 0`: actual result was **3 / C1_UNKNOWN**. Source inspection
+   confirmed the product validates `Delivery` through `model_dump`; E's old
+   `SimpleNamespace` lacked that method. The sender double now returns the
+   existing validated `Delivery` DTO with synthetic delivery/intent/recipient
+   IDs, revision, attempt and aware acceptance/update times. The expected
+   accepted receipt and UNKNOWN safety semantics remain unchanged.
+
+The exact positive parent fixed-child assertion from RED commit
+`2ca3c87577b7b0283e69d475f7822a7623622923` is unchanged. All 26 existing cases
+remain, with no additional audit scope. The nine product-denial cases now pass
+at the actual explicit send-once API, so their former preparation-only passes
+are superseded. The final positive case reaches the real fixed product wrapper
+and a patched bootstrap target despite hostile ambient factory settings; the
+real bootstrap assembly remains I's separate integration check.
+
+All commands used the same unchanged application candidate:
+
+| Command | Actual E result |
+| --- | --- |
+| `uv run --locked pytest tests/integration/test_c1_entry.py -q --tb=short --junitxml=e2e/runtime-artifacts/c1-entry-harness-repro.xml` | 1 failed, 25 passed; 0.65 seconds; pytest exit 1 |
+| `uv run --locked pytest tests/integration/test_c1_entry.py -q --tb=short --junitxml=e2e/runtime-artifacts/c1-entry-explicit-repro.xml` | 1 failed, 25 passed; 0.64 seconds; pytest exit 1 |
+| `uv run --locked pytest tests/integration/test_c1_entry.py::test_product_uses_fixed_factory_and_existing_runtime_order -q --tb=short --junitxml=e2e/runtime-artifacts/c1-entry-delivery-repro.xml` | 1 failed; 0.62 seconds; exit 1 |
+| `uv run --locked pytest tests/integration/test_c1_entry.py -q --tb=short --junitxml=e2e/runtime-artifacts/c1-entry-harness-green.xml` | **26 passed**, 0.49 seconds; exit 0 |
+| `uv run --locked ruff check tests/integration/test_c1_entry.py` | Passed |
+| `uv run --locked ruff format --check tests/integration/test_c1_entry.py` | Passed; one file already formatted |
+| `git diff --check` | Passed |
+
+Disposition: the reproduced failures were E harness errors; these bounded checks
+found no remaining executable product defect. I must re-integrate this correction
+and verify its fixed bootstrap seam/build, followed by E acceptance of the exact
+final candidate. I's later `1498863514453c15b26617514626f0d547149d6a` was reported
+by M as additional I-owned factory evidence with unchanged C source; E did not
+adopt it or rerun its checks in this correction task.
+
+All permissions, bindings, URLs, deliveries and receipts used here are explicitly
+synthetic. Private files, actual children, network, database and containers were
+not accessed; no full suite, build, CI or old PostgreSQL tests ran. Product
+source/model/Feishu requests, sends and external cost are **0**. Real permission
+and active start remain absent; PostgreSQL transaction/concurrency behavior,
+platform receipt and physical phone display remain **NOT EXECUTED**.
+
 ## C1 controlled-entry regression: RED on accepted preparation baseline
 
 On 2026-09-12, E independently reproduced the missing supported execution entry

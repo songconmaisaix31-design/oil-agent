@@ -8,6 +8,7 @@ from types import SimpleNamespace
 import pytest
 
 from oil_agent import bootstrap
+from oil_agent.contracts.dto import Delivery
 from oil_agent.runtime import c1_private, c1_product
 from oil_agent.runtime.c1_config import C1Preparation, injection_fields
 from oil_agent.runtime.permissions import C1Permission
@@ -106,7 +107,6 @@ def product_input(monkeypatch, config, request):
     for name, value in injection_fields(config).items():
         monkeypatch.setenv(name, value)
     stdin_request(monkeypatch, request)
-    monkeypatch.setattr(c1_private.sys, "argv", ["oil_agent.runtime.c1_product", "send-once"])
 
 
 @pytest.mark.parametrize("entry", ["private", "product"])
@@ -153,7 +153,8 @@ def test_denied_scope_has_no_child_or_runtime_effect(
         result = c1_private.main(["send-once"])
     else:
         product_input(monkeypatch, config, request)
-        result = c1_product.main()
+        # Direct main() deliberately preserves preparation; CLI forwards explicit args.
+        result = c1_product.main(["send-once"])
     assert result == 2
     output = capsys.readouterr()
     assert "CANARY" not in output.out + output.err
@@ -213,11 +214,17 @@ def test_product_uses_fixed_factory_and_existing_runtime_order(entry_scope, monk
 
         async def send_c1_once(self):
             calls.append("send")
+            accepted_at = datetime.now(UTC)
             return (
-                SimpleNamespace(
+                Delivery(
+                    delivery_id="synthetic-entry-delivery",
+                    intent_id="synthetic-entry-intent",
+                    recipient_id=permission.identity.recipient_id,
+                    revision=1,
                     state="accepted",
                     platform_message_id="om_synthetic_entry",
-                    accepted_at=datetime.now(UTC),
+                    accepted_at=accepted_at,
+                    updated_at=accepted_at,
                     attempt=1,
                 ),
             )
@@ -235,8 +242,9 @@ def test_product_uses_fixed_factory_and_existing_runtime_order(entry_scope, monk
 
     # Patch only the fixed bootstrap target, preserving the product wrapper itself.
     monkeypatch.setattr(bootstrap, "build_runtime", fixed_factory)
-    result = c1_product.main()
-    assert calls == ["factory", "authorize", "prepare", "send", "dispose"]
+    result = c1_product.main(["send-once"])
+    # Check permission before preparation effects and recheck immediately before sending.
+    assert calls == ["factory", "authorize", "prepare", "authorize", "send", "dispose"]
     assert result == 0
     output = capsys.readouterr()
     assert "CANARY" not in output.out + output.err
