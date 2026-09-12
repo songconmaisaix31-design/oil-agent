@@ -1,5 +1,82 @@
 # I integration handoff
 
+## Current phase: real integration v1.1
+
+Accepted starting point: `ed1de2e24634e8471e0979cfc168eebec4c12e4c`, local
+fixture/dry-run only. The original I branch/worktree/session were clean and reused.
+Governance `57e72ee` was ordinary-merged at
+`7c55e6add97de8170f43652f8b356abae1e914b8`. The current phase in V01-TODO.md
+supersedes the historical delivery timing and external-gap labels below.
+This is an incremental assembly plan, not a claim that trial wiring exists yet.
+
+### Minimal assembly design and owner contracts
+
+- Keep `build_runtime`'s ordinary default fixture/dry-run behavior. Introduce a
+  separately selectable trial assembly only after adopting C's authoritative
+  classification/permission configuration. Production remains separately gated;
+  never change provenance by rewriting all fixture flags.
+- Construct the repository and C Runtime first, then attach AB source/model/rules
+  and D channels through their existing service protocols. Constructors must not
+  issue network requests or provision users, sessions or recipients.
+- C owns permission validation, durable budgets, transaction/checkpoint/outbox
+  writes, identity provisioning and per-recipient/version decisions. I forwards
+  typed configuration and callbacks, without duplicating those domain rules.
+- AB owns concrete Jin10 and model transport/parsing plus configured approved
+  assessment rules. I will use the exact exported constructor/DTO signatures in
+  each reviewed handoff, without inventing endpoints, models or rules.
+- D's existing FeishuChannel, FeishuIdentityAdapter and FeishuAckVerifier are
+  reused. Channel authorization binds Runtime.authorize_recipient; verifier
+  bindings remain Runtime.resolve_identity and Runtime.verify_delivery_message.
+  Proposed identity subject `tenant:app:open_id` requires coordinated C/D/E
+  adoption; old fixture sessions must not acquire real-identity authority.
+- Environment/Compose changes only expose the owner-defined explicit project
+  injection fields. No unrelated credential lookup, implicit dotenv loading,
+  default recipient injection or product network call is part of assembly.
+
+C supplied these exact async hooks through the coordinator; implementation SHA
+and exported permission models must be adopted before wiring them:
+
+```python
+latest_source_record(source_id, external_id) -> SourceRecord | None
+authorize_source_request(source_id, provider) -> str
+authorize_model_request(provider, model, reserved_tokens, *, urgent=True) -> str
+record_model_usage(reservation_id, input_tokens: int | None, output_tokens: int | None) -> None
+```
+
+The source history hook reads only the latest committed immutable version.
+AB proposes stable IDs/revisions; C validates and commits them atomically with
+the cursor. Source/model authorization occurs before every provider request,
+including explicitly permitted retries. The returned model reservation ID is
+used for actual usage evidence; unknown usage stays unknown. C permission types
+are SourcePermission, ModelPermission, IdentityPermission and TrialSendPermission
+with approval identity, authorization reference, validity interval and exact
+provider/model/recipient/budget scope. These are owner contracts, not grants.
+
+### Incremental verification and classified gaps
+
+For each exact producer commit: ordinary merge, resolve only I-owned glue, run
+relevant locked checks, commit/push, and hand the exact candidate to M for E's
+independent acceptance. Domain defects go back to their original owner. Keep the
+current dispatch open for subsequent increments and repairs until M concludes it.
+
+Assembly verification will use actual services with deterministic provider HTTP
+responses and real PostgreSQL authorization. Required behaviors include unchanged
+fixture defaults, explicit trial classification, missing/expired/wrong-scope
+denials, callbacks bound to current identity/message/version, durable provider
+request budgets/usage, and non-urgent source/model/storage output with no alert.
+Labeled urgent exercises are separate from actual emergencies and require their
+own exact test-recipient permission. No test principal is seeded by a factory.
+
+Current gaps: source/model/rule implementation and trial assembly are **missing
+implementation** (AB/C/I); actual provider/rules/budget/recipient inputs are
+**missing authorization** (user scope); existing Feishu/OAuth/callback adapters
+are **implemented, awaiting real testing** (D/E). Prior local evidence does not
+settle any real chain. Product source calls 0, model calls/tokens 0, Feishu sends
+0 and paid product cost 0 during this design increment. Public documentation,
+dependency, Git and Orca traffic are excluded from product call counts.
+
+## Historical local integration evidence
+
 This is local synthetic integration evidence, not production acceptance. The
 user-supplied Markdown plan is the business source; original PRD/source-report
 documents and real source, identity, recipient and deployment authorization remain
