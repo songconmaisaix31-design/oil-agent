@@ -28,8 +28,10 @@ identity is supported by D.
 | Exercise authorization, if requested | Explicit fixture dataset and exercise scope, separate from real trial source/model permissions; ordinary reports are separately denied by default |
 | Test phone and operator availability | Named approved operator independently observes receipt and performs login/ack; never infer phone receipt from HTTP 200 |
 
-App permissions must cover the documented application-bot message API and the
-user-info fields actually needed (tenant/open ID). Do not request phone/email or
+The narrow documented send permission is `im:message:send_as_bot`; enable the
+application bot capability and publish that approved app version. Keep its
+availability limited to the exact approved test users. User-info needs tenant/open
+ID only. Do not request phone/email or
 directory scopes merely to authenticate. Resolve app availability/bot installation
 and public URL ownership before enabling the trial; this document does not grant
 new platform permissions. See [official references](REFERENCES.md).
