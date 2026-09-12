@@ -440,3 +440,15 @@ transport tests include False/None/empty/blank denial before DNS or HTTP, and sc
 Ruff passed. Full non-PostgreSQL validation passed 310 tests with 63 deselected and
 the same upstream warning. This small follow-up changes no external authorization,
 DTO or constructor shape; product calls remain 0.
+
+R1 multilingual qualifier follow-up: the same conservative qualifier gate now also
+applies to model-proposed statuses. Conditional, procedure, training and exercise
+wording in Chinese/English cannot become occurred facts just because a clause
+contains the approved positive criteria. Nine additional synthetic tests exercise
+two different Chinese current-source phrasings under one unchanged policy and
+conditional/training/procedure/plan/denial/uncertainty negatives. Intelligence tests
+passed 78; full non-PostgreSQL tests passed 319 with 63 deselected and the same
+upstream warning; scoped Ruff and wheel/source build passed. The rules schema is
+unchanged. I owns the approved assembly identity convention
+`authorization_ref + '@' + version`, and checks matching model/trial-send permission
+rules_ref values; AB does not reinterpret that convention as business approval.

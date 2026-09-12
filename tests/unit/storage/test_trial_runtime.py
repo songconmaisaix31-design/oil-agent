@@ -21,6 +21,7 @@ from oil_agent.runtime.settings import Settings
 from oil_agent.storage.models import (
     DeliveryRow,
     IntentRow,
+    PermissionRow,
     ProviderCallRow,
     SessionRow,
     SourceRecordRow,
@@ -279,6 +280,119 @@ async def test_source_wire_budget_and_classification_checked_before_commit(
     assert (
         await rt.latest_source_record(record.source_id, record.external_id)
     ).provenance == "trial"
+
+
+@pytest.mark.asyncio
+async def test_expired_trial_permission_rejects_session_and_queued_send(repository, source_record):
+    channel = Channel(repository)
+    rt = runtime_for_trial(
+        repository,
+        settings=settings_for(repository, outbound_mode="trial", session_ttl_seconds=7200),
+        assessment=Assessment(),
+        channels={"feishu": channel},
+    )
+    token, _, actor = await login(rt)
+    repository.update_config(
+        actor,
+        BusinessConfig(
+            recipient_ids=("trial-recipient",),
+            first_report_policy="credible_single_source",
+            outbound_mode="trial",
+            notification_channel="feishu",
+        ),
+    )
+    repository.persist_batch(batch(record_in_scope(source_record)), expected=None)
+    assert len(await rt.assess_pending()) == 1
+    expiry = rt.settings.identity_permission.expires_at
+    repository.clock = lambda: expiry
+    assert rt.resolve_session(token) is None
+    with pytest.raises(ServiceError) as error:
+        await rt.send_pending()
+    assert error.value.code == ErrorCode.FORBIDDEN
+    assert channel.calls == []
+    with repository.sessions() as session:
+        assert session.scalar(select(DeliveryRow.state)) == "pending"
+
+
+@pytest.mark.asyncio
+async def test_reported_model_overrun_is_preserved_and_blocks_further_requests(repository):
+    rt = runtime_for_trial(
+        repository,
+        settings=settings_for(
+            repository,
+            model_calls_enabled=True,
+            daily_model_calls=3,
+            daily_model_tokens=300,
+            model_permission=permission(repository, "model-overrun")
+            | dict(
+                provider="synthetic-model-provider",
+                model="synthetic-model",
+                credentials_ref="synthetic:model",
+                rules_ref="synthetic:rules",
+                max_tokens=300,
+            ),
+        ),
+    )
+    reservation = await rt.authorize_model_request(
+        "synthetic-model-provider", "synthetic-model", 100
+    )
+    await rt.record_model_usage(reservation, 90, 11)
+    with pytest.raises(ServiceError) as error:
+        await rt.authorize_model_request("synthetic-model-provider", "synthetic-model", 1)
+    assert error.value.code == ErrorCode.FORBIDDEN
+    with repository.sessions() as session:
+        assert session.get(PermissionRow, "model-overrun").blocked is True
+        row = session.get(ProviderCallRow, reservation)
+        assert (row.input_tokens, row.output_tokens, row.reserved_tokens) == (90, 11, 100)
+        assert session.scalar(select(func.count()).select_from(ProviderCallRow)) == 1
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("violation", ["classification", "rights"])
+async def test_source_scope_violation_never_commits_checkpoint_or_records(
+    repository, source_record, violation
+):
+    record = record_in_scope(source_record)
+    updates = (
+        dict(is_fixture=True, provenance="fixture", fixture_dataset="synthetic-wrong-dataset")
+        if violation == "classification"
+        else dict(rights_ref="synthetic:unapproved-rights")
+    )
+    returned = SourceRecord.model_validate(record.model_dump() | updates)
+    calls = []
+
+    class Source:
+        async def fetch(self, cursor, *, context):
+            await rt.authorize_source_request(record.source_id, "synthetic-mcp")
+            calls.append("synthetic-fetch")
+            return batch(returned)
+
+    rt = runtime_for_trial(
+        repository,
+        settings=settings_for(
+            repository,
+            external_sources_enabled=True,
+            source_permissions=(
+                permission(repository, "source-scope")
+                | dict(
+                    source_id=record.source_id,
+                    provider="synthetic-mcp",
+                    rights_ref=record.rights_ref,
+                    credentials_ref="synthetic:source",
+                ),
+            ),
+        ),
+        sources={record.source_id: Source()},
+        external_sources=frozenset({record.source_id}),
+    )
+    with pytest.raises(ServiceError) as error:
+        await rt.ingest(record.source_id)
+    assert error.value.code == ErrorCode.INVALID_OUTPUT
+    assert calls == ["synthetic-fetch"]
+    assert repository.checkpoint(record.source_id) is None
+    with repository.sessions() as session:
+        assert session.scalar(select(func.count()).select_from(SourceRecordRow)) == 0
+        assert session.scalar(select(func.count()).select_from(ProviderCallRow)) == 1
 
 
 @pytest.mark.asyncio

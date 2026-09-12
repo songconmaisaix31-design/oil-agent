@@ -282,3 +282,65 @@ async def test_approved_rule_survives_model_failure_without_inventing_details(so
     assert result.severity == "urgent" and result.evidence[0].excerpt == FIRST
     assert result.processing.model_version is None and not result.impact_path
     assert "model_failed_or_invalid" in result.unknowns
+
+
+def chinese_rules():
+    config = rules()
+    return rules(
+        rules=(
+            PublicationRule(
+                **{
+                    **config.rules[0].model_dump(),
+                    "facility_names": ("合成松柏炼油厂",),
+                    "event_terms": ("火灾",),
+                    "occurrence_terms": ("已发生", "已经发生"),
+                    "impact_terms": ("全面停运", "全部停运"),
+                    "current_terms": ("今日", "目前"),
+                    "exclusion_terms": ("例行检修",),
+                },
+            ),
+        )
+    )
+
+
+async def test_reusable_chinese_rule_accepts_distinct_current_assertions(source_record):
+    engine = service(chinese_rules())
+    messages = (
+        "今日合成松柏炼油厂已发生火灾，装置全面停运。",
+        "合成松柏炼油厂目前因已经发生的火灾造成全部停运。",
+    )
+    results = await engine.assess(
+        tuple(
+            record(source_record, external=f"zh-{index}", text=text)
+            for index, text in enumerate(messages)
+        ),
+        context=context(),
+    )
+    assert len(results) == 2 and not engine.reviews
+    assert all(event.severity == "urgent" for event in results)
+    assert [event.evidence[0].excerpt for event in results] == list(messages)
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "如果今日合成松柏炼油厂已发生火灾，装置全面停运。",
+        "今日合成松柏炼油厂若已发生火灾，装置全面停运。",
+        "培训材料：今日合成松柏炼油厂已发生火灾，装置全面停运。",
+        "处置规程：今日合成松柏炼油厂已发生火灾，装置全面停运。",
+        "应急预案示例：今日合成松柏炼油厂已发生火灾，装置全面停运。",
+        "今日合成松柏炼油厂否认已发生火灾以及装置全面停运。",
+        "今日合成松柏炼油厂计划进行演练：已发生火灾，装置全面停运。",
+        "现场人员说合成松柏炼油厂目前可能已经发生火灾，装置全部停运。",
+    ],
+)
+async def test_chinese_conditional_training_procedure_and_uncertainty_never_promote(
+    source_record, text
+):
+    from oil_agent.intelligence.assessment import guarded_status
+
+    item = record(source_record, text=text)
+    candidate = (await service(chinese_rules()).assess((item,), context=context()))[0]
+    assert candidate.severity == "routine" and candidate.assertion_status != "occurred"
+    assert suggest_notification(None, candidate, allow_first_report=True) is None
+    assert guarded_status(item, "occurred", NOW) != "occurred"

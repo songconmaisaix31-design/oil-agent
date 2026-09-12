@@ -1,7 +1,21 @@
 import { useState } from "react";
 import { api, errorText, unwrap } from "./api";
 import type { Schema } from "./api";
-import { label, Panel, State, time, useLoad } from "./ui";
+import {
+  label,
+  Panel,
+  RuntimeClassification,
+  State,
+  time,
+  useLoad,
+} from "./ui";
+
+const permissionLabels: Record<string, string> = {
+  source_requests: "来源请求",
+  model_requests: "模型请求",
+  real_identity: "飞书身份登录",
+  trial_sending: "试运行发送",
+};
 
 function ConfigForm({ initial }: { initial: Schema<"BusinessConfig"> }) {
   const [draft, setDraft] = useState(initial);
@@ -90,7 +104,7 @@ function ConfigForm({ initial }: { initial: Schema<"BusinessConfig"> }) {
         {draft.phone_enabled ? "已开启" : "关闭"}
       </p>
       <p className="notice">
-        真实外发、短信和电话需完成业务授权与实机验证，本页面暂不提供开启操作。
+        试运行发送由已批准的服务端配置控制；短信和电话保持关闭。
       </p>
       <button className="primary" disabled={busy} onClick={save}>
         {busy ? "保存中…" : "保存配置"}
@@ -135,6 +149,7 @@ export function Configuration({ admin }: { admin: boolean }) {
         <State resource={status} />
         {status.data && (
           <>
+            <RuntimeClassification status={status.data} />
             <dl>
               <dt>数据库</dt>
               <dd>{label(status.data.database)}</dd>
@@ -161,6 +176,26 @@ export function Configuration({ admin }: { admin: boolean }) {
             )}
             {admin && (
               <>
+                <h3>授权配置状态</h3>
+                {Object.entries(status.data.permissions ?? {}).filter(
+                  ([key]) => key !== "production_accepted",
+                ).length ? (
+                  <dl>
+                    {Object.entries(status.data.permissions ?? {})
+                      .filter(([key]) => key !== "production_accepted")
+                      .map(([key, enabled]) => (
+                        <div key={key}>
+                          <dt>{permissionLabels[key] ?? key}</dt>
+                          <dd>{enabled ? "配置有效" : "未就绪"}</dd>
+                        </div>
+                      ))}
+                  </dl>
+                ) : (
+                  <p className="muted">暂无授权配置状态</p>
+                )}
+                <p className="muted">
+                  实际执行仍受额度、有效期、对象版本和接收人限制；配置有效不代表实机验证通过。
+                </p>
                 <h3>运行计数</h3>
                 {Object.keys(status.data.counters ?? {}).length ? (
                   <dl>
