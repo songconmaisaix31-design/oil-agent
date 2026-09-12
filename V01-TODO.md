@@ -37,6 +37,18 @@ may be read once from only that container's `POSTGRES_PASSWORD` into process
 memory and injected only into the test child; no full environment dump, secret
 output/file, credential search or password change is authorized.
 
+At 12:36 UTC, E executed the unchanged 21 C1 cases once on actual PostgreSQL
+16.14: **21 passed, zero failures/skips**, pytest exit 0, 13.26 seconds. Tested
+source was `c725a56a803c77b94efec54956e30a97fea437fd`, with all executable inputs
+equal to integrated `4ec6c480dc971d44d176c3539bcbcade4ee7f802`. Evidence is in E
+`87065fea2e5ccfddad918dabf6db4a39df3d51d1`. Bounded read-only snapshots matched
+the original public schema, 73 relation identities, 29 data objects and 823
+row/sequence-state records; no new schema remained. Original container/volume
+metadata and running state matched afterward. This supersedes the historical
+missing-engine and unexecuted-21-case observations below. It proves actual
+PostgreSQL behavior with synthetic scenario inputs, not platform or phone receipt,
+physical-volume byte preservation or approval to use E's test DB for live C1.
+
 C completed `task_fac942c8c794` / `ctx_393ca3e4ccd4` with no code changes.
 The existing C1 structured stdin maps `database_url` directly to the fixed
 isolated child; both lookup and send need the same persistent approved database.
@@ -247,11 +259,11 @@ Remaining gaps stay separate:
 
 - **NOT IMPLEMENTED:** the production factory before formal delivery.
   Production is not a C1 prerequisite. The narrow E-owned C1 SQL adapter is now
-  implemented in the bounded increment above; its actual SQL execution remains
-  a separate unverified item.
-- **IMPLEMENTED, VERIFICATION NOT EXECUTED:** 21 C1 SQL cases, real tenant-result
-  mapping, platform acceptance and phone display. The exact Docker engine pipe
-  is unavailable; no shared service restart or unknown-resource action occurred.
+  implemented and its 21 actual SQL cases passed in the increment above.
+- **IMPLEMENTED, VERIFICATION NOT EXECUTED:** real tenant-result mapping,
+  platform acceptance and phone display. The E test database is now verified
+  reachable; it is separate from the future C1 database. No shared service restart
+  or unknown-resource action occurred.
 - **MISSING CONFIRMED SCOPE / CONFIGURATION:** tenant binding,
   required platform permissions and an approved isolated database. The current
   test host is now explicitly confirmed, locally mapped by C and checked by E.
