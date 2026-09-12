@@ -452,3 +452,42 @@ upstream warning; scoped Ruff and wheel/source build passed. The rules schema is
 unchanged. I owns the approved assembly identity convention
 `authorization_ref + '@' + version`, and checks matching model/trial-send permission
 rules_ref values; AB does not reinterpret that convention as business approval.
+
+## R1 T05 reviewed-denial regression repair
+
+Base: `651c11428642b8a3ac5549c7d40cc6edff3fe0f7`. The coordinator reported the
+unchanged E PostgreSQL T05 correction test failing on I `8de731b` (CI 34664381567)
+and E `f783bac` (CI 34664692956). Broad BLOCKERS introduced for false-occurrence
+protection also replaced an explicitly reviewed DENIED assertion with UNKNOWN
+when its correction contained the negative word "no".
+
+The additional broad guard now vetoes proposed OCCURRED assertions only. Existing
+specific denial/plan conflict handling, uncertain/archive/future/time-quality
+checks and reusable-rule qualifiers remain intact. No text-specific correction
+template was introduced. A new unit regression first failed on the base, then
+passed after the change, using the exact synthetic correction from E. It checks
+the same stable source family and event candidate, exact revision-2 evidence,
+DENIED/routine/credible-source status, advisory correction rather than a first
+report, immutable original evidence, and no trust promotion without a review.
+C's original-recipient authorization/outbox behavior and E tests were not edited.
+
+Verification on the existing frozen AB environment:
+
+- `uv run --frozen pytest tests/unit/ingestion tests/unit/intelligence tests/unit/reporting -q`:
+  178 passed.
+- `uv run --frozen python -B -m pytest -p no:cacheprovider --confcutdir C:/Users/DW/orca/workspaces/oil-agent/oil-v01-e/tests/integration C:/Users/DW/orca/workspaces/oil-agent/oil-v01-e/tests/integration/test_rules_acceptance.py -q`:
+  15 passed, reading E files without bytecode/cache writes. The test file matches
+  E `f783bac` blob `0013f7ab23cf93f240fbf2e643e077eb4b1a50c8`; positive assertions
+  and conditional/procedure/training negatives remain unchanged.
+- `uv run --frozen pytest -m 'not postgres' -q`: 320 passed, 63 PostgreSQL tests
+  deselected, one existing Starlette/AnyIO deprecation warning.
+- `uv run --frozen ruff check src/oil_agent/intelligence/assessment.py tests/unit/intelligence/test_assessment.py`:
+  passed.
+- `uv build --out-dir "$env:TEMP/oil-ab-fix-denial-ctx-a5f1b25a8789"`:
+  wheel and source distribution built outside the repository.
+
+I/E must adopt the fix SHA and rerun the unchanged PostgreSQL T05 test in remote CI
+to verify durable correction delivery remains limited to original authorized
+recipients. AB did not restart Docker or substitute SQLite for that acceptance.
+This is a bounded code repair; real source/model/Feishu calls remain unauthorized
+and unexecuted, and product usage/cost remains 0.

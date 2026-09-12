@@ -133,7 +133,11 @@ def guarded_status(
         or uncertain
         or archive
         or record.time_quality != TimeQuality.VALID
-        or any(contains(text, term) for term in BLOCKERS)
+        # Broad negative/instruction cues veto occurrence, not an explicit denial.
+        or (
+            proposed == AssertionStatus.OCCURRED
+            and any(contains(text, term) for term in BLOCKERS)
+        )
     ):
         return AssertionStatus.UNKNOWN
     return proposed

@@ -324,6 +324,41 @@ async def test_T05_advisory_correction_and_first_report_gates(source_record):
         suggest_notification(previous, previous.model_copy(update={"event_id": "different"}))
 
 
+async def test_T05_reviewed_negative_correction_retains_denial_and_correction_intent(source_record):
+    original = record(source_record, "The operator reports refinery destruction.", "same-family")
+    correction = record(
+        source_record,
+        "Correction: our destruction report was wrong; no refinery damage is established.",
+        original.record_id,
+        revision=2,
+    )
+    original_snapshot = original.model_dump_json()
+    service = ConservativeAssessmentService(
+        policy=AssessmentPolicy(
+            allow_credible_single_source=True,
+            trusted_publishers=frozenset({original.origin_publisher}),
+        ),
+        reviews=(review(original), review(correction, AssertionStatus.DENIED)),
+        clock=lambda: NOW,
+    )
+    (before,) = await service.assess((original,), context=context())
+    (after,) = await service.assess((original, correction), context=context())
+    assert before.assertion_status == "occurred" and before.severity == "urgent"
+    assert after.event_id == before.event_id
+    assert after.assertion_status == "denied" and after.severity == "routine"
+    assert after.evidence_status == "credible_single_source"
+    assert after.evidence == (quote_reference(correction),)
+    assert after.evidence[0].revision == 2
+    assert suggest_notification(before, after) == "correction"
+    assert suggest_notification(None, after, allow_first_report=True) is None
+    assert original.model_dump_json() == original_snapshot
+    # Negative wording alone grants neither a trusted denial nor an occurred fact.
+    (unreviewed,) = await ConservativeAssessmentService(clock=lambda: NOW).assess(
+        (correction,), context=context()
+    )
+    assert unreviewed.assertion_status == "unknown" and unreviewed.severity == "routine"
+
+
 async def test_same_source_revision_cannot_hide_conflicting_content(source_record):
     a = record(source_record, "Synthetic original statement.")
     b = record(
