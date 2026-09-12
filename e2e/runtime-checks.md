@@ -94,6 +94,46 @@ All real product source/model/Feishu requests, sends, tokens and paid product co
 remain 0. Development/CI billing was not collected. Independent final acceptance
 belongs to a later task on I's exact integrated candidate.
 
+### R17 follow-up: Linux serialization and stopped-resource preflight
+
+The initial deployment commit `c557665440ce537017741d84b46396fac77da404`
+did not pass Linux: [focused CI 34669072808](https://github.com/songconmaisaix31-design/oil-agent/actions/runs/34669072808)
+reported **53 passed, 1 failed**, before reaching Nginx. The failure was E's
+interpretation of `bind.create_host_path`: Compose v2 omits false in JSON, while
+Windows Compose 5.1.4 emits false explicitly. The checker now selects the
+representation using the actual CLI major version; unsupported majors and
+explicit true remain rejected. Original negative assertions are preserved.
+
+The follow-up implements read-only `check-retained` for seven explicitly recorded
+full trial container IDs. It checks ownership labels and configuration paths
+before reading container configuration, then clean stopped state, current image
+identity, commands/environment, security/resource bounds, exact data/TLS mounts,
+loopback ports, DNS pins, IPv6 state and the two exact networks/attachments. It
+does not enumerate unrelated containers, start, stop, detach, delete or replay
+anything. The previous automatic-resume limitation remains; manual recovery now
+has an executable read-only preflight rather than an instruction to bypass the
+cold-start check. UNKNOWN delivery still requires the established reconciliation.
+
+`uv run --locked pytest tests/integration/test_controlled_trial_deploy.py
+tests/integration/test_deploy_safety.py -q --tb=short
+--junitxml=e2e/runtime-artifacts/controlled-trial-preparation.xml` now reports
+**70 passed, 0 failures/errors/skips, 0.84 seconds**, Windows Python 3.13.13.
+Ruff check/format, `bash -n scripts/trial-start.sh` and `git diff --check` pass.
+New negative cases refuse foreign ownership, wrong file paths, running/failed
+containers, old data volumes, changed image/environment, unexpected attachments,
+replaced network IDs, extra published ports and IPv6. Recorded-state checks use
+explicit isolated Docker command doubles; actual retained resource inspection
+and stop/recovery remain NOT EXECUTED because the local engine is unavailable.
+
+I intermediate `9c5cba6baac9d2ed33a653515334046bae3a8bac` was independently
+diffed against E `c557665`: only M governance and I's `.env.example`,
+`docs/runbook.md`, `config/integration-handoff.md` changed. Its integration notes
+correctly distinguish configuration parsing from activation and public callback
+reachability. This review accepts that documentation scope only; the known E
+Linux failure and R16 failures preclude whole-candidate acceptance at that SHA.
+Product source/model/Feishu requests, sends, tokens and paid product cost remain
+0; development/CI billing is unmeasured. No infrastructure was activated.
+
 ### Final independent code acceptance: PASS for synthetic integration
 
 Accepted code: **`63627eee09bc9fb10e32b68f979f7715db199791`**, including I's

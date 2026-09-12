@@ -212,13 +212,24 @@ def resolved_compose(tmp_path_factory, synthetic_tls):
         timeout=20,
     )
     assert result.returncode == 0, "Synthetic Compose parsing failed; no real env was read"
-    return json.loads(result.stdout), cert, key
+    version = (
+        subprocess.check_output(
+            (["docker-compose"] if os.name == "nt" else ["docker", "compose"])
+            + ["version", "--short"],
+            env=env,
+            text=True,
+            timeout=10,
+        )
+        .strip()
+        .lstrip("v")
+    )
+    return json.loads(result.stdout), cert, key, version.startswith("2.")
 
 
 def test_actual_compose_merge_preserves_isolation_and_tls(resolved_compose):
-    config, cert, key = resolved_compose
+    config, cert, key, legacy = resolved_compose
     trial.verify_tls(ORIGIN, cert, key)
-    trial.verify_compose(config, {}, ORIGIN, cert, key)
+    trial.verify_compose(config, {}, ORIGIN, cert, key, legacy_bind_json=legacy)
     assert config["services"]["gateway"]["ports"][0]["host_ip"] == "127.0.0.1"
     assert config["networks"]["trial-egress"]["external"] is True
     assert all(
@@ -250,7 +261,7 @@ def test_actual_compose_merge_preserves_isolation_and_tls(resolved_compose):
     ],
 )
 def test_trial_rejects_unsafe_resolved_configuration(resolved_compose, defect):
-    original, cert, key = resolved_compose
+    original, cert, key, legacy = resolved_compose
     config = copy.deepcopy(original)
     services, pins = config["services"], {}
     if defect == "public-port":
@@ -292,7 +303,219 @@ def test_trial_rejects_unsafe_resolved_configuration(resolved_compose, defect):
     else:
         pins = {"api.openai.com": "8.8.8.8"}
     with pytest.raises(ValueError):
-        trial.verify_compose(config, pins, ORIGIN, cert, key)
+        trial.verify_compose(config, pins, ORIGIN, cert, key, legacy_bind_json=legacy)
+
+
+@pytest.mark.parametrize("legacy", [True, False])
+def test_tls_create_path_true_remains_rejected_in_both_compose_formats(resolved_compose, legacy):
+    original, cert, key, _ = resolved_compose
+    config = copy.deepcopy(original)
+    for mount in config["services"]["gateway"]["volumes"]:
+        mount["bind"] = {"create_host_path": True}
+    with pytest.raises(ValueError):
+        trial.verify_compose(config, {}, ORIGIN, cert, key, legacy_bind_json=legacy)
+
+
+def test_legacy_false_omission_requires_legacy_serializer(resolved_compose):
+    original, cert, key, _ = resolved_compose
+    config = copy.deepcopy(original)
+    for mount in config["services"]["gateway"]["volumes"]:
+        mount["bind"] = {}
+    trial.verify_compose(config, {}, ORIGIN, cert, key, legacy_bind_json=True)
+    with pytest.raises(ValueError):
+        trial.verify_compose(config, {}, ORIGIN, cert, key, legacy_bind_json=False)
+
+
+def retained_double(config):
+    overlay = ROOT / "synthetic-pins-only.yaml"
+    files = ",".join(
+        str(path)
+        for path in (ROOT / "deploy/compose.yaml", ROOT / "deploy/compose.e-trial.yaml", overlay)
+    )
+    ids = {name: f"{index:064x}" for index, name in enumerate(config["services"], start=1)}
+    networks = {
+        trial.NETWORK: dict(
+            Id="a" * 64,
+            Name=trial.NETWORK,
+            Driver="bridge",
+            Internal=False,
+            EnableIPv6=False,
+            Options={"com.docker.network.bridge.name": trial.BRIDGE},
+            Labels={"oil-agent.scope": "e-controlled-trial"},
+            Containers={},
+        ),
+        "oil-agent-e-trial_backend": dict(
+            Id="b" * 64,
+            Name="oil-agent-e-trial_backend",
+            Driver="bridge",
+            Internal=True,
+            EnableIPv6=False,
+            Options={"com.docker.network.bridge.name": trial.BACKEND},
+            Labels={
+                "com.docker.compose.project": "oil-agent-e-trial",
+                "com.docker.compose.network": "backend",
+            },
+            Containers={},
+        ),
+    }
+    containers, images = {}, {}
+    for name, service in config["services"].items():
+        image = {
+            "Id": "c" * 64,
+            "Config": {"Entrypoint": ["synthetic-entrypoint"], "Cmd": ["synthetic-default"]},
+        }
+        images[service["image"]] = image
+        labels = {
+            "com.docker.compose.project": "oil-agent-e-trial",
+            "com.docker.compose.service": name,
+            "com.docker.compose.project.config_files": files,
+            "com.docker.compose.project.working_dir": str(ROOT / "deploy"),
+            "com.docker.compose.oneoff": "False",
+        }
+        command = service.get("command")
+        if command is None:
+            command = image["Config"]["Cmd"]
+        containers[ids[name]] = {
+            "Id": ids[name],
+            "Name": f"/oil-agent-e-trial-{name}-1",
+            "Image": image["Id"],
+            "State": {"Status": "exited", "ExitCode": 0, "Running": False, "OOMKilled": False},
+            "Config": {
+                "Labels": labels,
+                "Image": service["image"],
+                "Cmd": command,
+                "Entrypoint": image["Config"]["Entrypoint"],
+                "Env": [f"{key}={value}" for key, value in service.get("environment", {}).items()],
+            },
+            "HostConfig": {
+                "Privileged": False,
+                "SecurityOpt": ["no-new-privileges:true"],
+                "ReadonlyRootfs": name != "postgres",
+                "CapDrop": ["ALL"],
+                "Memory": service["mem_limit"],
+                "PidsLimit": service["pids_limit"],
+                "Dns": service.get("dns"),
+                "Sysctls": service.get("sysctls"),
+                "PortBindings": {"8443/tcp": [{"HostIp": "127.0.0.1", "HostPort": "18443"}]}
+                if name == "gateway"
+                else {},
+            },
+            "NetworkSettings": {
+                "Networks": {
+                    config["networks"][key]["name"]: {
+                        "NetworkID": networks[config["networks"][key]["name"]]["Id"]
+                    }
+                    for key in service["networks"]
+                }
+            },
+            "Mounts": [],
+        }
+        if name == "postgres":
+            containers[ids[name]]["Mounts"] = [
+                {
+                    "Type": "volume",
+                    "Name": "oil-agent-e-trial_trial-data",
+                    "Destination": "/var/lib/postgresql/data",
+                }
+            ]
+        elif name == "gateway":
+            containers[ids[name]]["Mounts"] = [
+                {
+                    "Type": "bind",
+                    "Source": item["source"],
+                    "Destination": item["target"],
+                    "RW": False,
+                }
+                for item in service["volumes"]
+            ]
+    calls = []
+
+    def read(args):
+        calls.append(args)
+        assert args[:3] in (
+            ["docker", "container", "inspect"],
+            ["docker", "image", "inspect"],
+            ["docker", "network", "inspect"],
+        ), "No mutation may run during retained checks"
+        if args[1] == "network":
+            return json.dumps([networks[args[-1]]])
+        if args[1] == "image":
+            return json.dumps(images[args[-1]])
+        container = containers[args[-1]]
+        return json.dumps(
+            container["Config"]["Labels"] if args[-2] == "{{json .Config.Labels}}" else container
+        )
+
+    return ids, containers, networks, images, calls, overlay, read
+
+
+def test_readonly_retained_check_accepts_exact_stopped_resources(resolved_compose):
+    config, _, _, _ = resolved_compose
+    ids, containers, _, _, calls, overlay, read = retained_double(config)
+    # Docker uses null for absent ExtraHosts and may include tmpfs in Mounts.
+    containers[ids["api"]]["HostConfig"]["ExtraHosts"] = None
+    containers[ids["gateway"]]["Mounts"].append({"Type": "tmpfs", "Destination": "/tmp"})
+    trial.verify_retained(config, list(ids.values()), overlay, read)
+    assert len(calls) == 23  # Seven label/container/image checks and two networks; no exec/start.
+
+
+@pytest.mark.parametrize(
+    "defect",
+    [
+        "wrong-owner",
+        "running",
+        "failed-stop",
+        "old-volume",
+        "changed-env",
+        "changed-image",
+        "unknown-attachment",
+        "replaced-network",
+        "extra-port",
+        "wrong-files",
+        "ipv6",
+    ],
+)
+def test_retained_revalidation_rejects_changed_or_unknown_state(resolved_compose, defect):
+    config, _, _, _ = resolved_compose
+    ids, containers, networks, images, _, overlay, read = retained_double(config)
+    api = containers[ids["api"]]
+    if defect == "wrong-owner":
+        api["Config"]["Labels"]["com.docker.compose.project"] = "oil-agent-c"
+    elif defect == "running":
+        api["State"]["Running"] = True
+    elif defect == "failed-stop":
+        api["State"]["ExitCode"] = 137
+    elif defect == "old-volume":
+        containers[ids["postgres"]]["Mounts"][0]["Name"] = "oil-agent-e_postgres-data"
+    elif defect == "changed-env":
+        api["Config"]["Env"] = []
+    elif defect == "changed-image":
+        api["Image"] = "d" * 64
+    elif defect == "unknown-attachment":
+        networks[trial.NETWORK]["Containers"] = {"f" * 64: {"Name": "unrelated"}}
+    elif defect == "replaced-network":
+        api["NetworkSettings"]["Networks"][trial.NETWORK]["NetworkID"] = "e" * 64
+    elif defect == "extra-port":
+        api["HostConfig"]["PortBindings"] = {
+            "8000/tcp": [{"HostIp": "0.0.0.0", "HostPort": "8000"}]
+        }
+    elif defect == "wrong-files":
+        api["Config"]["Labels"]["com.docker.compose.project.config_files"] = "unrelated.yaml"
+    else:
+        api["HostConfig"]["Sysctls"] = {"net.ipv6.conf.all.disable_ipv6": "0"}
+    with pytest.raises(ValueError):
+        trial.verify_retained(config, list(ids.values()), overlay, read)
+
+
+def test_retained_check_rejects_short_or_missing_ids_before_inspection(resolved_compose):
+    config, _, _, _ = resolved_compose
+    with pytest.raises(ValueError):
+        trial.verify_retained(
+            config,
+            ["short"],
+            ROOT / "pins.yaml",
+            lambda _: pytest.fail("Invalid IDs must not trigger Docker reads"),
+        )
 
 
 def test_default_check_denies_missing_prerequisites_without_commands(tmp_path, monkeypatch, capsys):

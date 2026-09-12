@@ -130,15 +130,26 @@ With the exact verified Compose selection and explicit injection file, stop
 volumes, network and firewall; no `down`, `prune`, force removal or data deletion.
 Do not report a graceful stop if it timed out or the daemon disappeared.
 
-Resume requires a new scope/TLS/firewall check; the pre-start network check is
-intentionally for a fresh unattached network, so it refuses retained attachments.
-Do not detach resources to bypass that refusal. A reviewed operator resume must
-revalidate the retained exact container/network identities before using Compose
-`start`; automatic retained-resource resume is not implemented in this increment.
-Run C's existing `recover` while workers remain stopped before admitting work:
+Resume requires `controlled_trial.py check-retained` with the same TLS/pins/
+origin/explicit-injection arguments as `check`, plus seven repeated
+`--container-id` arguments containing the full recorded IDs for postgres, init,
+api, ingest, urgent, normal and gateway. The action is read-only: it requires all
+seven to be cleanly stopped, unique services, exact project/config-file/working-
+directory labels, matching environment, selected image ID/entrypoint, mounts,
+ports, resource/privilege/DNS/IPv6 bounds and network IDs. Unknown attachments,
+changed resources or an incomplete ID set refuse. It never lists or changes
+unrelated resources and never detaches resources to bypass the cold-start check.
+Configuration/secret comparisons stay in memory without printing their values.
+
+After this revalidation and separate live-action approval, an operator starts
+only PostgreSQL and runs C's existing `recover` with the same verified Compose
+selection (`run --no-deps init recover`) while all workers remain stopped:
 expired in-flight deliveries become UNKNOWN, and UNKNOWN requires reconciliation,
 not manual retry or a new delivery row. No database checkpoint/outbox reset is
-allowed. The existing PostgreSQL recovery tests remain the application evidence;
+allowed. Preserve the recovery one-off container as evidence, then start the
+already verified API/queue/gateway services. Automatic activation is not part of
+the checker. Revalidate again if configuration/images/firewall/identities changed.
+The existing PostgreSQL recovery tests remain the application evidence;
 new-host stop/resume, backup/restore and physical-kill acceptance are NOT EXECUTED.
 
 Official references checked for this preparation: Docker's
@@ -146,3 +157,5 @@ Official references checked for this preparation: Docker's
 [Compose override/reset semantics](https://docs.docker.com/reference/compose-file/merge/),
 and [network DNS/custom-host behavior](https://docs.docker.com/engine/network/).
 Compose `!override` requires 2.24.4 or newer; this workspace parsed with 5.1.4.
+The checker handles Compose v2's false-bool omission and v5's explicit false
+representation separately; explicit `create_host_path: true` stays rejected.
