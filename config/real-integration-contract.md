@@ -1,14 +1,17 @@
 # C real integration construction contract
 
 This is a construction handoff, not permission to call a provider or production acceptance.
-The first increment defines validated settings and committed source history; runtime
-request reservation, session scope and send gates follow in the next C increment.
+The first increment defines validated settings and committed source history; the
+operational increment implements request reservation, session scope and trial gates.
 Default settings remain fixture/dry-run with every external enable flag false.
 
 ## Settings (C-owned; I injects, never searches credentials)
 
 `Settings.data_provenance` uses existing `Provenance`: `fixture`, `trial`, `production`.
 `fixture_dataset` is required only for fixture and must explicitly be `None` otherwise.
+Process environment uses `OIL_DATA_PROVENANCE=trial` and `OIL_FIXTURE_DATASET=null`;
+Settings parses the literal `null` as None, including CLI/API startup. Permission
+objects/tuples use JSON environment values. There is no automatic dotenv loader.
 `outbound_mode` accepts `dry_run`, `trial`, `production`; permission to read real sources
 or call a model does not turn on sending or establish production acceptance.
 
@@ -51,7 +54,7 @@ It reads the latest committed immutable source revision and rejects another data
 classification/dataset. AB reuses stable record IDs, returns revision candidates and
 does not persist cursors; C atomically commits records plus pending work plus checkpoint.
 
-Reserved signatures for the next operational increment:
+Implemented operational signatures:
 
 ```python
 await runtime.authorize_source_request(source_id: str, provider: str) -> str
@@ -80,6 +83,43 @@ D also verifies its server-owned recipient mapping. `FeishuAckVerifier` uses
 `delivery_matches=runtime.verify_delivery_message`. C owns authoritative body labels;
 D owns card/mobile rendering. No parallel edits to I's bootstrap, CLI factory seam,
 environment file or integration handoff are authorized.
+
+The actual Jin10 provider identifier is `jin10` (not a synthetic `jin10_mcp` label).
+The source/model hooks reserve each real wire request. IdentityPermission.max_requests
+counts bounded OAuth exchanges, and TrialSendPermission.max_requests counts message
+send attempts; D owns the bounded subordinate token/message HTTP operations. These
+operation counters must not be reported as measured total platform HTTP usage/cost.
+
+Application schema head is `0003_trial`: sessions add authentication_scope; immutable
+permission_scopes and provider_calls persist approval budgets and optional usage.
+Run C's existing `runtime.cli migrate` explicitly. No queue replacement or new scheduler.
+Unknown model usage stays null and retains its reservation; duplicate matching usage
+is idempotent, mismatched replay rejects, and reported usage exceeding its reservation
+blocks further requests under the same approval. No credential/prompt/provider body
+is stored in this ledger. Sources/models are independently permitted; sending still
+requires explicit trial or production configuration. Production is not accepted.
+
+`python -m oil_agent.runtime.provision --actor-id APPROVED_ID` validates one exact
+approved identity without writing. Add `--apply` only for that approved identity to
+create its user mapping, idempotently; conflicts reject without rewrites. It creates
+no session and invokes no provider. The old runtime.cli provision-user command rejects
+real/trial settings; there is no fixture alias. Real sessions are issued only after
+the configured identity adapter and are bound to the current identity approval ID;
+null-scope local/test sessions are rejected by real runtime API authorization.
+
+Runtime data scope filters pending claims, source checkpoint reuse, event/report views,
+evidence/feedback/ack/import access, report snapshots, outbox claims and recovery.
+Mixed retained data is neither relabeled nor silently promoted. A fixture exercise
+uses a fixture runtime/dataset plus an explicit trial send grant; bodies say 合成演练.
+Trial data bodies say 试运行. Non-urgent trial events create no notification intent;
+daily trial reports stay silent unless allow_reports is explicitly approved. Correction
+and withdrawal routing still uses original, currently authorized recipients.
+
+OpenAPI is regenerated from C's Python API. BusinessConfig/RuntimeStatus outbound_mode
+adds `trial`; RuntimeStatus adds data_provenance, nonsecret permission booleans and
+production_accepted=false. D must regenerate its client from that sole schema. Actual
+capabilities require I wiring plus E independent verification; permission fields alone
+are not proof of provider receipt, source quality, actual usage or production acceptance.
 
 Usage so far: product source requests 0, product model requests/tokens 0, Feishu sends
 and login requests 0, paid product cost 0. Missing implementation is distinct from

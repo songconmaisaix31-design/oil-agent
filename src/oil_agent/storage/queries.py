@@ -62,6 +62,8 @@ class QueryRepository:
             reject(ErrorCode.FORBIDDEN, "Production readiness gates are not satisfied")
         if config.outbound_mode == "dry_run" and config.notification_channel != "dry_run":
             reject(ErrorCode.FORBIDDEN, "Dry-run configuration cannot select a live channel")
+        if config.outbound_mode == "trial" and not self.trial_config_gate(config):
+            reject(ErrorCode.FORBIDDEN, "Trial configuration exceeds its approved scope")
         with self.sessions.begin() as session:
             self.check_actor(session, actor, admin=True)
             row = session.get(BusinessConfigRow, 1, with_for_update=True)
@@ -104,6 +106,7 @@ class QueryRepository:
             )
             .where(
                 SubjectRow.kind == kind,
+                *self.payload_scope(VersionRow.payload),
                 AuthorizationRow.recipient_id == actor.recipient_id,
                 AuthorizationRow.active.is_(True),
             )
@@ -132,6 +135,11 @@ class QueryRepository:
             subject = session.get(SubjectRow, event_id)
             if not subject or subject.kind != "event":
                 reject(ErrorCode.FORBIDDEN, "Event is not authorized")
+            self.require_data_scope(
+                EventAssessment.model_validate(
+                    session.get(VersionRow, (event_id, subject.current_revision)).payload
+                )
+            )
             grants = session.scalars(
                 select(AuthorizationRow)
                 .where(
@@ -225,9 +233,11 @@ class QueryRepository:
             )
             if not permitted:
                 reject(ErrorCode.FORBIDDEN, "Evidence is not authorized")
-            return SourceRecord.model_validate(
+            record = SourceRecord.model_validate(
                 session.get(SourceRecordRow, (record_id, revision)).payload
             )
+            self.require_data_scope(record)
+            return record
 
     def feedback(self, actor, event_id, request):
         with self.sessions.begin() as session:
@@ -262,6 +272,8 @@ class QueryRepository:
             return item
 
     def save_preview(self, actor, parsed):
+        for record in parsed.records:
+            self.require_data_scope(record)
         refs = {(record.record_id, record.revision): record for record in parsed.records}
         if len(refs) != len(parsed.records):
             reject(ErrorCode.INVALID_OUTPUT, "Quote source records must be unique")
@@ -314,6 +326,8 @@ class QueryRepository:
             if preview.expires_at <= self.clock() or not preview.can_import:
                 reject(ErrorCode.INVALID_INPUT, "Preview expired or contains invalid rows")
             records = [SourceRecord.model_validate(r) for r in row.source_records]
+            for record in records:
+                self.require_data_scope(record)
             # Serialize shared quote identities across actor-specific preview imports.
             from oil_agent.storage.base import lock_key
 
@@ -411,11 +425,16 @@ class QueryRepository:
 
     def coverage_gaps(self):
         with self.sessions() as session:
+            scope = self.data_scope()
+            allowed_sources = select(SourceRecordRow.source_id).where(
+                *self.payload_scope(SourceRecordRow.payload)
+            )
             return tuple(
                 f"Source {row.source_id} coverage gap: {row.gap_state}"
                 for row in session.scalars(
                     select(SourceCheckpointRow)
                     .where(SourceCheckpointRow.gap_state != "none")
+                    .where(SourceCheckpointRow.source_id.in_(allowed_sources) if scope else True)
                     .limit(100)
                 )
             )

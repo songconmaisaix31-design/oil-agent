@@ -12,10 +12,65 @@ from sqlalchemy import delete, select, update
 from oil_agent.contracts.dto import Actor, ExternalIdentity, Role
 from oil_agent.contracts.services import ErrorCode
 from oil_agent.storage.base import digest, new_id, reject
-from oil_agent.storage.models import AuthorizationRow, LoginStateRow, SessionRow, UserRow
+from oil_agent.storage.models import (
+    AuthorizationRow,
+    LoginStateRow,
+    SessionRow,
+    UserRow,
+    VersionRow,
+)
 
 
 class AuthRepository:
+    def provision_scoped_user(self, permission, actor_id):
+        approved = next((a for a in permission.identities if a.actor_id == actor_id), None)
+        if approved is None:
+            reject(ErrorCode.FORBIDDEN, "Actor is outside approved trial provisioning scope")
+        with self.sessions.begin() as session:
+            self.bind_permission(session, permission)
+            user = session.get(UserRow, actor_id, with_for_update=True)
+            if user:
+                if not user.active or (
+                    user.recipient_id,
+                    user.provider,
+                    user.provider_subject,
+                    user.role,
+                    user.is_test_recipient,
+                ) != (
+                    approved.recipient_id,
+                    permission.provider,
+                    approved.subject,
+                    approved.role,
+                    True,
+                ):
+                    reject(
+                        ErrorCode.FORBIDDEN, "Existing user conflicts with approved identity scope"
+                    )
+                return "already_provisioned"
+            session.add(
+                UserRow(
+                    actor_id=actor_id,
+                    recipient_id=approved.recipient_id,
+                    provider=permission.provider,
+                    provider_subject=approved.subject,
+                    role=approved.role.value,
+                    active=True,
+                    is_test_recipient=True,
+                )
+            )
+            self.audit(
+                session,
+                "trial_user_provisioned",
+                actor_id,
+                details={"approval_id": permission.approval_id},
+            )
+            return "provisioned"
+
+    def identity_for_actor(self, actor):
+        with self.sessions() as session:
+            _, user = self.check_actor(session, actor)
+            return ExternalIdentity(provider=user.provider, subject=user.provider_subject)
+
     def resolve_identity(self, identity: ExternalIdentity):
         with self.sessions() as session:
             user = session.scalar(
@@ -38,6 +93,8 @@ class AuthRepository:
         *,
         is_test_recipient=False,
     ):
+        if not self.local_provisioning_allowed():
+            reject(ErrorCode.FORBIDDEN, "Use explicitly approved real identity provisioning")
         with self.sessions.begin() as session:
             if session.get(UserRow, actor_id):
                 reject(ErrorCode.INVALID_INPUT, "User already provisioned")
@@ -105,7 +162,9 @@ class AuthRepository:
                 reject(ErrorCode.UNAUTHORIZED, "Invalid login state")
             session.delete(row)
 
-    def issue_session(self, identity: ExternalIdentity, *, duration_seconds=3600):
+    def issue_session(
+        self, identity: ExternalIdentity, *, duration_seconds=3600, authentication_scope=None
+    ):
         """Call only after a trusted adapter authenticates a consumed login state."""
         with self.sessions.begin() as session:
             user = session.scalar(
@@ -127,6 +186,7 @@ class AuthRepository:
                 actor_id=user.actor_id,
                 created_at=now,
                 expires_at=now + timedelta(seconds=min(duration_seconds, 86400)),
+                authentication_scope=authentication_scope,
             )
             session.add(row)
             session.flush()
@@ -143,7 +203,7 @@ class AuthRepository:
             expires_at=row.expires_at,
         )
 
-    def resolve_session(self, token: str | None):
+    def resolve_session(self, token: str | None, *, authentication_scope=None):
         if not token or len(token) > 512:
             return None
         with self.sessions() as session:
@@ -155,6 +215,7 @@ class AuthRepository:
                     SessionRow.revoked_at.is_(None),
                     SessionRow.expires_at > self.clock(),
                     UserRow.active.is_(True),
+                    SessionRow.authentication_scope == authentication_scope,
                 )
             ).first()
             return self._actor(pair[1], pair[0]) if pair else None
@@ -172,7 +233,7 @@ class AuthRepository:
                 UserRow.recipient_id == actor.recipient_id,
             )
         ).first()
-        if not pair:
+        if not pair or not self.actor_scope_gate(pair[1], pair[0]):
             reject(ErrorCode.UNAUTHORIZED, "Session expired or revoked")
         if admin and pair[1].role != Role.ADMIN:
             reject(ErrorCode.FORBIDDEN, "Administrator role required")
@@ -198,4 +259,11 @@ class AuthRepository:
         grant = session.get(AuthorizationRow, (subject_id, revision, actor.recipient_id))
         if not grant or not grant.active:
             reject(ErrorCode.FORBIDDEN, "No current authorization for this revision")
+        row = session.get(VersionRow, (subject_id, revision))
+        scope = self.data_scope()
+        if not row or (
+            scope is not None
+            and (row.payload["provenance"], row.payload["fixture_dataset"]) != scope
+        ):
+            reject(ErrorCode.FORBIDDEN, "Object belongs to another runtime data scope")
         return grant

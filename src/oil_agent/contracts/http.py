@@ -18,6 +18,7 @@ from oil_agent.contracts.dto import (
     EventAssessment,
     FeedbackKind,
     MarketObservation,
+    Provenance,
     ProvenancedDTO,
     Report,
     Revision,
@@ -132,14 +133,17 @@ class BusinessConfig(DTO):
     reminders_enabled: bool = False
     sms_enabled: bool = False
     phone_enabled: bool = False
-    outbound_mode: Literal["dry_run", "production"] = "dry_run"
+    outbound_mode: Literal["dry_run", "trial", "production"] = "dry_run"
     notification_channel: Literal["dry_run", "feishu"] = "dry_run"
 
 
 class RuntimeStatus(DTO):
     stage: Literal["foundation", "runtime"]
     database: Literal["not_configured", "available", "unavailable"]
-    outbound_mode: Literal["dry_run", "production"]
+    outbound_mode: Literal["dry_run", "trial", "production"]
+    data_provenance: Provenance = Provenance.FIXTURE
+    production_accepted: Literal[False] = False
+    permissions: dict[str, bool] = Field(default_factory=dict)
     first_report_policy: str | None
     reminders_enabled: bool
     sms_enabled: bool

@@ -137,6 +137,8 @@ def create_app(settings: Settings | None = None, *, runtime=None) -> FastAPI:
         rt = get_runtime()
         if rt.services.identity is None or not rt.settings.identity_enabled:
             rt.missing("Verified identity")
+        if not rt.local_test_identity():
+            rt.identity_permission()
         state, browser, expires = await rt.db(rt.repository.create_login_state)
         url = rt.services.identity.authorization_url(state)
         if urlsplit(url).scheme != "https" or not urlsplit(url).hostname:
@@ -277,6 +279,9 @@ def create_app(settings: Settings | None = None, *, runtime=None) -> FastAPI:
             if database_ready(settings)
             else "unavailable",
             outbound_mode=config.outbound_mode,
+            data_provenance=settings.data_provenance,
+            production_accepted=False,
+            permissions=runtime.permission_status() if runtime else {},
             first_report_policy=config.first_report_policy,
             reminders_enabled=config.reminders_enabled,
             sms_enabled=False,

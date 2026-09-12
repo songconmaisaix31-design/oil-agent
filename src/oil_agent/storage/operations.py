@@ -127,8 +127,12 @@ class OperationsRepository:
                     continue
                 version = session.get(VersionRow, (grant.subject_id, grant.revision))
                 model = EventAssessment if subject.kind == "event" else Report
-                self._intent(
-                    session, subject, model.model_validate(version.payload), grant, user, "reminder"
-                )
+                item = model.model_validate(version.payload)
+                scope = self.data_scope()
+                if scope is not None and (item.provenance, item.fixture_dataset) != scope:
+                    continue
+                if not self.recipient_scope_gate(item, user):
+                    continue
+                self._intent(session, subject, item, grant, user, "reminder")
                 count += 1
             return count

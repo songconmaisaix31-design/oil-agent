@@ -214,6 +214,7 @@
             "default": "dry_run",
             "enum": [
               "dry_run",
+              "trial",
               "production"
             ],
             "title": "Outbound Mode",
@@ -1566,6 +1567,10 @@
             "title": "Counters",
             "type": "object"
           },
+          "data_provenance": {
+            "$ref": "#/components/schemas/Provenance",
+            "default": "fixture"
+          },
           "database": {
             "enum": [
               "not_configured",
@@ -1596,13 +1601,27 @@
           "outbound_mode": {
             "enum": [
               "dry_run",
+              "trial",
               "production"
             ],
             "title": "Outbound Mode",
             "type": "string"
           },
+          "permissions": {
+            "additionalProperties": {
+              "type": "boolean"
+            },
+            "title": "Permissions",
+            "type": "object"
+          },
           "phone_enabled": {
             "title": "Phone Enabled",
+            "type": "boolean"
+          },
+          "production_accepted": {
+            "const": false,
+            "default": false,
+            "title": "Production Accepted",
             "type": "boolean"
           },
           "reminders_enabled": {
