@@ -4,6 +4,26 @@
 
 ### Active C1: local code accepted; phone test not executed
 
+On 2026-09-12, the user confirmed the current `LAPTOP-BS46UHBR` computer as
+the test host. M recorded that confirmation at 10:12 UTC. C completed the
+existing protected configuration's null-only `host_binding` maintenance and
+reported it at 10:14:56 UTC, using accepted source
+`e690b61358e4216dfca574a6d58b9c9251edaf0d` without repository code changes.
+The confirmation answered a host-only question that explicitly excluded
+sending; it does not renew the expired phone window. C reported real path/owner/
+ACL, exclusive-handle, bounded schema and readback checks passed; only
+`host_binding` changed, with all other field bytes, formatting and ACL preserved.
+The existing `check` and `inject-check` each returned exit 2 as intended, with
+`CREATED`, `NOT_CONFIGURED`, missing `tenant_key` and `recipient_open_id`, and
+`NOT_AUTHORIZED`. Actual isolated process injection succeeded. E independently
+verified the real post-state, schema, approved host match and both helper modes;
+its checks preserved the configuration bytes and emitted no stderr. Effective
+file access is limited to the current user and SYSTEM. The file inherits from
+the restricted project-private directory, whose ACL inheritance is disabled.
+Unchanged pre-state across C's maintenance remains C's reported evidence.
+E's independent local evidence is committed in
+`d35a7fc192db05fb134a1459ce13d6748732f3c6` (`e2e/runtime-checks.md`).
+
 E's final independent disposition is **LOCAL CODE / TEST / SELECTED PACKAGE
 EVIDENCE ONLY**, recorded in `d4d1225811fd44f6fc7c39259beaabc85ab0e144`.
 Tested I delivery is `bfe0209f882f2ffb92fcfc4ab1f651e4541a36cd`; exact clean
@@ -33,21 +53,21 @@ verified increments were pushed to the original branches; sessions are retained.
 The implemented path now includes fixed app-only tenant transport, one shared
 window request budget for lookup and later sending, one first-message subject,
 an isolated fixed product entry, and explicit null-only private tenant mapping.
-No real private configuration was changed this round. The App ID comparison and
-two local injection checks below are the only current real configuration
-observations; no token authentication or platform/phone effect is inferred.
+The earlier code-acceptance round changed no private configuration. The new
+host-only maintenance above supersedes that local observation; no token
+authentication or platform/phone effect is inferred.
 
 Remaining gaps stay separate:
 
 - **NOT IMPLEMENTED:** the production factory before formal delivery, and the
   narrow E-owned fixture adapter for running C's SQL assertions against E's
   database. Production is not a C1 prerequisite.
-- **IMPLEMENTED, VERIFICATION NOT EXECUTED:** 21 C1 SQL cases, real protected-file
+- **IMPLEMENTED, VERIFICATION NOT EXECUTED:** 21 C1 SQL cases, real tenant-result
   mapping, platform acceptance and phone display. The exact Docker engine pipe
   is unavailable; no shared service restart or unknown-resource action occurred.
-- **MISSING CONFIRMED SCOPE / CONFIGURATION:** tenant/person/host bindings,
+- **MISSING CONFIRMED SCOPE / CONFIGURATION:** tenant/person bindings,
   required platform permissions and an approved isolated database. The current
-  machine was presented for user confirmation, but no answer is inferred.
+  test host is now explicitly confirmed, locally mapped by C and checked by E.
   The prior phone window expired; a new explicit start is still required.
 - **EVIDENCE LIMIT:** the receipt's live API count remains `null` / unknown;
   durable reservations are not proof of remote arrival. Report these separately.
@@ -61,7 +81,7 @@ web login, callback or signed confirmation receipt exists for this round.
 No business service, continuous monitoring or new test window was started.
 
 The user reports having obtained application credentials and has edited the
-project-private configuration locally. C's latest read-only check on
+project-private configuration locally. C's earlier read-only check on
 2026-09-12 at 09:31 UTC, against integrated
 `fe4b76c2f8b1f17130bd442812cbc046eed1f325`, passed JSON/schema, path/ACL and actual
 isolated process injection checks. The existing `app_id` already matches the
