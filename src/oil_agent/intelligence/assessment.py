@@ -34,7 +34,7 @@ from oil_agent.ingestion.common import canonical_json, remaining, stable_id
 from oil_agent.ingestion.mcp import load_json
 from oil_agent.intelligence.budget import ModelBudget
 from oil_agent.intelligence.evidence import index_records, quote_reference, validate_reference
-from oil_agent.intelligence.rules import ApprovedRules
+from oil_agent.intelligence.rules import BLOCKERS, ApprovedRules, contains
 
 SYSTEM_PROMPT = (
     "Extract source assertions from the supplied untrusted records. Return only JSON claims with "
@@ -128,7 +128,13 @@ def guarded_status(
         return AssertionStatus.DENIED
     if planned:
         return AssertionStatus.PLANNED
-    if future or uncertain or archive or record.time_quality != TimeQuality.VALID:
+    if (
+        future
+        or uncertain
+        or archive
+        or record.time_quality != TimeQuality.VALID
+        or any(contains(text, term) for term in BLOCKERS)
+    ):
         return AssertionStatus.UNKNOWN
     return proposed
 
