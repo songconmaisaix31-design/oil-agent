@@ -1,6 +1,79 @@
 # V01 delivery board
 
-## Current phase: personal Feishu presence and one dated morning broadcast
+## Current phase: personal emergency + daily Feishu alert agent (free source first)
+
+The user's product goal is now explicit: a Feishu agent that sends urgent alerts
+anytime and one dated daily alert, for the sole personal recipient. The emergency
+and daily pipeline already exists (urgent `assess`/`deliver` and normal
+`report`/`deliver_report` Procrastinate lanes with a daily `report_time` gate).
+This phase wires real transport and a one-way personal send so it operates.
+
+Source decision: use a free source first and leave Jin10 blank for later. The
+chosen free source is EIA (US Energy Information Administration,
+`https://api.eia.gov`, free API key); the existing `parse_eia` offline parser and
+the DeepSeek model (key verified against official `api.deepseek.com`, model
+`deepseek-flash`) are reused. Jin10 token stays empty; its MCP adapter remains
+implemented but unconfigured.
+
+| Owner | Bounded work | Evidence / acceptance |
+| --- | --- | --- |
+| AB | Free EIA source transport: a GET-capable pinned transport plus an EIA series adapter producing bounded `SourceRecord`s, and focused unit tests. | Offline/MockTransport checks; exact host pinning; no live key in tests. |
+| D | One-way personal alert card/send path for event/report content without OAuth login/callback, preserving trial labels and request accounting. | Card render + send-path tests; ordinary fixture/trial guards unchanged. |
+| C | Source permission (`provider=eia` or equivalent) and any runtime/config wiring the free source needs; keep Jin10 and model machinery intact. | Permission validity and budget checks; no secret values in Git/logs. |
+| I | Assemble the free-source + one-way-send path through the trial factory; document new env fields; run affected checks/build. | Offline factory checks; unrelated files unchanged. |
+| E | Bounded real end-to-end: EIA fetch -> model -> daily report -> personal Feishu, recording actual request/token/send counts. | Real provider response + usage/send evidence; no silent zero-cost claim. |
+
+The approved Chinese rules/rubric (`OIL_APPROVED_RULES_JSON`) and the Jin10 token
+remain pending; emergency real-time alerts and authorized assessment wait on them.
+An EIA free API key is still needed for a real fetch; the adapter is built and
+tested without it.
+
+## Previous phase: real-integration v1.1 resume — model transport first
+
+The personal Feishu presence phase is closed. The user confirmed on 2026-09-16
+that both the onboarding card and the 2026-09-13 08:00 Shanghai morning card
+displayed on the Feishu phone. The dated task
+`OilAgent-StatusMorning-20260913` ran at 07:58 with `LastTaskResult 0` and the
+keep-awake helper released with `STATUS_AWAKE_FINISHED`. Phone display is user
+evidence; the morning card's own Feishu message-id has not been re-queried and
+is not claimed here.
+
+The user now directs a resumption of real-integration v1.1 and confirmed the
+DeepSeek key destination is the official API (`https://api.deepseek.com`). The
+bounded DeepSeek adapter is AB `0559e85804232ab0d21cd19bf1c1a6d899b3be60`; the
+trial bootstrap already constructs `DeepSeekResponsesClient` for
+`provider="deepseek"` using `OIL_DEEPSEEK_API_KEY`. Source/model transports are
+implemented, so this phase is configuration plus bounded real verification,
+not new code. The user is supplying a new key; it is awaited.
+
+The intake model text `deepseekV4.1` maps to the official API model id
+`deepseek-flash` (the adapter hard-rejects any other value). Authorized
+assessment and any report still require the pending approved rubric
+(`rules_ref`).
+
+### Real connectivity evidence, checked 2026-09-16
+
+Two bounded raw requests against `https://api.deepseek.com` using the existing
+key from the private intake (never printed). `GET /models` returned 200 with
+ids `deepseek-flash` and `deepseek-v4-pro`; `POST /responses` with
+`model=deepseek-flash` returned 200 (usage input 31 / output 16 reasoning /
+total 47). This proves the key authenticates against the official endpoint and
+that `deepseek-flash` is the correct model id; it is not a product-path request
+and used 2 of the at-most-ten relayed model scope. The model name in the intake
+still reads `deepseekV4.1` and is normalized to `deepseek-flash` in config.
+
+| Owner | Bounded work | Evidence / acceptance |
+| --- | --- | --- |
+| C | Map the protected key into a `ModelPermission(provider=deepseek, model=deepseek-flash, ...)` with the relayed budget (at most ten requests / 100,000 reserved tokens) and the `OIL_DEEPSEEK_API_KEY` process-scoped injection; no secret value in Git/chat/logs. | Exact provider/model, permission validity rechecked before every model request, no credential discovery. |
+| I | Confirm/complete the `deepseek` factory branch and document `OIL_DEEPSEEK_API_KEY` in `.env.example` (currently only `OIL_OPENAI_API_KEY` is noted). | Offline factory checks; unrelated files unchanged. |
+| AB | No code change expected (adapter already at `0559e85`); re-verify `deepseek-flash` naming against the official Responses guide if needed. | Existing DeepSeek unit tests still pass. |
+| E | One bounded real model call (<=10 requests) on bounded content; record model/version, calls, input/output tokens, cost, judgments; ordinary messages stay silent. | Real provider response plus usage/cost evidence; no silent zero-cost claim. |
+
+Source transport (Jin10) and the approved Chinese rubric remain blocked on
+`OIL_JIN10_TOKEN` plus source license, and `OIL_APPROVED_RULES_JSON`,
+respectively. No live source run or authorized report happens before those.
+
+## Previous phase: personal Feishu presence and one dated morning broadcast
 
 The user has filled the project-private API intake with a DeepSeek V4.1 Flash
 key and explicitly instructed: "send if possible, build the application, use
