@@ -112,8 +112,8 @@ class EiaSource:
             data = response_obj["data"]
         except (ValueError, KeyError, TypeError, json.JSONDecodeError):
             raise ServiceError(ErrorCode.INVALID_OUTPUT, "EIA response shape changed") from None
-        if response_obj.get("id") != settings.series_id or not isinstance(data, list):
-            raise ServiceError(ErrorCode.INVALID_OUTPUT, "EIA returned another series identity")
+        if not isinstance(payload, dict) or not isinstance(response_obj, dict) or not isinstance(data, list):
+            raise ServiceError(ErrorCode.INVALID_OUTPUT, "EIA response shape changed")
         records = []
         for point in data[: settings.max_points]:
             if not isinstance(point, dict):
