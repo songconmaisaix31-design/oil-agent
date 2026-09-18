@@ -79,6 +79,24 @@ Real end-to-end remains gated on the approved Chinese rules/rubric
 EIA/DeepSeek/Feishu request or send was made through the product this increment
 and no silent zero-cost claim is recorded.
 
+### Next increment: add a free news source for event alerts (2026-09-18)
+
+The user formally approved proceeding and chose to add a news source, because the
+free EIA source returns price series data, not event text, so it cannot trigger
+the existing text-event assessment rubric. Direction decided:
+
+- Keep EIA (`PET.RWTC.D` and similar) as the **price** source for the daily report
+  and price context.
+- Add **GNews.io** (free tier news API, JSON) as the **event-news** source for
+  urgent event alerts. Free key required (`OIL_GNEWS_API_KEY`), same pattern as EIA.
+
+Still pending before any real model/send run: the actual approved Chinese rules
+JSON content (`OIL_APPROVED_RULES_JSON`) — the user approved in principle but the
+rubric text (facility/event/occurrence/impact terms, severity, validity,
+`authorization_ref`) still needs to be supplied; a GNews free API key; and a clean
+(non-fake-ip) network for the product transport. Send window authorization is
+formally recorded; exact recipient/budget scope to be pinned before any send.
+
 ## Previous phase: real-integration v1.1 resume — model transport first
 
 The personal Feishu presence phase is closed. The user confirmed on 2026-09-16
