@@ -294,3 +294,96 @@ def test_identity_use_requires_original_bound_approval_not_same_id_extended_expi
     rows[fresh.approval_id].blocked = True
     with pytest.raises(ServiceError):
         authorization.current_identity_permission()
+
+
+def eia_source_permission(**changes):
+    values = (
+        grant("synthetic-eia")
+        | dict(
+            source_id="eia-trial",
+            provider="eia",
+            rights_ref="synthetic:eia-rights",
+            credentials_ref="project-injection:eia-key",
+            host="api.eia.gov",
+        )
+        | changes
+    )
+    return SourcePermission(**values)
+
+
+def test_eia_source_is_an_explicitly_supported_free_source():
+    permission = eia_source_permission()
+    assert permission.provider == "eia" and permission.host == "api.eia.gov"
+    assert permission.max_new_fee == 0
+    assert permission.max_requests == 5
+    assert permission.active(NOW)
+    assert not permission.active(NOW + timedelta(days=1))
+    assert not permission.active(NOW + timedelta(days=2))
+
+
+def test_eia_requires_the_official_host_and_jin10_stays_host_free():
+    base = dict(
+        **grant("synthetic-eia"),
+        source_id="eia-trial",
+        provider="eia",
+        rights_ref="synthetic:eia-rights",
+        credentials_ref="project-injection:eia-key",
+    )
+    with pytest.raises(ValidationError):
+        SourcePermission(**base)
+    with pytest.raises(ValidationError):
+        SourcePermission(**base, host="api.example.invalid")
+    with pytest.raises(ValidationError):
+        SourcePermission(**(base | {"host": "api.eia.gov", "provider": "jin10"}))
+    assert SourcePermission(**base, host="api.eia.gov").provider == "eia"
+    jin10 = source_permission()
+    assert jin10.provider == "jin10" and jin10.host is None and jin10.max_new_fee == 0
+
+
+def test_source_permission_validity_is_bounded():
+    with pytest.raises(ValidationError):
+        SourcePermission.model_validate(
+            eia_source_permission().model_dump() | {"expires_at": NOW + timedelta(days=31)}
+        )
+    with pytest.raises(ValidationError):
+        SourcePermission.model_validate(
+            source_permission().model_dump() | {"expires_at": NOW + timedelta(days=31)}
+        )
+
+
+def test_free_source_rejects_any_new_fee():
+    with pytest.raises(ValidationError):
+        SourcePermission.model_validate(eia_source_permission().model_dump() | {"max_new_fee": 1})
+
+
+def test_eia_source_settings_enforce_daily_budget_and_scope():
+    permission = eia_source_permission(max_requests=10)
+    with pytest.raises(ValidationError):
+        Settings(
+            data_provenance="trial",
+            fixture_dataset=None,
+            external_sources_enabled=True,
+            source_permissions=(permission,),
+            daily_source_requests=5,
+        )
+    settings = Settings(
+        data_provenance="trial",
+        fixture_dataset=None,
+        external_sources_enabled=True,
+        source_permissions=(permission,),
+        daily_source_requests=10,
+    )
+    assert settings.source_permissions[0].provider == "eia"
+
+
+def test_deepseek_model_permission_stays_intact():
+    permission = ModelPermission(
+        **grant("synthetic-deepseek"),
+        provider="deepseek",
+        model="deepseek-flash",
+        credentials_ref="project-injection:model",
+        rules_ref="synthetic:rules",
+        max_tokens=1000,
+    )
+    assert permission.provider == "deepseek" and permission.model == "deepseek-flash"
+    assert permission.active(NOW) and permission.max_tokens == 1000

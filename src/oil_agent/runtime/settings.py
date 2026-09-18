@@ -157,6 +157,12 @@ class Settings(BaseSettings):
             raise ValueError("Only fixture runtime requires a fixture dataset")
         if len({p.source_id for p in self.source_permissions}) != len(self.source_permissions):
             raise ValueError("Source permissions must have distinct source IDs")
+        for permission in self.source_permissions:
+            if (
+                permission.provider == "eia"
+                and permission.max_requests > self.daily_source_requests
+            ):
+                raise ValueError("EIA source budget must stay within the daily source budget")
         if self.external_sources_enabled and (
             self.data_provenance == Provenance.FIXTURE
             or not self.source_permissions
