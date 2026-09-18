@@ -56,7 +56,7 @@ def series(points, series_id="PET.RWTC.D", **updates):
         "dateFormat": "YYYY-MM-DD",
         "frequency": "daily",
         "description": "West Texas Intermediate crude oil spot price",
-        "id": series_id,
+        "id": "petroleum",
         "data": data,
         **updates,
     }
@@ -110,7 +110,7 @@ async def test_fetch_series_produces_bounded_records():
 
     batch = await source(provider).fetch(None, context=context())
     assert seen["path"] == "/v2/seriesid/PET.RWTC.D"
-    assert seen["params"] == {"api_key": "synthetic-key"}
+    assert seen["params"] == {"api_key": "synthetic-key", "length": "5"}
     assert not batch.has_more
     assert batch.checkpoint.source_id == "eia-test"
     assert len(batch.records) == 2
@@ -144,14 +144,14 @@ async def test_fetch_denies_without_key():
     assert exc.value.code == ErrorCode.UNAUTHORIZED
 
 
-async def test_fetch_rejects_wrong_series_identity():
+async def test_fetch_accepts_dataset_id_different_from_series():
     async def provider(request):
-        return response(200, series([["2026-09-11", 1.0]], series_id="OTHER.SERIES"))
+        return response(200, series([["2026-09-11", 1.0]]))
 
     src = source(provider)
-    with pytest.raises(ServiceError) as exc:
-        await src.fetch(None, context=context())
-    assert exc.value.code == ErrorCode.INVALID_OUTPUT
+    batch = await src.fetch(None, context=context())
+    assert len(batch.records) == 1
+    assert batch.records[0].external_id == "PET.RWTC.D:2026-09-11"
 
 
 async def test_fetch_rejects_malformed_response():
