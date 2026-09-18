@@ -54,11 +54,30 @@ workers. E's independent cross-worktree verification was blocked by opencode's
 per-worktree external-directory permission prompts, so the integration was instead
 verified by I's 582-test run plus direct coordinator SHA confirmation.
 
-Real end-to-end remains gated, unchanged: a real EIA API key (`OIL_EIA_API_KEY`)
-is still required for a live fetch; the approved Chinese rules/rubric
-(`OIL_APPROVED_RULES_JSON`) and an authorized real send window are still pending.
-No live EIA/DeepSeek/Feishu request or send was made this increment and no silent
-zero-cost claim is recorded.
+### Live EIA verification, 2026-09-18
+
+The user supplied a free EIA key (stored only in the private intake, never in Git
+or logs). A bounded real fetch proved the key and exposed one environment block:
+
+- **The key is valid.** A direct HTTPS GET to the live v2 API returns real data:
+  `PET.RWTC.D` is "Cushing, OK WTI Spot Price FOB", unit `$/BBL`, latest
+  `2026-09-15` = `107.02`.
+- **A real defect, now fixed.** The original adapter pointed at the deprecated v1
+  `https://api.eia.gov/series/` (404). AB fixed it in `d8ae3a8` to the v2
+  `https://api.eia.gov/v2/seriesid/<id>` path + `payload["response"]["data"]`
+  shape (period `YYYY-MM-DD`, numeric `value`); I merged it at `bfd6981`. Focused
+  EIA tests pass (6 passed).
+- **Environment block (not a code defect).** The product's own pinned transport
+  refuses the live fetch because this machine's DNS resolves `api.eia.gov` to
+  `198.18.0.13` (RFC 2544 fake-ip range, `is_global=False`), a transparent
+  proxy/TUN artifact; the transport's IP validation correctly rejects it. The raw
+  system-proxy request succeeded, so the code and key are sound; the product path
+  needs a clean (non-fake-ip) network to complete a real fetch.
+
+Real end-to-end remains gated on the approved Chinese rules/rubric
+(`OIL_APPROVED_RULES_JSON`) and an authorized real send window. No live
+EIA/DeepSeek/Feishu request or send was made through the product this increment
+and no silent zero-cost claim is recorded.
 
 ## Previous phase: real-integration v1.1 resume — model transport first
 
