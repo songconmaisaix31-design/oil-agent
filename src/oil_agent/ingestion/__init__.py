@@ -3,6 +3,7 @@
 from oil_agent.ingestion.background import BackgroundBatch, EiaSeries, parse_eia
 from oil_agent.ingestion.eia import ENDPOINT as EIA_ENDPOINT
 from oil_agent.ingestion.eia import EiaSettings, EiaSource
+from oil_agent.ingestion.gnews import GnewsSettings, GnewsSource
 from oil_agent.ingestion.network import BoundedHttpReader, HttpResult, SourceSettings
 from oil_agent.ingestion.parser import SafeQuoteParser
 from oil_agent.ingestion.quotes import QuotePreview, UploadLimits, preview_quotes
@@ -15,6 +16,8 @@ __all__ = [
     "EiaSeries",
     "EiaSettings",
     "EiaSource",
+    "GnewsSettings",
+    "GnewsSource",
     "HttpResult",
     "QuotePreview",
     "ReplaySource",

@@ -23,6 +23,8 @@ from oil_agent.channels.common import https_url
 from oil_agent.ingestion import SafeQuoteParser
 from oil_agent.ingestion.eia import ENDPOINT as EIA_ENDPOINT
 from oil_agent.ingestion.eia import EiaSettings, EiaSource
+from oil_agent.ingestion.gnews import ENDPOINT as GNEWS_ENDPOINT
+from oil_agent.ingestion.gnews import GnewsSettings, GnewsSource
 from oil_agent.ingestion.http import HttpBounds, PinnedHttpClient
 from oil_agent.ingestion.jin10 import ENDPOINT, Jin10Settings, Jin10Source
 from oil_agent.ingestion.mcp import load_json
@@ -91,6 +93,8 @@ def _wire_source(runtime: Runtime) -> None:
         source, poll_seconds = _jin10_source(runtime, permission)
     elif permission.provider == "eia":
         source, poll_seconds = _eia_source(runtime, permission)
+    elif permission.provider == "gnews":
+        source, poll_seconds = _gnews_source(runtime, permission)
     else:
         raise ValueError("Trial source assembly requires an approved supported provider")
     runtime.services.sources[permission.source_id] = source
@@ -154,6 +158,36 @@ def _eia_source(runtime: Runtime, permission):
         ),
         authorize_source_request=runtime.authorize_source_request,
         latest_source_record=runtime.latest_source_record,
+        clock=runtime.repository.clock,
+    )
+    return source, source_settings.poll_seconds
+
+
+def _gnews_source(runtime: Runtime, permission):
+    settings = runtime.settings
+    source_settings = GnewsSettings(
+        source_id=permission.source_id,
+        rights_ref=permission.rights_ref,
+        authorization_ref=permission.authorization_ref,
+        api_key=SecretStr(_required_environment("OIL_GNEWS_API_KEY")),
+        query=_required_environment("OIL_GNEWS_QUERY"),
+        lang=os.environ.get("OIL_GNEWS_LANG", "en"),
+        max_items=int(os.environ.get("OIL_GNEWS_MAX_ITEMS", "10")),
+        network_authorized=True,
+        provenance=settings.data_provenance.value,
+        fixture_dataset=settings.fixture_dataset,
+        poll_seconds=int(os.environ.get("OIL_GNEWS_POLL_SECONDS", "300")),
+    )
+    source = GnewsSource(
+        source_settings,
+        http=PinnedHttpClient(
+            HttpBounds(
+                GNEWS_ENDPOINT,
+                ("gnews.io",),
+                request_limit=min(permission.max_requests, settings.daily_source_requests, 10000),
+            )
+        ),
+        authorize_source_request=runtime.authorize_source_request,
         clock=runtime.repository.clock,
     )
     return source, source_settings.poll_seconds
