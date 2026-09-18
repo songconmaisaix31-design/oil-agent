@@ -97,6 +97,27 @@ I merges `93a6f2b`/`fc24c32`/`34d0c2f` (factory glue). I ran
 **614 passed, 0 failed/skipped**, ruff check and offline build passed. I noted ruff
 `format --check` flags four AB owner files (line wrapping only), left untouched.
 
+### Requirements locked + development started (2026-09-18)
+
+The user delegated requirement definition ("你来定") and approved the design. Decisions:
+
+- **Urgent events**: GNews media whitelist (exact `source.name` strings observed on the free
+  tier: CNBC, CNBC TV18, OilPrice, Al-Monitor, The Hindu, Hindustan Times, The Economic
+  Times, The Straits Times, Livemint, Moneycontrol). Two categories — geopolitical and
+  supply-chain — with English keyword sets; severity `urgent` triggers the immediate alert,
+  non-matching items feed the daily report. `max_age_minutes=360`, `Asia/Shanghai`,
+  `credible_single_source`. `authorization_ref=USER-APPROVED-2026-09-18`.
+- **Price-volatility alert (new capability)**: WTI `PET.RWTC.D` day-over-day close change
+  `>= 1.5%` -> immediate alert (Decimal comparison). Baseline = today's close vs prior
+  day's close from EIA daily data.
+- **Daily broadcast**: `08:00 Asia/Shanghai`, Chinese report = EIA WTI latest + day change,
+  plus matched GNews events, plus honest data-gap note.
+- **Send scope**: sole personal recipient; model <=10 requests / 100k tokens; Feishu
+  <=3 send attempts / <=20 requests; production send disabled by default.
+
+Reference projects: `laurentvv/oil-agent` (event categories, impact score, trusted sources),
+`Ollie7098/crude-volatility-monitor` (price-volatility threshold alert).
+
 ### Real source transport verified end-to-end (2026-09-18)
 
 The user turned off the fake-ip proxy and supplied the GNews key. After three more
