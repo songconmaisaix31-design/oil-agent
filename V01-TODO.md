@@ -90,12 +90,20 @@ the existing text-event assessment rubric. Direction decided:
 - Add **GNews.io** (free tier news API, JSON) as the **event-news** source for
   urgent event alerts. Free key required (`OIL_GNEWS_API_KEY`), same pattern as EIA.
 
+The GNews event-source increment is integrated and unit-verified (2026-09-18):
+AB `142f821` (GNews v4 search adapter), C `cbd68df` (gnews source permission),
+I merges `93a6f2b`/`fc24c32`/`34d0c2f` (factory glue). I ran
+`uv run pytest tests/unit/ingestion tests/unit/runtime tests/unit/channels -q`:
+**614 passed, 0 failed/skipped**, ruff check and offline build passed. I noted ruff
+`format --check` flags four AB owner files (line wrapping only), left untouched.
+
 Still pending before any real model/send run: the actual approved Chinese rules
 JSON content (`OIL_APPROVED_RULES_JSON`) — the user approved in principle but the
 rubric text (facility/event/occurrence/impact terms, severity, validity,
-`authorization_ref`) still needs to be supplied; a GNews free API key; and a clean
-(non-fake-ip) network for the product transport. Send window authorization is
-formally recorded; exact recipient/budget scope to be pinned before any send.
+`authorization_ref`) still needs to be supplied; a GNews free API key
+(`OIL_GNEWS_API_KEY`); and a clean (non-fake-ip) network for the product
+transport. Send window authorization is formally recorded; exact recipient/budget
+scope to be pinned before any send.
 
 ## Previous phase: real-integration v1.1 resume — model transport first
 
