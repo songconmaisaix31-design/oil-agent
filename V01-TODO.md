@@ -97,15 +97,27 @@ I merges `93a6f2b`/`fc24c32`/`34d0c2f` (factory glue). I ran
 **614 passed, 0 failed/skipped**, ruff check and offline build passed. I noted ruff
 `format --check` flags four AB owner files (line wrapping only), left untouched.
 
+### Real source transport verified end-to-end (2026-09-18)
+
+The user turned off the fake-ip proxy and supplied the GNews key. After three more
+real-fetch fixes, both sources fetch live data through the product's own pinned
+transport:
+
+- AB `1c7b361` prefer IPv4 over IPv6 in `resolve_public_host` (IPv6-first had no
+  route and timed out); `51987eb` bound the EIA fetch via the `length` query param
+  (the default 5000-point response stalled the stream); `74cbf0a` fixed the EIA
+  identity check (v2 `response.id` is the dataset name, not the series id). I merged
+  them at `c587187`.
+- Bounded real fetch through `EiaSource` and `GnewsSource` (2 total provider
+  requests): EIA returned 3 WTI points (latest `2026-09-15` = `107.02`); GNews
+  returned 3 real oil-event articles (e.g. "Saudis and Houthis exchange strikes",
+  CNBC). Both parse into bounded `SourceRecord`s correctly.
+
 Still pending before any real model/send run: the actual approved Chinese rules
 JSON content (`OIL_APPROVED_RULES_JSON`) — the user approved in principle but the
 rubric text (facility/event/occurrence/impact terms, severity, validity,
-`authorization_ref`) still needs to be supplied; and a clean (non-fake-ip) network
-for the product transport (both `api.eia.gov` and `gnews.io` resolve to the
-RFC 2544 `198.18.0.13` fake-ip range on this host, which the transport's IP
-validation correctly rejects). The GNews free key was supplied and verified valid
-(real search returns articles). Send window authorization is formally recorded;
-exact recipient/budget scope to be pinned before any send.
+`authorization_ref`) still needs to be supplied. Send window authorization is
+formally recorded; exact recipient/budget scope to be pinned before any send.
 
 ## Previous phase: real-integration v1.1 resume — model transport first
 
