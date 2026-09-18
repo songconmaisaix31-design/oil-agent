@@ -4,13 +4,15 @@ Data provenance, request permission and send permission are separate. Validated
 operator approvals permit a bounded trial; none asserts production acceptance.
 """
 
-from typing import Literal
+from datetime import datetime
+from decimal import Decimal
+from typing import Annotated, Literal
 
-from pydantic import Field, SecretStr, model_validator
+from pydantic import BeforeValidator, Field, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy.engine import make_url
 
-from oil_agent.contracts.dto import NonEmpty, Provenance, StableId
+from oil_agent.contracts.dto import NonEmpty, Provenance, StableId, reject_float
 from oil_agent.runtime.permissions import (
     C1AppRequestPermission,
     C1Permission,
@@ -61,6 +63,14 @@ class Settings(BaseSettings):
     quote_upload_rights_ref: NonEmpty | None = None
     quote_origin_publisher: NonEmpty | None = None
     daily_source_requests: int = Field(default=1000, ge=0, le=100000)
+    price_alert_pct: (
+        Annotated[
+            Decimal,
+            BeforeValidator(reject_float),
+            Field(ge=Decimal("0.01"), le=Decimal("100.0"), allow_inf_nan=False),
+        ]
+        | None
+    ) = None
     daily_processing_calls: int = Field(default=1000, ge=0, le=100000)
     urgent_processing_reserve: int = Field(default=200, ge=0, le=100000)
     daily_model_calls: int = Field(default=0, ge=0, le=100000)
@@ -89,6 +99,17 @@ class Settings(BaseSettings):
             and self.production_credentials_ref
             and self.production_identity_verification_ref
             and self.first_report_policy
+        )
+
+    def price_alert_may_fire(self, now: datetime) -> bool:
+        """A price-volatility alert may fire only inside an active, in-budget EIA scope."""
+        if self.price_alert_pct is None:
+            return False
+        permission = next((p for p in self.source_permissions if p.provider == "eia"), None)
+        return bool(
+            permission
+            and permission.active(now)
+            and permission.within_daily_budget(self.daily_source_requests)
         )
 
     @model_validator(mode="after")
