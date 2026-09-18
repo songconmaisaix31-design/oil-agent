@@ -1,0 +1,1412 @@
+{
+  "version": "v1-oil-events",
+  "approved": true,
+  "authorization_ref": "USER-APPROVED-2026-09-18",
+  "valid_from": "2026-09-18T00:00:00Z",
+  "expires_at": "2026-12-31T00:00:00Z",
+  "provenances": [
+    "trial"
+  ],
+  "rules": [
+    {
+      "rule_id": "oil-geopolitical-cnbc",
+      "source_id": "gnews-oil",
+      "origin_publisher": "CNBC",
+      "facility_names": [
+        "strait of hormuz",
+        "red sea",
+        "suez",
+        "opec",
+        "saudi",
+        "iran",
+        "houthi",
+        "yemen",
+        "israel",
+        "gaza"
+      ],
+      "event_terms": [
+        "strike",
+        "attack",
+        "war",
+        "conflict",
+        "sanction",
+        "blockade",
+        "seizure",
+        "missile",
+        "drone",
+        "shelling"
+      ],
+      "occurrence_terms": [
+        "hit",
+        "struck",
+        "fired",
+        "launched",
+        "reported",
+        "confirmed",
+        "announced",
+        "declared"
+      ],
+      "impact_terms": [
+        "supply",
+        "surge",
+        "plunge",
+        "disruption",
+        "casualties",
+        "evacuat",
+        "export",
+        "shipments"
+      ],
+      "current_terms": [
+        "today",
+        "now",
+        "latest",
+        "breaking",
+        "hours",
+        "minutes",
+        "just in"
+      ],
+      "exclusion_terms": [
+        "analysis",
+        "opinion",
+        "forecast",
+        "outlook",
+        "review",
+        "futures",
+        "prediction"
+      ],
+      "max_age_minutes": 360,
+      "timezone": "Asia/Shanghai",
+      "severity": "urgent",
+      "evidence_status": "credible_single_source"
+    },
+    {
+      "rule_id": "oil-geopolitical-cnbc-tv18",
+      "source_id": "gnews-oil",
+      "origin_publisher": "CNBC TV18",
+      "facility_names": [
+        "strait of hormuz",
+        "red sea",
+        "suez",
+        "opec",
+        "saudi",
+        "iran",
+        "houthi",
+        "yemen",
+        "israel",
+        "gaza"
+      ],
+      "event_terms": [
+        "strike",
+        "attack",
+        "war",
+        "conflict",
+        "sanction",
+        "blockade",
+        "seizure",
+        "missile",
+        "drone",
+        "shelling"
+      ],
+      "occurrence_terms": [
+        "hit",
+        "struck",
+        "fired",
+        "launched",
+        "reported",
+        "confirmed",
+        "announced",
+        "declared"
+      ],
+      "impact_terms": [
+        "supply",
+        "surge",
+        "plunge",
+        "disruption",
+        "casualties",
+        "evacuat",
+        "export",
+        "shipments"
+      ],
+      "current_terms": [
+        "today",
+        "now",
+        "latest",
+        "breaking",
+        "hours",
+        "minutes",
+        "just in"
+      ],
+      "exclusion_terms": [
+        "analysis",
+        "opinion",
+        "forecast",
+        "outlook",
+        "review",
+        "futures",
+        "prediction"
+      ],
+      "max_age_minutes": 360,
+      "timezone": "Asia/Shanghai",
+      "severity": "urgent",
+      "evidence_status": "credible_single_source"
+    },
+    {
+      "rule_id": "oil-geopolitical-oilprice",
+      "source_id": "gnews-oil",
+      "origin_publisher": "OilPrice",
+      "facility_names": [
+        "strait of hormuz",
+        "red sea",
+        "suez",
+        "opec",
+        "saudi",
+        "iran",
+        "houthi",
+        "yemen",
+        "israel",
+        "gaza"
+      ],
+      "event_terms": [
+        "strike",
+        "attack",
+        "war",
+        "conflict",
+        "sanction",
+        "blockade",
+        "seizure",
+        "missile",
+        "drone",
+        "shelling"
+      ],
+      "occurrence_terms": [
+        "hit",
+        "struck",
+        "fired",
+        "launched",
+        "reported",
+        "confirmed",
+        "announced",
+        "declared"
+      ],
+      "impact_terms": [
+        "supply",
+        "surge",
+        "plunge",
+        "disruption",
+        "casualties",
+        "evacuat",
+        "export",
+        "shipments"
+      ],
+      "current_terms": [
+        "today",
+        "now",
+        "latest",
+        "breaking",
+        "hours",
+        "minutes",
+        "just in"
+      ],
+      "exclusion_terms": [
+        "analysis",
+        "opinion",
+        "forecast",
+        "outlook",
+        "review",
+        "futures",
+        "prediction"
+      ],
+      "max_age_minutes": 360,
+      "timezone": "Asia/Shanghai",
+      "severity": "urgent",
+      "evidence_status": "credible_single_source"
+    },
+    {
+      "rule_id": "oil-geopolitical-al-monitor",
+      "source_id": "gnews-oil",
+      "origin_publisher": "Al-Monitor",
+      "facility_names": [
+        "strait of hormuz",
+        "red sea",
+        "suez",
+        "opec",
+        "saudi",
+        "iran",
+        "houthi",
+        "yemen",
+        "israel",
+        "gaza"
+      ],
+      "event_terms": [
+        "strike",
+        "attack",
+        "war",
+        "conflict",
+        "sanction",
+        "blockade",
+        "seizure",
+        "missile",
+        "drone",
+        "shelling"
+      ],
+      "occurrence_terms": [
+        "hit",
+        "struck",
+        "fired",
+        "launched",
+        "reported",
+        "confirmed",
+        "announced",
+        "declared"
+      ],
+      "impact_terms": [
+        "supply",
+        "surge",
+        "plunge",
+        "disruption",
+        "casualties",
+        "evacuat",
+        "export",
+        "shipments"
+      ],
+      "current_terms": [
+        "today",
+        "now",
+        "latest",
+        "breaking",
+        "hours",
+        "minutes",
+        "just in"
+      ],
+      "exclusion_terms": [
+        "analysis",
+        "opinion",
+        "forecast",
+        "outlook",
+        "review",
+        "futures",
+        "prediction"
+      ],
+      "max_age_minutes": 360,
+      "timezone": "Asia/Shanghai",
+      "severity": "urgent",
+      "evidence_status": "credible_single_source"
+    },
+    {
+      "rule_id": "oil-geopolitical-the-hindu",
+      "source_id": "gnews-oil",
+      "origin_publisher": "The Hindu",
+      "facility_names": [
+        "strait of hormuz",
+        "red sea",
+        "suez",
+        "opec",
+        "saudi",
+        "iran",
+        "houthi",
+        "yemen",
+        "israel",
+        "gaza"
+      ],
+      "event_terms": [
+        "strike",
+        "attack",
+        "war",
+        "conflict",
+        "sanction",
+        "blockade",
+        "seizure",
+        "missile",
+        "drone",
+        "shelling"
+      ],
+      "occurrence_terms": [
+        "hit",
+        "struck",
+        "fired",
+        "launched",
+        "reported",
+        "confirmed",
+        "announced",
+        "declared"
+      ],
+      "impact_terms": [
+        "supply",
+        "surge",
+        "plunge",
+        "disruption",
+        "casualties",
+        "evacuat",
+        "export",
+        "shipments"
+      ],
+      "current_terms": [
+        "today",
+        "now",
+        "latest",
+        "breaking",
+        "hours",
+        "minutes",
+        "just in"
+      ],
+      "exclusion_terms": [
+        "analysis",
+        "opinion",
+        "forecast",
+        "outlook",
+        "review",
+        "futures",
+        "prediction"
+      ],
+      "max_age_minutes": 360,
+      "timezone": "Asia/Shanghai",
+      "severity": "urgent",
+      "evidence_status": "credible_single_source"
+    },
+    {
+      "rule_id": "oil-geopolitical-hindustan-times",
+      "source_id": "gnews-oil",
+      "origin_publisher": "Hindustan Times",
+      "facility_names": [
+        "strait of hormuz",
+        "red sea",
+        "suez",
+        "opec",
+        "saudi",
+        "iran",
+        "houthi",
+        "yemen",
+        "israel",
+        "gaza"
+      ],
+      "event_terms": [
+        "strike",
+        "attack",
+        "war",
+        "conflict",
+        "sanction",
+        "blockade",
+        "seizure",
+        "missile",
+        "drone",
+        "shelling"
+      ],
+      "occurrence_terms": [
+        "hit",
+        "struck",
+        "fired",
+        "launched",
+        "reported",
+        "confirmed",
+        "announced",
+        "declared"
+      ],
+      "impact_terms": [
+        "supply",
+        "surge",
+        "plunge",
+        "disruption",
+        "casualties",
+        "evacuat",
+        "export",
+        "shipments"
+      ],
+      "current_terms": [
+        "today",
+        "now",
+        "latest",
+        "breaking",
+        "hours",
+        "minutes",
+        "just in"
+      ],
+      "exclusion_terms": [
+        "analysis",
+        "opinion",
+        "forecast",
+        "outlook",
+        "review",
+        "futures",
+        "prediction"
+      ],
+      "max_age_minutes": 360,
+      "timezone": "Asia/Shanghai",
+      "severity": "urgent",
+      "evidence_status": "credible_single_source"
+    },
+    {
+      "rule_id": "oil-geopolitical-the-economic-times",
+      "source_id": "gnews-oil",
+      "origin_publisher": "The Economic Times",
+      "facility_names": [
+        "strait of hormuz",
+        "red sea",
+        "suez",
+        "opec",
+        "saudi",
+        "iran",
+        "houthi",
+        "yemen",
+        "israel",
+        "gaza"
+      ],
+      "event_terms": [
+        "strike",
+        "attack",
+        "war",
+        "conflict",
+        "sanction",
+        "blockade",
+        "seizure",
+        "missile",
+        "drone",
+        "shelling"
+      ],
+      "occurrence_terms": [
+        "hit",
+        "struck",
+        "fired",
+        "launched",
+        "reported",
+        "confirmed",
+        "announced",
+        "declared"
+      ],
+      "impact_terms": [
+        "supply",
+        "surge",
+        "plunge",
+        "disruption",
+        "casualties",
+        "evacuat",
+        "export",
+        "shipments"
+      ],
+      "current_terms": [
+        "today",
+        "now",
+        "latest",
+        "breaking",
+        "hours",
+        "minutes",
+        "just in"
+      ],
+      "exclusion_terms": [
+        "analysis",
+        "opinion",
+        "forecast",
+        "outlook",
+        "review",
+        "futures",
+        "prediction"
+      ],
+      "max_age_minutes": 360,
+      "timezone": "Asia/Shanghai",
+      "severity": "urgent",
+      "evidence_status": "credible_single_source"
+    },
+    {
+      "rule_id": "oil-geopolitical-the-straits-times",
+      "source_id": "gnews-oil",
+      "origin_publisher": "The Straits Times",
+      "facility_names": [
+        "strait of hormuz",
+        "red sea",
+        "suez",
+        "opec",
+        "saudi",
+        "iran",
+        "houthi",
+        "yemen",
+        "israel",
+        "gaza"
+      ],
+      "event_terms": [
+        "strike",
+        "attack",
+        "war",
+        "conflict",
+        "sanction",
+        "blockade",
+        "seizure",
+        "missile",
+        "drone",
+        "shelling"
+      ],
+      "occurrence_terms": [
+        "hit",
+        "struck",
+        "fired",
+        "launched",
+        "reported",
+        "confirmed",
+        "announced",
+        "declared"
+      ],
+      "impact_terms": [
+        "supply",
+        "surge",
+        "plunge",
+        "disruption",
+        "casualties",
+        "evacuat",
+        "export",
+        "shipments"
+      ],
+      "current_terms": [
+        "today",
+        "now",
+        "latest",
+        "breaking",
+        "hours",
+        "minutes",
+        "just in"
+      ],
+      "exclusion_terms": [
+        "analysis",
+        "opinion",
+        "forecast",
+        "outlook",
+        "review",
+        "futures",
+        "prediction"
+      ],
+      "max_age_minutes": 360,
+      "timezone": "Asia/Shanghai",
+      "severity": "urgent",
+      "evidence_status": "credible_single_source"
+    },
+    {
+      "rule_id": "oil-geopolitical-livemint",
+      "source_id": "gnews-oil",
+      "origin_publisher": "Livemint",
+      "facility_names": [
+        "strait of hormuz",
+        "red sea",
+        "suez",
+        "opec",
+        "saudi",
+        "iran",
+        "houthi",
+        "yemen",
+        "israel",
+        "gaza"
+      ],
+      "event_terms": [
+        "strike",
+        "attack",
+        "war",
+        "conflict",
+        "sanction",
+        "blockade",
+        "seizure",
+        "missile",
+        "drone",
+        "shelling"
+      ],
+      "occurrence_terms": [
+        "hit",
+        "struck",
+        "fired",
+        "launched",
+        "reported",
+        "confirmed",
+        "announced",
+        "declared"
+      ],
+      "impact_terms": [
+        "supply",
+        "surge",
+        "plunge",
+        "disruption",
+        "casualties",
+        "evacuat",
+        "export",
+        "shipments"
+      ],
+      "current_terms": [
+        "today",
+        "now",
+        "latest",
+        "breaking",
+        "hours",
+        "minutes",
+        "just in"
+      ],
+      "exclusion_terms": [
+        "analysis",
+        "opinion",
+        "forecast",
+        "outlook",
+        "review",
+        "futures",
+        "prediction"
+      ],
+      "max_age_minutes": 360,
+      "timezone": "Asia/Shanghai",
+      "severity": "urgent",
+      "evidence_status": "credible_single_source"
+    },
+    {
+      "rule_id": "oil-geopolitical-moneycontrol",
+      "source_id": "gnews-oil",
+      "origin_publisher": "Moneycontrol",
+      "facility_names": [
+        "strait of hormuz",
+        "red sea",
+        "suez",
+        "opec",
+        "saudi",
+        "iran",
+        "houthi",
+        "yemen",
+        "israel",
+        "gaza"
+      ],
+      "event_terms": [
+        "strike",
+        "attack",
+        "war",
+        "conflict",
+        "sanction",
+        "blockade",
+        "seizure",
+        "missile",
+        "drone",
+        "shelling"
+      ],
+      "occurrence_terms": [
+        "hit",
+        "struck",
+        "fired",
+        "launched",
+        "reported",
+        "confirmed",
+        "announced",
+        "declared"
+      ],
+      "impact_terms": [
+        "supply",
+        "surge",
+        "plunge",
+        "disruption",
+        "casualties",
+        "evacuat",
+        "export",
+        "shipments"
+      ],
+      "current_terms": [
+        "today",
+        "now",
+        "latest",
+        "breaking",
+        "hours",
+        "minutes",
+        "just in"
+      ],
+      "exclusion_terms": [
+        "analysis",
+        "opinion",
+        "forecast",
+        "outlook",
+        "review",
+        "futures",
+        "prediction"
+      ],
+      "max_age_minutes": 360,
+      "timezone": "Asia/Shanghai",
+      "severity": "urgent",
+      "evidence_status": "credible_single_source"
+    },
+    {
+      "rule_id": "oil-supply-chain-cnbc",
+      "source_id": "gnews-oil",
+      "origin_publisher": "CNBC",
+      "facility_names": [
+        "refinery",
+        "pipeline",
+        "oilfield",
+        "tanker",
+        "port",
+        "terminal",
+        "platform",
+        "storage"
+      ],
+      "event_terms": [
+        "explosion",
+        "fire",
+        "leak",
+        "spill",
+        "shutdown",
+        "outage",
+        "halt",
+        "closure",
+        "strike",
+        "sabotage"
+      ],
+      "occurrence_terms": [
+        "hit",
+        "struck",
+        "caused",
+        "forced",
+        "reported",
+        "confirmed",
+        "shut",
+        "halted"
+      ],
+      "impact_terms": [
+        "production",
+        "supply",
+        "cut",
+        "output",
+        "damage",
+        "disruption",
+        "shortage",
+        "barrels"
+      ],
+      "current_terms": [
+        "today",
+        "now",
+        "latest",
+        "breaking",
+        "hours",
+        "minutes",
+        "just in"
+      ],
+      "exclusion_terms": [
+        "analysis",
+        "opinion",
+        "forecast",
+        "outlook",
+        "review",
+        "futures",
+        "prediction"
+      ],
+      "max_age_minutes": 360,
+      "timezone": "Asia/Shanghai",
+      "severity": "urgent",
+      "evidence_status": "credible_single_source"
+    },
+    {
+      "rule_id": "oil-supply-chain-cnbc-tv18",
+      "source_id": "gnews-oil",
+      "origin_publisher": "CNBC TV18",
+      "facility_names": [
+        "refinery",
+        "pipeline",
+        "oilfield",
+        "tanker",
+        "port",
+        "terminal",
+        "platform",
+        "storage"
+      ],
+      "event_terms": [
+        "explosion",
+        "fire",
+        "leak",
+        "spill",
+        "shutdown",
+        "outage",
+        "halt",
+        "closure",
+        "strike",
+        "sabotage"
+      ],
+      "occurrence_terms": [
+        "hit",
+        "struck",
+        "caused",
+        "forced",
+        "reported",
+        "confirmed",
+        "shut",
+        "halted"
+      ],
+      "impact_terms": [
+        "production",
+        "supply",
+        "cut",
+        "output",
+        "damage",
+        "disruption",
+        "shortage",
+        "barrels"
+      ],
+      "current_terms": [
+        "today",
+        "now",
+        "latest",
+        "breaking",
+        "hours",
+        "minutes",
+        "just in"
+      ],
+      "exclusion_terms": [
+        "analysis",
+        "opinion",
+        "forecast",
+        "outlook",
+        "review",
+        "futures",
+        "prediction"
+      ],
+      "max_age_minutes": 360,
+      "timezone": "Asia/Shanghai",
+      "severity": "urgent",
+      "evidence_status": "credible_single_source"
+    },
+    {
+      "rule_id": "oil-supply-chain-oilprice",
+      "source_id": "gnews-oil",
+      "origin_publisher": "OilPrice",
+      "facility_names": [
+        "refinery",
+        "pipeline",
+        "oilfield",
+        "tanker",
+        "port",
+        "terminal",
+        "platform",
+        "storage"
+      ],
+      "event_terms": [
+        "explosion",
+        "fire",
+        "leak",
+        "spill",
+        "shutdown",
+        "outage",
+        "halt",
+        "closure",
+        "strike",
+        "sabotage"
+      ],
+      "occurrence_terms": [
+        "hit",
+        "struck",
+        "caused",
+        "forced",
+        "reported",
+        "confirmed",
+        "shut",
+        "halted"
+      ],
+      "impact_terms": [
+        "production",
+        "supply",
+        "cut",
+        "output",
+        "damage",
+        "disruption",
+        "shortage",
+        "barrels"
+      ],
+      "current_terms": [
+        "today",
+        "now",
+        "latest",
+        "breaking",
+        "hours",
+        "minutes",
+        "just in"
+      ],
+      "exclusion_terms": [
+        "analysis",
+        "opinion",
+        "forecast",
+        "outlook",
+        "review",
+        "futures",
+        "prediction"
+      ],
+      "max_age_minutes": 360,
+      "timezone": "Asia/Shanghai",
+      "severity": "urgent",
+      "evidence_status": "credible_single_source"
+    },
+    {
+      "rule_id": "oil-supply-chain-al-monitor",
+      "source_id": "gnews-oil",
+      "origin_publisher": "Al-Monitor",
+      "facility_names": [
+        "refinery",
+        "pipeline",
+        "oilfield",
+        "tanker",
+        "port",
+        "terminal",
+        "platform",
+        "storage"
+      ],
+      "event_terms": [
+        "explosion",
+        "fire",
+        "leak",
+        "spill",
+        "shutdown",
+        "outage",
+        "halt",
+        "closure",
+        "strike",
+        "sabotage"
+      ],
+      "occurrence_terms": [
+        "hit",
+        "struck",
+        "caused",
+        "forced",
+        "reported",
+        "confirmed",
+        "shut",
+        "halted"
+      ],
+      "impact_terms": [
+        "production",
+        "supply",
+        "cut",
+        "output",
+        "damage",
+        "disruption",
+        "shortage",
+        "barrels"
+      ],
+      "current_terms": [
+        "today",
+        "now",
+        "latest",
+        "breaking",
+        "hours",
+        "minutes",
+        "just in"
+      ],
+      "exclusion_terms": [
+        "analysis",
+        "opinion",
+        "forecast",
+        "outlook",
+        "review",
+        "futures",
+        "prediction"
+      ],
+      "max_age_minutes": 360,
+      "timezone": "Asia/Shanghai",
+      "severity": "urgent",
+      "evidence_status": "credible_single_source"
+    },
+    {
+      "rule_id": "oil-supply-chain-the-hindu",
+      "source_id": "gnews-oil",
+      "origin_publisher": "The Hindu",
+      "facility_names": [
+        "refinery",
+        "pipeline",
+        "oilfield",
+        "tanker",
+        "port",
+        "terminal",
+        "platform",
+        "storage"
+      ],
+      "event_terms": [
+        "explosion",
+        "fire",
+        "leak",
+        "spill",
+        "shutdown",
+        "outage",
+        "halt",
+        "closure",
+        "strike",
+        "sabotage"
+      ],
+      "occurrence_terms": [
+        "hit",
+        "struck",
+        "caused",
+        "forced",
+        "reported",
+        "confirmed",
+        "shut",
+        "halted"
+      ],
+      "impact_terms": [
+        "production",
+        "supply",
+        "cut",
+        "output",
+        "damage",
+        "disruption",
+        "shortage",
+        "barrels"
+      ],
+      "current_terms": [
+        "today",
+        "now",
+        "latest",
+        "breaking",
+        "hours",
+        "minutes",
+        "just in"
+      ],
+      "exclusion_terms": [
+        "analysis",
+        "opinion",
+        "forecast",
+        "outlook",
+        "review",
+        "futures",
+        "prediction"
+      ],
+      "max_age_minutes": 360,
+      "timezone": "Asia/Shanghai",
+      "severity": "urgent",
+      "evidence_status": "credible_single_source"
+    },
+    {
+      "rule_id": "oil-supply-chain-hindustan-times",
+      "source_id": "gnews-oil",
+      "origin_publisher": "Hindustan Times",
+      "facility_names": [
+        "refinery",
+        "pipeline",
+        "oilfield",
+        "tanker",
+        "port",
+        "terminal",
+        "platform",
+        "storage"
+      ],
+      "event_terms": [
+        "explosion",
+        "fire",
+        "leak",
+        "spill",
+        "shutdown",
+        "outage",
+        "halt",
+        "closure",
+        "strike",
+        "sabotage"
+      ],
+      "occurrence_terms": [
+        "hit",
+        "struck",
+        "caused",
+        "forced",
+        "reported",
+        "confirmed",
+        "shut",
+        "halted"
+      ],
+      "impact_terms": [
+        "production",
+        "supply",
+        "cut",
+        "output",
+        "damage",
+        "disruption",
+        "shortage",
+        "barrels"
+      ],
+      "current_terms": [
+        "today",
+        "now",
+        "latest",
+        "breaking",
+        "hours",
+        "minutes",
+        "just in"
+      ],
+      "exclusion_terms": [
+        "analysis",
+        "opinion",
+        "forecast",
+        "outlook",
+        "review",
+        "futures",
+        "prediction"
+      ],
+      "max_age_minutes": 360,
+      "timezone": "Asia/Shanghai",
+      "severity": "urgent",
+      "evidence_status": "credible_single_source"
+    },
+    {
+      "rule_id": "oil-supply-chain-the-economic-times",
+      "source_id": "gnews-oil",
+      "origin_publisher": "The Economic Times",
+      "facility_names": [
+        "refinery",
+        "pipeline",
+        "oilfield",
+        "tanker",
+        "port",
+        "terminal",
+        "platform",
+        "storage"
+      ],
+      "event_terms": [
+        "explosion",
+        "fire",
+        "leak",
+        "spill",
+        "shutdown",
+        "outage",
+        "halt",
+        "closure",
+        "strike",
+        "sabotage"
+      ],
+      "occurrence_terms": [
+        "hit",
+        "struck",
+        "caused",
+        "forced",
+        "reported",
+        "confirmed",
+        "shut",
+        "halted"
+      ],
+      "impact_terms": [
+        "production",
+        "supply",
+        "cut",
+        "output",
+        "damage",
+        "disruption",
+        "shortage",
+        "barrels"
+      ],
+      "current_terms": [
+        "today",
+        "now",
+        "latest",
+        "breaking",
+        "hours",
+        "minutes",
+        "just in"
+      ],
+      "exclusion_terms": [
+        "analysis",
+        "opinion",
+        "forecast",
+        "outlook",
+        "review",
+        "futures",
+        "prediction"
+      ],
+      "max_age_minutes": 360,
+      "timezone": "Asia/Shanghai",
+      "severity": "urgent",
+      "evidence_status": "credible_single_source"
+    },
+    {
+      "rule_id": "oil-supply-chain-the-straits-times",
+      "source_id": "gnews-oil",
+      "origin_publisher": "The Straits Times",
+      "facility_names": [
+        "refinery",
+        "pipeline",
+        "oilfield",
+        "tanker",
+        "port",
+        "terminal",
+        "platform",
+        "storage"
+      ],
+      "event_terms": [
+        "explosion",
+        "fire",
+        "leak",
+        "spill",
+        "shutdown",
+        "outage",
+        "halt",
+        "closure",
+        "strike",
+        "sabotage"
+      ],
+      "occurrence_terms": [
+        "hit",
+        "struck",
+        "caused",
+        "forced",
+        "reported",
+        "confirmed",
+        "shut",
+        "halted"
+      ],
+      "impact_terms": [
+        "production",
+        "supply",
+        "cut",
+        "output",
+        "damage",
+        "disruption",
+        "shortage",
+        "barrels"
+      ],
+      "current_terms": [
+        "today",
+        "now",
+        "latest",
+        "breaking",
+        "hours",
+        "minutes",
+        "just in"
+      ],
+      "exclusion_terms": [
+        "analysis",
+        "opinion",
+        "forecast",
+        "outlook",
+        "review",
+        "futures",
+        "prediction"
+      ],
+      "max_age_minutes": 360,
+      "timezone": "Asia/Shanghai",
+      "severity": "urgent",
+      "evidence_status": "credible_single_source"
+    },
+    {
+      "rule_id": "oil-supply-chain-livemint",
+      "source_id": "gnews-oil",
+      "origin_publisher": "Livemint",
+      "facility_names": [
+        "refinery",
+        "pipeline",
+        "oilfield",
+        "tanker",
+        "port",
+        "terminal",
+        "platform",
+        "storage"
+      ],
+      "event_terms": [
+        "explosion",
+        "fire",
+        "leak",
+        "spill",
+        "shutdown",
+        "outage",
+        "halt",
+        "closure",
+        "strike",
+        "sabotage"
+      ],
+      "occurrence_terms": [
+        "hit",
+        "struck",
+        "caused",
+        "forced",
+        "reported",
+        "confirmed",
+        "shut",
+        "halted"
+      ],
+      "impact_terms": [
+        "production",
+        "supply",
+        "cut",
+        "output",
+        "damage",
+        "disruption",
+        "shortage",
+        "barrels"
+      ],
+      "current_terms": [
+        "today",
+        "now",
+        "latest",
+        "breaking",
+        "hours",
+        "minutes",
+        "just in"
+      ],
+      "exclusion_terms": [
+        "analysis",
+        "opinion",
+        "forecast",
+        "outlook",
+        "review",
+        "futures",
+        "prediction"
+      ],
+      "max_age_minutes": 360,
+      "timezone": "Asia/Shanghai",
+      "severity": "urgent",
+      "evidence_status": "credible_single_source"
+    },
+    {
+      "rule_id": "oil-supply-chain-moneycontrol",
+      "source_id": "gnews-oil",
+      "origin_publisher": "Moneycontrol",
+      "facility_names": [
+        "refinery",
+        "pipeline",
+        "oilfield",
+        "tanker",
+        "port",
+        "terminal",
+        "platform",
+        "storage"
+      ],
+      "event_terms": [
+        "explosion",
+        "fire",
+        "leak",
+        "spill",
+        "shutdown",
+        "outage",
+        "halt",
+        "closure",
+        "strike",
+        "sabotage"
+      ],
+      "occurrence_terms": [
+        "hit",
+        "struck",
+        "caused",
+        "forced",
+        "reported",
+        "confirmed",
+        "shut",
+        "halted"
+      ],
+      "impact_terms": [
+        "production",
+        "supply",
+        "cut",
+        "output",
+        "damage",
+        "disruption",
+        "shortage",
+        "barrels"
+      ],
+      "current_terms": [
+        "today",
+        "now",
+        "latest",
+        "breaking",
+        "hours",
+        "minutes",
+        "just in"
+      ],
+      "exclusion_terms": [
+        "analysis",
+        "opinion",
+        "forecast",
+        "outlook",
+        "review",
+        "futures",
+        "prediction"
+      ],
+      "max_age_minutes": 360,
+      "timezone": "Asia/Shanghai",
+      "severity": "urgent",
+      "evidence_status": "credible_single_source"
+    }
+  ]
+}
