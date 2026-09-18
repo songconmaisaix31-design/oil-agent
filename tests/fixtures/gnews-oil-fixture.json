@@ -1,0 +1,32 @@
+{
+  "totalArticles": 3,
+  "articles": [
+    {
+      "title": "Refinery fire halts production",
+      "description": "A fire at a refinery today caused a shutdown and a supply disruption.",
+      "content": "A fire at a refinery today caused a shutdown and a supply disruption. [+96 chars]",
+      "url": "https://oilprice.com/energy/crude-oil/refinery-fire-halts-production.html",
+      "image": "https://oilprice.com/images/refinery-fire.jpg",
+      "publishedAt": "2026-09-18T01:00:00Z",
+      "source": {"name": "OilPrice", "url": "https://oilprice.com"}
+    },
+    {
+      "title": "Drone strike hit a ship in the Strait of Hormuz",
+      "description": "A drone strike hit a ship in the Strait of Hormuz today and caused a supply disruption.",
+      "content": "A drone strike hit a ship in the Strait of Hormuz today and caused a supply disruption. [+120 chars]",
+      "url": "https://www.al-monitor.com/originals/2026/09/drone-strike-strait-hormuz.html",
+      "image": "https://www.al-monitor.com/sites/default/files/styles/hero/public/hormuz.jpg",
+      "publishedAt": "2026-09-18T00:45:00Z",
+      "source": {"name": "Al-Monitor", "url": "https://www.al-monitor.com"}
+    },
+    {
+      "title": "Israel conflict threatens crude oil supply",
+      "description": "Israel announced a new conflict today that threatens crude oil supply.",
+      "content": "Israel announced a new conflict today that threatens crude oil supply. [+84 chars]",
+      "url": "https://www.cnbc.com/2026/09/18/israel-conflict-threatens-oil-supply.html",
+      "image": "https://image.cnbcfm.com/api/v1/image/107000000-israel.jpg",
+      "publishedAt": "2026-09-18T00:30:00Z",
+      "source": {"name": "CNBC", "url": "https://www.cnbc.com"}
+    }
+  ]
+}

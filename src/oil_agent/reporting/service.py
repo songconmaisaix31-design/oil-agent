@@ -17,6 +17,7 @@ from oil_agent.contracts.dto import (
     QualityState,
     Report,
     ReportBuildRequest,
+    SourceRecord,
     SupportedFact,
     TimeQuality,
 )
@@ -24,7 +25,12 @@ from oil_agent.contracts.services import CallContext, ErrorCode, ServiceError
 from oil_agent.ingestion.common import remaining, stable_id
 from oil_agent.ingestion.quotes import comparison_key, validate_observation
 from oil_agent.intelligence.assessment import guarded_status
-from oil_agent.intelligence.evidence import index_records, validate_reference
+from oil_agent.intelligence.evidence import index_records, quote_reference, validate_reference
+from oil_agent.intelligence.price_alert import (
+    assess_price_change,
+    daily_close_change,
+    extract_eia_point,
+)
 from oil_agent.intelligence.rules import contains, occurrence_context
 
 
@@ -123,11 +129,21 @@ class SnapshotReportService:
         self,
         *,
         thresholds: tuple[QuoteThreshold, ...] = (),
+        price_alert_pct: Decimal | None = None,
         clock: Callable[[], datetime] = lambda: datetime.now(UTC),
     ):
         self.thresholds = {item.comparison: item.absolute_change for item in thresholds}
         if len(self.thresholds) != len(thresholds):
             raise ValueError("Duplicate quote threshold configuration")
+        if price_alert_pct is not None and (
+            not isinstance(price_alert_pct, Decimal)
+            or not price_alert_pct.is_finite()
+            or price_alert_pct <= 0
+        ):
+            raise ValueError(
+                "Price alert threshold must be an explicitly configured positive Decimal"
+            )
+        self.price_alert_pct = price_alert_pct
         self.clock = clock
 
     async def build(self, cutoff: ReportBuildRequest, *, context: CallContext) -> Report:
@@ -450,6 +466,76 @@ class SnapshotReportService:
                     formula=formula,
                 )
             )
+        eia_series: dict[str, list[SourceRecord]] = {}
+        for record in available.values():
+            point = extract_eia_point(record)
+            if point is not None:
+                eia_series.setdefault(point.series_id, []).append(record)
+        for series_id in sorted(eia_series):
+            series_records = eia_series[series_id]
+            signal = (
+                assess_price_change(series_records, self.price_alert_pct)
+                if self.price_alert_pct is not None
+                else daily_close_change(series_records)
+            )
+            by_id = {record.record_id: record for record in series_records}
+            latest = by_id.get(signal.latest_record_id) if signal else None
+            previous = by_id.get(signal.previous_record_id) if signal else None
+            if signal is None or latest is None or previous is None:
+                gaps.add(
+                    "EIA 日收盘价缺乏可比较的前一日数据，当日价差未知，不能视为持平。"
+                    f" EIA series {series_id} lacks a comparable prior daily close"
+                )
+                continue
+            latest_point = extract_eia_point(latest)
+            latest_ref = quote_reference(latest)
+            previous_ref = quote_reference(previous)
+            if latest_point is None or latest_ref is None or previous_ref is None:
+                gaps.add(f"EIA series {series_id} evidence cannot be quoted")
+                continue
+            label = latest_point.product or series_id
+            unit = latest_point.unit or "unknown"
+            change = signal.latest_close - signal.previous_close
+            pct = (signal.change_fraction * Decimal("100")).normalize()
+            metrics.append(
+                ComputedMetric(
+                    name=f"EIA daily close: {label} ({signal.latest_period})",
+                    value=signal.latest_close,
+                    unit=unit,
+                    as_of=signal.latest_as_of,
+                    evidence=(latest_ref,),
+                    quality_state=QualityState.VALID,
+                    formula="Latest EIA daily close available at cutoff",
+                )
+            )
+            include(latest_ref)
+            metrics.append(
+                ComputedMetric(
+                    name=f"EIA day change: {label}",
+                    value=change,
+                    unit=unit,
+                    as_of=signal.latest_as_of,
+                    evidence=(previous_ref, latest_ref),
+                    quality_state=QualityState.VALID,
+                    formula="latest close - previous daily close; same EIA series",
+                )
+            )
+            include(previous_ref)
+            direction = {"up": "上涨", "down": "下跌", "flat": "持平"}[signal.direction]
+            analysis.append(
+                f"价格解读：EIA {label} 日收盘价 {signal.latest_close} {unit}"
+                f"（{signal.latest_period}），较前一日 {signal.previous_period} 收盘价"
+                f" {signal.previous_close} 变动 {change} {unit}（{pct}%，{direction}）；"
+                f"仅反映 EIA 已发布数据，不代表未来价格预测。"
+                f"[{include(previous_ref)}; {include(latest_ref)}]"
+            )
+            if signal.urgent:
+                watch.add(
+                    f"原油日收盘价变动达到配置阈值，请核对原始数据。"
+                    f" EIA daily close change reached the configured"
+                    f" {self.price_alert_pct}% threshold: {label}; change {pct}% "
+                    f"[{include(previous_ref)}; {include(latest_ref)}]"
+                )
         if not cutoff.records:
             gaps.add("截至本期未提供来源证据。 No source evidence was supplied for this cutoff")
         if not observations:
