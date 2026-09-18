@@ -61,12 +61,16 @@ class FeishuChannel:
         public_base_url: str = "",
         c1_display_only: bool = False,
         trial_status_only: bool = False,
+        personal_alert_only: bool = False,
         authorize_request: Callable[[Literal["tenant_token", "message_send"]], Awaitable[str]]
         | None = None,
         observe_request: RequestObserver | None = None,
         transport: httpx.AsyncBaseTransport | None = None,
     ):
-        if c1_display_only and trial_status_only:
+        if (
+            sum(bool(mode) for mode in (c1_display_only, trial_status_only, personal_alert_only))
+            > 1
+        ):
             raise ValueError("Notification modes are mutually exclusive")
         if trial_status_only:
             if not callable(authorize_request) or not callable(observe_request):
@@ -75,6 +79,13 @@ class FeishuChannel:
                 recipient.is_test_recipient for recipient in recipients.values()
             ):
                 raise ValueError("Trial status requires exactly one configured test recipient")
+        if personal_alert_only:
+            if not callable(authorize_request) or not callable(observe_request):
+                raise ValueError("Personal alert requires request authorization and observation")
+            if len(recipients) != 1 or not all(
+                recipient.is_test_recipient for recipient in recipients.values()
+            ):
+                raise ValueError("Personal alert requires exactly one configured test recipient")
         if c1_display_only and not callable(authorize_request):
             raise ValueError("C1 requires per-request authorization")
         if c1_display_only and len(recipients) != 1:
@@ -85,6 +96,7 @@ class FeishuChannel:
         self.public_base_url = public_base_url
         self.c1_display_only = c1_display_only
         self.trial_status_only = trial_status_only
+        self.personal_alert_only = personal_alert_only
         self.authorize_request = authorize_request
         self.http = ProviderHTTP(transport, observe_request=observe_request)
         self._tokens = FeishuTenantToken(
@@ -101,6 +113,10 @@ class FeishuChannel:
             if self.trial_status_only:
                 raise ServiceError(
                     ErrorCode.FORBIDDEN, "Trial status request authorization is unavailable"
+                )
+            if self.personal_alert_only:
+                raise ServiceError(
+                    ErrorCode.FORBIDDEN, "Personal alert request authorization is unavailable"
                 )
             if self.c1_display_only:
                 raise ServiceError(ErrorCode.FORBIDDEN, "C1 request authorization is unavailable")
@@ -141,6 +157,7 @@ class FeishuChannel:
                     public_base_url=self.public_base_url,
                     c1_display_only=self.c1_display_only,
                     trial_status_only=self.trial_status_only,
+                    personal_alert_only=self.personal_alert_only,
                 )
                 token = await self._access_token(context)
                 # Recheck live permission after token/network work and immediately before send.

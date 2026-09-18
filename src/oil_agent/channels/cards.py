@@ -6,24 +6,14 @@ from zoneinfo import ZoneInfo
 
 from oil_agent.channels.c1 import C1_CONTENT, C1_DATASET, build_c1_card
 from oil_agent.channels.common import https_url
+from oil_agent.channels.labels import LABELS, PROVENANCE_LABELS
+from oil_agent.channels.personal_alert import (
+    build_personal_alert_card,
+    build_personal_alert_text,
+)
 from oil_agent.channels.trial_status import build_trial_status_card
 from oil_agent.contracts.dto import STATUS_MESSAGE_PAIRS, NotificationIntent
 from oil_agent.contracts.services import ErrorCode, ServiceError
-
-LABELS = {
-    "first_report": ("事件首报", "red"),
-    "update": ("事件进展", "orange"),
-    "correction": ("更正通知", "orange"),
-    "withdrawal": ("撤回说明", "orange"),
-    "daily_report": ("每日简报", "blue"),
-    "reminder": ("待确认提醒", "orange"),
-}
-
-PROVENANCE_LABELS = {
-    "fixture": "合成演练 · 非真实事件",
-    "trial": "试运行 · 真实来源",
-    "production": "生产数据",
-}
 
 
 def notification_text(intent: NotificationIntent) -> str:
@@ -52,13 +42,16 @@ def build_message(
     public_base_url: str = "",
     c1_display_only: bool = False,
     trial_status_only: bool = False,
+    personal_alert_only: bool = False,
 ) -> tuple[str, str]:
-    if c1_display_only and trial_status_only:
+    if sum(bool(mode) for mode in (c1_display_only, trial_status_only, personal_alert_only)) > 1:
         raise ServiceError(ErrorCode.INVALID_INPUT, "Notification modes are mutually exclusive")
     if c1_display_only:
         return c1_message(intent)
     if trial_status_only:
         return trial_status_message(intent)
+    if personal_alert_only:
+        return personal_alert_message(intent)
     if intent.subject_type == "status" or intent.kind in ("onboarding", "morning_status"):
         raise ServiceError(ErrorCode.INVALID_INPUT, "Status requires trial status-only mode")
     if intent.subject_type == "exercise" or intent.kind == "exercise":
@@ -156,3 +149,14 @@ def trial_status_message(intent: NotificationIntent) -> tuple[str, str]:
         raise ServiceError(ErrorCode.INVALID_INPUT, "Intent is outside the fixed trial status")
     card = build_trial_status_card(purpose=intent.kind, created_at=intent.created_at)
     return "interactive", json.dumps(card, ensure_ascii=False, separators=(",", ":"))
+
+
+def personal_alert_message(intent: NotificationIntent) -> tuple[str, str]:
+    """One-way trial event/report alerts; no OAuth, login, links, actions or callbacks."""
+    card = build_personal_alert_card(intent)
+    content = json.dumps(card, ensure_ascii=False, separators=(",", ":"))
+    if len(content.encode()) > 28000:
+        # Link-free fallback chosen BEFORE any HTTP side effect; no second send.
+        content = json.dumps({"text": build_personal_alert_text(intent)}, ensure_ascii=False)
+        return "text", content
+    return "interactive", content
