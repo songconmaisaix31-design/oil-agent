@@ -376,6 +376,77 @@ def test_eia_source_settings_enforce_daily_budget_and_scope():
     assert settings.source_permissions[0].provider == "eia"
 
 
+def gnews_source_permission(**changes):
+    values = (
+        grant("synthetic-gnews")
+        | dict(
+            source_id="gnews-trial",
+            provider="gnews",
+            rights_ref="synthetic:gnews-rights",
+            credentials_ref="project-injection:gnews-key",
+            host="gnews.io",
+        )
+        | changes
+    )
+    return SourcePermission(**values)
+
+
+def test_gnews_source_is_an_explicitly_supported_free_source():
+    permission = gnews_source_permission()
+    assert permission.provider == "gnews" and permission.host == "gnews.io"
+    assert permission.max_new_fee == 0
+    assert permission.max_requests == 5
+    assert permission.active(NOW)
+    assert not permission.active(NOW + timedelta(days=1))
+    assert not permission.active(NOW + timedelta(days=2))
+
+
+def test_gnews_requires_the_official_host_and_jin10_stays_host_free():
+    base = dict(
+        **grant("synthetic-gnews"),
+        source_id="gnews-trial",
+        provider="gnews",
+        rights_ref="synthetic:gnews-rights",
+        credentials_ref="project-injection:gnews-key",
+    )
+    with pytest.raises(ValidationError):
+        SourcePermission(**base)
+    with pytest.raises(ValidationError):
+        SourcePermission(**base, host="api.example.invalid")
+    with pytest.raises(ValidationError):
+        SourcePermission(**(base | {"host": "gnews.io", "provider": "jin10"}))
+    assert SourcePermission(**base, host="gnews.io").provider == "gnews"
+    jin10 = source_permission()
+    assert jin10.provider == "jin10" and jin10.host is None and jin10.max_new_fee == 0
+
+
+def test_free_source_provider_and_host_must_agree():
+    with pytest.raises(ValidationError):
+        SourcePermission(**(gnews_source_permission().model_dump() | {"host": "api.eia.gov"}))
+    with pytest.raises(ValidationError):
+        SourcePermission(**(eia_source_permission().model_dump() | {"host": "gnews.io"}))
+
+
+def test_gnews_source_settings_enforce_daily_budget_and_scope():
+    permission = gnews_source_permission(max_requests=10)
+    with pytest.raises(ValidationError):
+        Settings(
+            data_provenance="trial",
+            fixture_dataset=None,
+            external_sources_enabled=True,
+            source_permissions=(permission,),
+            daily_source_requests=5,
+        )
+    settings = Settings(
+        data_provenance="trial",
+        fixture_dataset=None,
+        external_sources_enabled=True,
+        source_permissions=(permission,),
+        daily_source_requests=10,
+    )
+    assert settings.source_permissions[0].provider == "gnews"
+
+
 def test_deepseek_model_permission_stays_intact():
     permission = ModelPermission(
         **grant("synthetic-deepseek"),
