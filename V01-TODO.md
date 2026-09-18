@@ -100,10 +100,12 @@ I merges `93a6f2b`/`fc24c32`/`34d0c2f` (factory glue). I ran
 Still pending before any real model/send run: the actual approved Chinese rules
 JSON content (`OIL_APPROVED_RULES_JSON`) — the user approved in principle but the
 rubric text (facility/event/occurrence/impact terms, severity, validity,
-`authorization_ref`) still needs to be supplied; a GNews free API key
-(`OIL_GNEWS_API_KEY`); and a clean (non-fake-ip) network for the product
-transport. Send window authorization is formally recorded; exact recipient/budget
-scope to be pinned before any send.
+`authorization_ref`) still needs to be supplied; and a clean (non-fake-ip) network
+for the product transport (both `api.eia.gov` and `gnews.io` resolve to the
+RFC 2544 `198.18.0.13` fake-ip range on this host, which the transport's IP
+validation correctly rejects). The GNews free key was supplied and verified valid
+(real search returns articles). Send window authorization is formally recorded;
+exact recipient/budget scope to be pinned before any send.
 
 ## Previous phase: real-integration v1.1 resume — model transport first
 
