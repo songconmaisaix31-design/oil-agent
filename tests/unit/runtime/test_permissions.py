@@ -458,3 +458,47 @@ def test_deepseek_model_permission_stays_intact():
     )
     assert permission.provider == "deepseek" and permission.model == "deepseek-flash"
     assert permission.active(NOW) and permission.max_tokens == 1000
+
+
+def price_alert_settings(**changes):
+    values = dict(
+        data_provenance="trial",
+        fixture_dataset=None,
+        external_sources_enabled=True,
+        source_permissions=(eia_source_permission(),),
+        daily_source_requests=10,
+        price_alert_pct="1.5",
+    )
+    return Settings(**(values | changes))
+
+
+def test_price_alert_may_fire_only_with_an_active_in_budget_eia_source():
+    assert price_alert_settings().price_alert_may_fire(NOW) is True
+
+
+def test_price_alert_stays_disabled_without_a_threshold():
+    assert price_alert_settings(price_alert_pct=None).price_alert_may_fire(NOW) is False
+
+
+def test_price_alert_refuses_without_an_eia_source_permission():
+    settings = price_alert_settings(source_permissions=(gnews_source_permission(),))
+    assert settings.price_alert_may_fire(NOW) is False
+
+
+def test_price_alert_refuses_an_expired_eia_source():
+    settings = price_alert_settings(
+        source_permissions=(
+            eia_source_permission(
+                valid_from=NOW - timedelta(days=2),
+                expires_at=NOW - timedelta(days=1),
+            ),
+        )
+    )
+    assert settings.price_alert_may_fire(NOW) is False
+
+
+def test_source_permission_daily_budget_is_a_positive_inclusive_bound():
+    permission = eia_source_permission()  # max_requests == 5
+    assert permission.within_daily_budget(5) is True
+    assert permission.within_daily_budget(4) is False
+    assert permission.within_daily_budget(0) is False

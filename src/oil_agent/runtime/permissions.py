@@ -98,6 +98,9 @@ class SourcePermission(RequestPermission):
             raise ValueError("Only the GNews source carries the official gnews.io host")
         return self
 
+    def within_daily_budget(self, daily_source_requests: int) -> bool:
+        return 0 < self.max_requests <= daily_source_requests
+
 
 class ModelPermission(RequestPermission):
     provider: StableId
