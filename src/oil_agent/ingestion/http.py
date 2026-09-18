@@ -169,12 +169,13 @@ class PinnedHttpClient:
 
         Query parameters carry the provider's key and selection; an optional path
         segment carries a provider route key (for example the EIA v2 ``seriesid``).
-        The endpoint itself stays query-free so the host allowlist and certificate
-        name remain exact.
+        When no path segment is supplied, the endpoint itself carries the full
+        provider route. The endpoint stays query-free so the host allowlist and
+        certificate name remain exact.
         """
         headers = headers or {}
         query = query or {}
-        if not _safe_path_segment(path):
+        if path and not _safe_path_segment(path):
             raise ServiceError(ErrorCode.INVALID_INPUT, "Invalid provider path segment")
         if any(
             not isinstance(k, str) or not isinstance(v, str)
