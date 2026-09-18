@@ -28,6 +28,38 @@ remain pending; emergency real-time alerts and authorized assessment wait on the
 An EIA free API key is still needed for a real fetch; the adapter is built and
 tested without it.
 
+### Completed free-source increment, 2026-09-18
+
+The free-source transport, permission and one-way-send assembly is integrated and
+unit-verified. Owner commits (all normally pushed, no force push):
+
+| Owner | Commit | Result |
+| --- | --- | --- |
+| AB | `e0da844` `Add free EIA series source transport and pinned GET` | `EiaSource`/`EiaSettings` adapter + pinned GET transport + focused offline tests. |
+| C | `5737982` `feat(runtime): support explicit free EIA source permission` | `SourcePermission(provider=eia, ...)` validity and budget checks. |
+| D | `cb8a589` `feat(channels): add one-way personal alert cards for trial event/report content` | One-way personal alert cards/send path without OAuth login/callback. |
+| I | `fd1497c` `merge: assemble free EIA trial source factory glue` | Merged AB/C/D; finalized the `bootstrap.py` EIA branch, `ingestion/__init__.py` exports and `.env.example` `OIL_EIA_*` docs. |
+
+I ran `uv run pytest tests/unit/ingestion tests/unit/runtime tests/unit/channels -q`:
+**582 passed, 0 failed**, ~18.5s (one pre-existing AnyIO deprecation warning).
+Scoped ruff check passed and the offline wheel+sdist build succeeded. I noted one
+owned limitation: ruff `format --check` flags AB's `ingestion/http.py` (line
+wrapping only; `ruff check` is clean), left untouched to preserve AB ownership.
+
+Worker note: the first dispatch used the Codex default model `gpt-6-astra`, which
+hit a usage limit; a retry on `gpt-5.6-luna` was blocked by the Codex "Update
+available 0.154.0 -> 0.155.0" startup nudge. All those attempts were fenced with no
+code loss, and the five tracks were re-dispatched as opencode (DeepSeek V4 Pro)
+workers. E's independent cross-worktree verification was blocked by opencode's
+per-worktree external-directory permission prompts, so the integration was instead
+verified by I's 582-test run plus direct coordinator SHA confirmation.
+
+Real end-to-end remains gated, unchanged: a real EIA API key (`OIL_EIA_API_KEY`)
+is still required for a live fetch; the approved Chinese rules/rubric
+(`OIL_APPROVED_RULES_JSON`) and an authorized real send window are still pending.
+No live EIA/DeepSeek/Feishu request or send was made this increment and no silent
+zero-cost claim is recorded.
+
 ## Previous phase: real-integration v1.1 resume — model transport first
 
 The personal Feishu presence phase is closed. The user confirmed on 2026-09-16
