@@ -47,14 +47,20 @@ async def authorized(*args):
 
 
 def series(points, series_id="PET.RWTC.D", **updates):
+    data = [
+        {"period": period, "value": value, "series": series_id, "units": "$/bbl"}
+        for period, value in points
+    ]
     row = {
-        "series_id": series_id,
-        "units": "$/bbl",
-        "data": points,
-        "updated": "2026-09-11T12:00:00-04:00",
+        "total": len(data),
+        "dateFormat": "YYYY-MM-DD",
+        "frequency": "daily",
+        "description": "West Texas Intermediate crude oil spot price",
+        "id": series_id,
+        "data": data,
         **updates,
     }
-    return json.dumps({"series": [row]}).encode()
+    return json.dumps({"response": row}).encode()
 
 
 def source(provider=None, *, settings=None, history=None):
@@ -94,22 +100,23 @@ async def test_fetch_series_produces_bounded_records():
 
     async def provider(request):
         seen["params"] = dict(request.url.params)
+        seen["path"] = request.url.path
         assert request.url.host == "8.8.8.8"
         assert request.headers["host"] == "api.eia.gov"
         assert request.extensions["sni_hostname"] == "api.eia.gov"
         assert request.headers["accept-encoding"] == "identity"
         assert request.method == "GET"
-        return response(200, series([["20260911", 70.38], ["20260910", 71.02]]))
+        return response(200, series([["2026-09-11", 70.38], ["2026-09-10", 71.02]]))
 
     batch = await source(provider).fetch(None, context=context())
-    assert seen["params"]["series_id"] == "PET.RWTC.D"
-    assert seen["params"]["api_key"] == "synthetic-key"
+    assert seen["path"] == "/v2/seriesid/PET.RWTC.D"
+    assert seen["params"] == {"api_key": "synthetic-key"}
     assert not batch.has_more
     assert batch.checkpoint.source_id == "eia-test"
     assert len(batch.records) == 2
     first = batch.records[0]
     assert first.source_id == "eia-test"
-    assert first.external_id == "PET.RWTC.D:20260911"
+    assert first.external_id == "PET.RWTC.D:2026-09-11"
     assert first.origin_publisher == "US Energy Information Administration"
     assert first.provenance == "fixture"
     assert first.fixture_dataset == "synthetic-eia"
@@ -139,7 +146,7 @@ async def test_fetch_denies_without_key():
 
 async def test_fetch_rejects_wrong_series_identity():
     async def provider(request):
-        return response(200, series([["20260911", 1.0]], series_id="OTHER.SERIES"))
+        return response(200, series([["2026-09-11", 1.0]], series_id="OTHER.SERIES"))
 
     src = source(provider)
     with pytest.raises(ServiceError) as exc:
@@ -150,6 +157,29 @@ async def test_fetch_rejects_wrong_series_identity():
 async def test_fetch_rejects_malformed_response():
     async def provider(request):
         return response(200, b"not-json")
+
+    src = source(provider)
+    with pytest.raises(ServiceError) as exc:
+        await src.fetch(None, context=context())
+    assert exc.value.code == ErrorCode.INVALID_OUTPUT
+
+
+async def test_fetch_rejects_non_numeric_value():
+    async def provider(request):
+        body = json.dumps(
+            {
+                "response": {
+                    "total": 1,
+                    "dateFormat": "YYYY-MM-DD",
+                    "frequency": "daily",
+                    "id": "PET.RWTC.D",
+                    "data": [
+                        {"period": "2026-09-11", "value": None, "series": "PET.RWTC.D"}
+                    ],
+                }
+            }
+        ).encode()
+        return response(200, body)
 
     src = source(provider)
     with pytest.raises(ServiceError) as exc:

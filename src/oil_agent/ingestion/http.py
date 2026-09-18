@@ -22,6 +22,15 @@ async def resolve_public_host(host: str) -> tuple[str, ...]:
     return tuple(dict.fromkeys(item[4][0] for item in entries))
 
 
+def _safe_path_segment(segment: str) -> bool:
+    if not segment or len(segment) > 128:
+        return False
+    return all(
+        ("a" <= c <= "z") or ("A" <= c <= "Z") or ("0" <= c <= "9") or c in "._-"
+        for c in segment
+    )
+
+
 @dataclass(frozen=True)
 class HttpBounds:
     endpoint: str
@@ -152,16 +161,21 @@ class PinnedHttpClient:
         query: Mapping[str, str] | None = None,
         *,
         headers: Mapping[str, str] | None = None,
+        path: str = "",
         context: CallContext,
         authorize: Callable[[], Awaitable[str]],
     ) -> HttpResponse:
         """Bounded HTTPS GET with the same pinning and reservation as ``post``.
 
-        Query parameters carry the provider's key and selection; the endpoint itself
-        stays query-free so the host allowlist and certificate name remain exact.
+        Query parameters carry the provider's key and selection; an optional path
+        segment carries a provider route key (for example the EIA v2 ``seriesid``).
+        The endpoint itself stays query-free so the host allowlist and certificate
+        name remain exact.
         """
         headers = headers or {}
         query = query or {}
+        if not _safe_path_segment(path):
+            raise ServiceError(ErrorCode.INVALID_INPUT, "Invalid provider path segment")
         if any(
             not isinstance(k, str) or not isinstance(v, str)
             or len(k) > 256 or len(v) > 2048
@@ -187,7 +201,10 @@ class PinnedHttpClient:
                 host = _validate_url(self.bounds.endpoint, self.bounds.allowed_hosts)
                 addresses = await self.resolver(host)
                 validate_target(self.bounds.endpoint, self.bounds.allowed_hosts, addresses)
-                target = httpx.URL(self.bounds.endpoint).copy_with(
+                url = self.bounds.endpoint
+                if path:
+                    url = url.rstrip("/") + "/" + path
+                target = httpx.URL(url).copy_with(
                     host=addresses[0], params=list(query.items())
                 )
                 request_headers = {

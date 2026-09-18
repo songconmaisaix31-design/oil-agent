@@ -3,12 +3,14 @@
 Produces immutable SourceRecords for the latest data points so they flow through
 the ordinary ingest -> assess/report pipeline. Reuses the same authorization and
 request-accounting callbacks as every external source; no key is discovered or
-guessed. EIA's free API key travels as a query parameter and is never logged.
+guessed. EIA's free API key travels as a query parameter and is never logged; the
+series id travels as the v2 ``seriesid`` path segment.
 """
 
 import json
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
+from decimal import Decimal
 from typing import Literal
 
 from pydantic import SecretStr
@@ -18,10 +20,8 @@ from oil_agent.contracts.services import CallContext, ErrorCode, ServiceError
 from oil_agent.ingestion.common import canonical_json, content_hash, stable_id
 from oil_agent.ingestion.http import PinnedHttpClient
 
-ENDPOINT = "https://api.eia.gov/series/"
+ENDPOINT = "https://api.eia.gov/v2/seriesid/"
 PUBLISHER = "US Energy Information Administration"
-
-_PERIOD_FORMATS = (8, 6, 4)  # YYYYMMDD / YYYYMM / YYYY
 
 
 @dataclass(frozen=True)
@@ -78,12 +78,10 @@ class EiaSource:
             raise ServiceError(ErrorCode.UNAUTHORIZED, "EIA project key is missing")
         if cursor is not None and cursor.source_id != settings.source_id:
             raise ServiceError(ErrorCode.INVALID_INPUT, "EIA checkpoint identity mismatch")
-        query = {
-            "api_key": settings.api_key.get_secret_value(),
-            "series_id": settings.series_id,
-        }
+        query = {"api_key": settings.api_key.get_secret_value()}
         response = await self.http.get(
             query,
+            path=settings.series_id,
             context=context,
             authorize=lambda: self.authorize(settings.source_id, "eia"),
         )
@@ -109,30 +107,29 @@ class EiaSource:
     def _records(self, body: bytes, discovered: datetime) -> list[SourceRecord]:
         settings = self.settings
         try:
-            payload = json.loads(body)
-            series = payload["series"][0]
-            data = series["data"]
-        except (ValueError, KeyError, TypeError, IndexError, json.JSONDecodeError):
+            payload = json.loads(body, parse_float=Decimal)
+            response_obj = payload["response"]
+            data = response_obj["data"]
+        except (ValueError, KeyError, TypeError, json.JSONDecodeError):
             raise ServiceError(ErrorCode.INVALID_OUTPUT, "EIA response shape changed") from None
-        if series.get("series_id") != settings.series_id or not isinstance(data, list):
+        if response_obj.get("id") != settings.series_id or not isinstance(data, list):
             raise ServiceError(ErrorCode.INVALID_OUTPUT, "EIA returned another series identity")
-        updated = series.get("updated")
-        if isinstance(updated, str):
-            try:
-                updated = datetime.fromisoformat(updated)
-            except ValueError:
-                updated = None
         records = []
         for point in data[: settings.max_points]:
-            if not isinstance(point, list) or len(point) != 2:
+            if not isinstance(point, dict):
                 raise ServiceError(ErrorCode.INVALID_OUTPUT, "EIA data point shape changed")
-            period, raw = str(point[0]), point[1]
-            if len(period) not in _PERIOD_FORMATS or not period.isdigit():
+            period = point.get("period")
+            if not isinstance(period, str):
                 raise ServiceError(ErrorCode.INVALID_OUTPUT, "EIA period format changed")
-            if isinstance(raw, bool):
+            try:
+                published = datetime.strptime(period, "%Y-%m-%d").replace(tzinfo=UTC)
+            except ValueError:
+                raise ServiceError(ErrorCode.INVALID_OUTPUT, "EIA period format changed") from None
+            raw = point.get("value")
+            if isinstance(raw, bool) or not isinstance(raw, (int, float, Decimal)):
                 raise ServiceError(ErrorCode.INVALID_OUTPUT, "EIA value is not numeric")
             value = str(raw)
-            published = self._published(period, updated, discovered)
+            published = min(published, discovered)
             excerpt = canonical_json(
                 {
                     "series_id": settings.series_id,
@@ -167,16 +164,3 @@ class EiaSource:
                 )
             )
         return records
-
-    @staticmethod
-    def _published(period: str, updated: datetime | None, discovered: datetime) -> datetime:
-        if updated is not None:
-            return updated.astimezone(UTC) if updated.tzinfo else updated.replace(tzinfo=UTC)
-        length = len(period)
-        if length == 8:
-            value = datetime.strptime(period, "%Y%m%d").replace(tzinfo=UTC)
-        elif length == 6:
-            value = datetime.strptime(period, "%Y%m").replace(tzinfo=UTC)
-        else:
-            value = datetime.strptime(period, "%Y").replace(tzinfo=UTC)
-        return min(value, discovered)
