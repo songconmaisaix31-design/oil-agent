@@ -147,6 +147,98 @@ class PinnedHttpClient:
         except Exception:
             raise ServiceError(ErrorCode.UNAVAILABLE, "Provider transport unavailable") from None
 
+    async def get(
+        self,
+        query: Mapping[str, str] | None = None,
+        *,
+        headers: Mapping[str, str] | None = None,
+        context: CallContext,
+        authorize: Callable[[], Awaitable[str]],
+    ) -> HttpResponse:
+        """Bounded HTTPS GET with the same pinning and reservation as ``post``.
+
+        Query parameters carry the provider's key and selection; the endpoint itself
+        stays query-free so the host allowlist and certificate name remain exact.
+        """
+        headers = headers or {}
+        query = query or {}
+        if any(
+            not isinstance(k, str) or not isinstance(v, str)
+            or len(k) > 256 or len(v) > 2048
+            or any(ord(c) < 32 or ord(c) > 126 for c in k + v)
+            for k, v in query.items()
+        ):
+            raise ServiceError(ErrorCode.INVALID_INPUT, "Invalid provider query parameters")
+        if any(
+            not isinstance(k, str) or not isinstance(v, str)
+            or len(k) > 256 or len(v) > 4096
+            or any(ord(c) < 32 or ord(c) > 126 for c in k + v)
+            for k, v in headers.items()
+        ):
+            raise ServiceError(ErrorCode.INVALID_INPUT, "Invalid provider request headers")
+        if self.attempts >= self.bounds.request_limit:
+            raise ServiceError(ErrorCode.QUOTA_EXHAUSTED, "Local provider request limit reached")
+        self.attempts += 1
+        try:
+            async with asyncio.timeout(remaining(context)):
+                reservation = await authorize()
+                if not isinstance(reservation, str) or not reservation.strip():
+                    raise ServiceError(ErrorCode.FORBIDDEN, "Provider request not authorized")
+                host = _validate_url(self.bounds.endpoint, self.bounds.allowed_hosts)
+                addresses = await self.resolver(host)
+                validate_target(self.bounds.endpoint, self.bounds.allowed_hosts, addresses)
+                target = httpx.URL(self.bounds.endpoint).copy_with(
+                    host=addresses[0], params=list(query.items())
+                )
+                request_headers = {
+                    **headers,
+                    "Host": host,
+                    "Accept-Encoding": "identity",
+                }
+                async with httpx.AsyncClient(
+                    transport=self.transport,
+                    trust_env=False,
+                    follow_redirects=False,
+                    timeout=remaining(context),
+                ) as client:
+                    async with client.stream(
+                        "GET",
+                        target,
+                        headers=request_headers,
+                        extensions={"sni_hostname": host},
+                    ) as response:
+                        if sum(len(k) + len(v) for k, v in response.headers.raw) > 32_768:
+                            raise ServiceError(
+                                ErrorCode.INVALID_OUTPUT, "Provider headers too large"
+                            )
+                        if response.headers.get("content-encoding", "identity") != "identity":
+                            raise ServiceError(
+                                ErrorCode.INVALID_OUTPUT, "Encoded response rejected"
+                            )
+                        length = response.headers.get("content-length")
+                        if length is not None and (
+                            not length.isdigit() or int(length) > self.bounds.max_response_bytes
+                        ):
+                            raise ServiceError(ErrorCode.INVALID_OUTPUT, "Provider body too large")
+                        chunks = bytearray()
+                        async for chunk in response.aiter_raw():
+                            if len(chunks) + len(chunk) > self.bounds.max_response_bytes:
+                                raise ServiceError(
+                                    ErrorCode.INVALID_OUTPUT, "Provider body too large"
+                                )
+                            chunks.extend(chunk)
+                        result = HttpResponse(
+                            response.status_code, dict(response.headers), bytes(chunks)
+                        )
+                        check_status(result)
+                        return result
+        except ServiceError:
+            raise
+        except (TimeoutError, httpx.TimeoutException):
+            raise ServiceError(ErrorCode.TIMEOUT, "Provider request timed out") from None
+        except Exception:
+            raise ServiceError(ErrorCode.UNAVAILABLE, "Provider transport unavailable") from None
+
 
 def check_status(response: HttpResponse) -> None:
     if 200 <= response.status < 300:
