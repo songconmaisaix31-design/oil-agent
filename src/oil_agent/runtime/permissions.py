@@ -72,10 +72,28 @@ class StatusAppPermission(RequestPermission):
 
 
 class SourcePermission(RequestPermission):
+    """One explicitly approved source permission.
+
+    ``jin10`` (token) and ``eia`` (US EIA free key on the official host
+    ``api.eia.gov``) are the explicitly supported providers. An EIA source is a
+    free source: it carries ``max_new_fee == 0``, requires the official host and
+    stays within a bounded validity window and positive request budget.
+    """
+
     source_id: StableId
     provider: StableId
     rights_ref: NonEmpty
     credentials_ref: NonEmpty
+    host: Literal["api.eia.gov"] | None = None
+    max_new_fee: Literal[0] = 0
+
+    @model_validator(mode="after")
+    def bounded_free_source(self):
+        if self.expires_at - self.valid_from > timedelta(days=30):
+            raise ValueError("Source permission validity cannot exceed thirty days")
+        if (self.provider == "eia") != (self.host == "api.eia.gov"):
+            raise ValueError("Only the EIA source carries the official api.eia.gov host")
+        return self
 
 
 class ModelPermission(RequestPermission):
