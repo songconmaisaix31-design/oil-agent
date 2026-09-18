@@ -21,6 +21,8 @@ from oil_agent.channels import (
 )
 from oil_agent.channels.common import https_url
 from oil_agent.ingestion import SafeQuoteParser
+from oil_agent.ingestion.eia import ENDPOINT as EIA_ENDPOINT
+from oil_agent.ingestion.eia import EiaSettings, EiaSource
 from oil_agent.ingestion.http import HttpBounds, PinnedHttpClient
 from oil_agent.ingestion.jin10 import ENDPOINT, Jin10Settings, Jin10Source
 from oil_agent.ingestion.mcp import load_json
@@ -82,9 +84,22 @@ def _wire_source(runtime: Runtime) -> None:
         return
     # One approved news source is the current product scope. Do not silently
     # ignore extra configured sources or map an unknown provider to Jin10.
-    if len(settings.source_permissions) != 1 or settings.source_permissions[0].provider != "jin10":
-        raise ValueError("Trial source assembly requires one explicitly approved Jin10 source")
+    if len(settings.source_permissions) != 1:
+        raise ValueError("Trial source assembly requires one explicitly approved source")
     permission = settings.source_permissions[0]
+    if permission.provider == "jin10":
+        source, poll_seconds = _jin10_source(runtime, permission)
+    elif permission.provider == "eia":
+        source, poll_seconds = _eia_source(runtime, permission)
+    else:
+        raise ValueError("Trial source assembly requires an approved supported provider")
+    runtime.services.sources[permission.source_id] = source
+    runtime.services.external_sources = frozenset({permission.source_id})
+    runtime.services.source_poll_seconds[permission.source_id] = poll_seconds
+
+
+def _jin10_source(runtime: Runtime, permission):
+    settings = runtime.settings
     source_settings = Jin10Settings(
         source_id=permission.source_id,
         rights_ref=permission.rights_ref,
@@ -97,7 +112,7 @@ def _wire_source(runtime: Runtime) -> None:
         offset_parameter=os.environ.get("OIL_JIN10_OFFSET_PARAMETER") or None,
         offset_type=os.environ.get("OIL_JIN10_OFFSET_TYPE", "string"),
     )
-    runtime.services.sources[permission.source_id] = Jin10Source(
+    source = Jin10Source(
         source_settings,
         http=PinnedHttpClient(
             HttpBounds(
@@ -110,8 +125,38 @@ def _wire_source(runtime: Runtime) -> None:
         latest_source_record=runtime.latest_source_record,
         clock=runtime.repository.clock,
     )
-    runtime.services.external_sources = frozenset({permission.source_id})
-    runtime.services.source_poll_seconds[permission.source_id] = source_settings.poll_seconds
+    return source, source_settings.poll_seconds
+
+
+def _eia_source(runtime: Runtime, permission):
+    settings = runtime.settings
+    source_settings = EiaSettings(
+        source_id=permission.source_id,
+        rights_ref=permission.rights_ref,
+        authorization_ref=permission.authorization_ref,
+        api_key=SecretStr(_required_environment("OIL_EIA_API_KEY")),
+        series_id=_required_environment("OIL_EIA_SERIES_ID"),
+        product=_required_environment("OIL_EIA_PRODUCT"),
+        unit=_required_environment("OIL_EIA_UNIT"),
+        network_authorized=True,
+        provenance=settings.data_provenance.value,
+        fixture_dataset=settings.fixture_dataset,
+        poll_seconds=int(os.environ.get("OIL_EIA_POLL_SECONDS", "86400")),
+    )
+    source = EiaSource(
+        source_settings,
+        http=PinnedHttpClient(
+            HttpBounds(
+                EIA_ENDPOINT,
+                ("api.eia.gov",),
+                request_limit=min(permission.max_requests, settings.daily_source_requests, 10000),
+            )
+        ),
+        authorize_source_request=runtime.authorize_source_request,
+        latest_source_record=runtime.latest_source_record,
+        clock=runtime.repository.clock,
+    )
+    return source, source_settings.poll_seconds
 
 
 def _wire_feishu(runtime: Runtime) -> None:
