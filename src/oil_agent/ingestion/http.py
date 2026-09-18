@@ -19,7 +19,17 @@ from oil_agent.ingestion.network import _validate_url, validate_target
 
 async def resolve_public_host(host: str) -> tuple[str, ...]:
     entries = await asyncio.get_running_loop().getaddrinfo(host, 443, type=socket.SOCK_STREAM)
-    return tuple(dict.fromkeys(item[4][0] for item in entries))
+    ipv4: list[str] = []
+    ipv6: list[str] = []
+    for item in entries:
+        address = item[4][0]
+        if address in ipv4 or address in ipv6:
+            continue
+        if item[0] == socket.AF_INET:
+            ipv4.append(address)
+        else:
+            ipv6.append(address)
+    return tuple(ipv4 + ipv6)
 
 
 def _safe_path_segment(segment: str) -> bool:
