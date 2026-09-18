@@ -78,7 +78,7 @@ class EiaSource:
             raise ServiceError(ErrorCode.UNAUTHORIZED, "EIA project key is missing")
         if cursor is not None and cursor.source_id != settings.source_id:
             raise ServiceError(ErrorCode.INVALID_INPUT, "EIA checkpoint identity mismatch")
-        query = {"api_key": settings.api_key.get_secret_value()}
+        query = {"api_key": settings.api_key.get_secret_value(), "length": str(settings.max_points)}
         response = await self.http.get(
             query,
             path=settings.series_id,

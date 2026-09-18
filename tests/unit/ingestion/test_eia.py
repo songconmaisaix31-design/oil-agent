@@ -110,7 +110,7 @@ async def test_fetch_series_produces_bounded_records():
 
     batch = await source(provider).fetch(None, context=context())
     assert seen["path"] == "/v2/seriesid/PET.RWTC.D"
-    assert seen["params"] == {"api_key": "synthetic-key"}
+    assert seen["params"] == {"api_key": "synthetic-key", "length": "5"}
     assert not batch.has_more
     assert batch.checkpoint.source_id == "eia-test"
     assert len(batch.records) == 2
