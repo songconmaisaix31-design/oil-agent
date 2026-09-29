@@ -4,7 +4,7 @@ import csv
 import io
 import json
 import zipfile
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from decimal import Decimal
 
 import pytest
@@ -245,7 +245,8 @@ async def test_T22_blocked_urls_never_reach_disallowed_transport(scenario, case_
         transport=transport,
     )
     with pytest.raises(ServiceError) as error:
-        await reader.read(context=case_context(case))
+        # Corpus event time stays frozen; a live transport deadline must be current.
+        await reader.read(context=case_context({**case, "clock_at": datetime.now(UTC).isoformat()}))
     assert error.value.code == "forbidden"
     assert len(calls) == (1 if "redirect_to" in stimulus else 0)
 
