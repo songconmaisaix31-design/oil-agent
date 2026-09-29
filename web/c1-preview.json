@@ -1,0 +1,6 @@
+{
+  "test_id": "c1-62d9df74f70b40bd84245776163c1769",
+  "created_at": "2026-09-12T06:27:01.304327+00:00",
+  "msg_type": "interactive",
+  "content": "{\"config\":{\"wide_screen_mode\":true,\"enable_forward\":false},\"header\":{\"template\":\"orange\",\"title\":{\"tag\":\"plain_text\",\"content\":\"【油品预警 Agent｜演练消息】\"}},\"elements\":[{\"tag\":\"div\",\"text\":{\"tag\":\"plain_text\",\"content\":\"演练／非真实行情\"}},{\"tag\":\"div\",\"text\":{\"tag\":\"plain_text\",\"content\":\"本条消息用于验证飞书推送与手机显示，\\n不代表真实市场事件，不构成采购或交易建议。\"}},{\"tag\":\"div\",\"text\":{\"tag\":\"plain_text\",\"content\":\"测试编号：c1-62d9df74f70b40bd84245776163c1769\\n消息生成时间：2026-09-12 14:27:01（上海时间）\"}},{\"tag\":\"div\",\"text\":{\"tag\":\"plain_text\",\"content\":\"本阶段只验证消息到达。\"}}]}"
+}

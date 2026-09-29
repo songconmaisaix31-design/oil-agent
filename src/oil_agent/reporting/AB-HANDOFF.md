@@ -1,0 +1,638 @@
+# AB integration handoff
+
+AB code owns only ingestion, intelligence, reporting and matching unit tests.
+Initial frozen base: `dd01ee225ba36c1d7e75acdf5c96cd2d8e0df482`. The coordinator
+authorized ordinary adoption of C contracts `e09683409550bbe7238396bc2506def3969ad202`
+and `bb39ece229c32131025b4a4ead7d7502ba471e0b`; AB did not edit C-owned files.
+
+## Runtime entrypoints
+
+```python
+from oil_agent.ingestion import ReplaySource, SafeQuoteParser
+from oil_agent.intelligence import ConservativeAssessmentService
+from oil_agent.reporting import SnapshotReportService
+
+sources = {"replay": ReplaySource(records, source_id="replay")}
+assessment = ConservativeAssessmentService()
+reports = SnapshotReportService()
+quote_parser = SafeQuoteParser()
+```
+
+These implement frozen `SourceAdapter.fetch`, `AssessmentService.assess`,
+`ReportService.build` and `QuoteParser.preview`, each with `context: CallContext`.
+Pass them into C's `RuntimeServices`. AB does not store checkpoints, allocate
+durable revisions, grant recipient authorization, send messages or deploy.
+
+## Replay, source admission and evidence
+
+`ReplaySource` accepts only explicitly labeled fixture records, preserves arrival
+order, revisions and late publication times, and returns bounded pages. The
+immutable evidence identity is `(record_id, revision)`: every source/external-ID
+family keeps one stable record ID, and that ID cannot alias another family.
+Exact duplicate revisions collapse at their first arrival position; conflicting
+same-revision content or metadata is rejected. Distinct revisions share one log.
+The checkpoint is a **candidate**; C must commit it with all returned records and
+pending work atomically. Replaying a committed cursor is deterministic. Input is
+append-only; changed consumed prefixes fail. Pagination and retention gaps are
+explicit; retention debt remains until C deliberately resets/reconciles coverage.
+
+Importers use `ingestion.common.content_hash(title, excerpt)`: SHA-256 of the UTF-8
+compact JSON array `[title, excerpt]`, with `ensure_ascii=False`. An arbitrary
+placeholder digest fails validation. Evidence references require exact record ID,
+revision, field and literal excerpt. Content hashing checks consistency, not truth.
+
+`SourceSettings` refuses missing license/rights, credentials, authorization,
+endpoint/host allowlist or finite request budget. `BoundedHttpReader` requires
+injected resolver/transport implementations; no commercial endpoint or socket
+transport is bundled. A future authorized transport must enforce the byte limit
+while streaming, connect only to the supplied public IPs, preserve TLS hostname
+verification and never resolve again. Each redirect is revalidated. Source
+attempts, including failures/redirects, consume the finite local counter; C must
+persist accounting, backoff and health across processes. Tests use stubs only.
+
+## Safe file preview and offline background
+
+`SafeQuoteParser.preview(QuoteParseRequest, context=...) -> ParsedQuotes` accepts
+the final C trusted envelope. The upload contains base64 bytes, filename, MIME,
+canonical-field-to-column mapping and rights reference. Publisher, discovered
+time and fixture/trial/production provenance come from C's trusted envelope, not
+the upload. Output contains records, observations, row issues, duplicate rows and
+file hash; C assigns actor-bound preview ID/expiry and owns confirmation/import.
+
+The lower-level `preview_quotes(data, filename, mapping, *, rights_ref,
+origin_publisher, discovered_at, is_fixture, provenance, fixture_dataset=None,
+limits=None)` exposes `QuotePreview(file_id, file_sha256, columns, rows)`. Rows have
+`row_number`, `row_id`, `mapped`, `errors`, `duplicate_of`, `record`, `observation`.
+Invalid/duplicate rows contain no importable DTOs. Required mapped fields are
+`value` and `as_of`; timezone offsets are mandatory. Optional comparison fields:
+product/spec/region/supplier/quote_type/tax_basis/delivery_basis/currency/unit,
+plus published_at. Missing basis remains uncomparable. File identity uses original
+bytes; row identity includes file, row number and canonical mapping.
+
+An empty mapping uses only exact canonical field names present in the validated
+header, retaining every present optional basis field and published_at. It still
+requires value and as_of; case variants, synonyms and missing columns are not
+guessed. A nonempty explicit mapping is validated as supplied and is never
+automatically completed. Equivalent derived/explicit mappings produce identical
+file/row identities and evidence; the caller's mapping is not mutated.
+
+Defaults: 2,000,000 raw upload bytes, 10 MB expanded XLSX, 200 ZIP entries, 100x expansion ratio,
+10,000 rows, 64 columns and 2,000 characters per cell. UTF-8 CSV and exactly one
+XLSX worksheet are supported. Macro/external/entity content, disguised extensions,
+bad archives and oversized data reject the file. Formula cells produce row errors;
+there is no evaluation. Parsing runs in a bounded worker thread; timeout prevents
+return/import but the bounded read-only parse may finish after cancellation.
+
+`parse_eia(data, EiaSeries(...), *, release_at, discovered_at, rights_ref,
+is_fixture, provenance, fixture_dataset=None)` is offline. It reads an EIA-v2-shaped
+`response.data` array only when series, units and period endpoints match explicit
+configuration. No real series or endpoint is guessed. Caller-supplied publication
+time stays separate from statistical period; output is US background. Empty data
+reports no-new-value, malformed input fails. Changed releases need C-owned source
+revision reconciliation before persistence; this parser does not query history.
+
+## Conservative assessment and revisions
+
+The LangGraph has two nodes, no loops/tools/checkpointer, and recursion limit 3,
+using the upstream [Graph API](https://docs.langchain.com/oss/python/langgraph/graph-api).
+LangSmith tracing is explicitly disabled, including when ambient tracing is on.
+The tracing helper is already present in the frozen LangGraph dependency tree.
+No product model client is bundled or invoked.
+
+An injected client receives only record ID/revision/title/excerpt and a fixed
+system instruction. It cannot request tools or alter recipients. Its schema can
+return only assertion status plus verbatim evidence. Invalid JSON, unknown IDs,
+wrong revisions, unsupported excerpts/numbers, extra fields, excessive output or
+timeout degrade to routine unverified candidates. Model output alone never earns
+reliable evidence or urgent severity. Plan/denial/archive/future/uncertainty guards
+only lower confidence; fallback does not infer occurrence from attack/fire words.
+Deterministic tests do not establish general semantic accuracy or live recall.
+
+`ClaimReview` is a trusted application-supplied annotation bound to content hash
+and exact evidence. Never construct it from raw model/article fields. Credible
+single-source promotion also requires explicit policy and publisher allowlist.
+Reviewed matching evidence from distinct original publishers may become independent
+multi-source; mirror domains never establish independence.
+
+Default candidate IDs bind source_id/external_id. No matching is inferred from
+place names. Constructor `matched_event_ids={(source_id, external_id): event_id}`
+accepts only explicit C-reviewed matches. C owns historical matching and monotonic
+revision allocation; candidate revision 1 never means an event is new.
+`suggest_notification(previous, current, allow_first_report=False)` is advisory
+after matching; it has no send authority. Same-origin mirror IDs/timestamps alone
+are not material changes; corrections/withdrawals remain suggestions even if
+severity falls. C must route changes to the appropriate original recipient scope.
+
+`AssessmentPolicy(model_authorized=True)` and positive `ModelBudget` values are
+needed even for an injected stub. Normal/urgent ledgers are separate, finite and
+cannot borrow capacity. Attempts reserve tokens before calls, failures retain
+reservations, actual usage and blocked attempts are observable. Empty input and
+unchanged cached extractions consume no call. Cache is bounded to 128 batches.
+C must persist cross-worker/provider reservations; local ledgers are not durable
+spending controls. There is no auto-purchase or fallback paid provider.
+
+## Reports and quote thresholds
+
+Reports use only the supplied cutoff snapshot. Late discovery/release/assessment,
+uncertain/future times and unsupported references are excluded with gaps. Facts
+are labeled source quotations, not copied generated titles/impact numbers. Facts,
+watch items and gaps are separate; deterministic impact analysis is empty.
+
+Every observation value and basis field must match its structured source row.
+Decimal changes use exact product/spec/region/supplier/quote type/tax/delivery/
+currency/unit keys. Missing basis, contradictory same-time quotes or missing prior
+quotes yield unknown changes. Shanghai business dates determine freshness; stale
+quotes retain value/date but never become today's zero change. US background
+retains its statistical period and release, never current domestic inventory.
+
+`QuoteThreshold(comparison_key, Decimal("..."))` configures an explicit absolute
+threshold. There are no industry defaults. A threshold hit creates a watch item;
+C owns subsequent alert/outbox policy. Mixed fixture/trial provenance propagates
+conservatively. Fixture reports carry `SYNTHETIC TEST - NOT MARKET INFORMATION`;
+C/D must enforce recipient and delivery isolation.
+
+## Verification and remaining boundaries
+
+Run checks serially on this low-memory host:
+
+```text
+uv sync --frozen --group dev
+uv run --frozen ruff check src/oil_agent/ingestion src/oil_agent/intelligence src/oil_agent/reporting tests/unit/ingestion tests/unit/intelligence tests/unit/reporting
+uv run --frozen pytest tests/unit/ingestion tests/unit/intelligence tests/unit/reporting tests/contracts -q
+uv build --out-dir tests/unit/reporting/.build-check
+```
+
+Local tests address T01-12, T21-22 and T27-28. E's labeled scenario descriptions
+were consulted read-only, not passed as API DTOs. This is not PostgreSQL
+transaction/concurrency acceptance, live source coverage, product model accuracy,
+recipient authorization, phone receipt or continuous-operation evidence.
+External gates: commercial license/credentials/endpoints, actual series/fields,
+authorized quote samples, model approval and budgets, deployed-network validation,
+phone acceptance and continuous operation. No real data/model requests, customer
+sends or deployment occurred.
+
+Initial delivery checks (Windows, CPython 3.13.13, frozen uv environment):
+
+- Scoped Ruff check: passed.
+- `uv run --frozen pytest -m 'not postgres' -q`: 85 passed, 3 PostgreSQL tests
+  deliberately deselected; one upstream Starlette/AnyIO deprecation warning.
+- Earlier AB plus contract check before the two final revision regression cases:
+  72 passed. Final non-PostgreSQL run includes all AB and contract tests.
+- `uv build --out-dir tests/unit/reporting/.build-check`: wheel and source
+  distribution built successfully; temporary build outputs removed after checking.
+
+The PostgreSQL tests were not run in AB: this track starts no extra database or
+Docker services and makes no database concurrency/transaction acceptance claim.
+
+## AB-FIX-REPLAY follow-up
+
+Base: `25cceea0bfb78930879060417054e4675d84956d`. E identified that the old
+record-ID-only deduplication rejected legal revisions sharing a stable ID.
+The correction uses composite evidence identity and enforces both directions of
+the source-family/record-ID mapping; cursor format and prefix hashing are unchanged.
+Only replay.py, its existing ingestion test file and this handoff were modified.
+
+Two new stable-ID pagination/extension tests failed on the original implementation
+before the fix. Regressions now cover one collection with revisions 1 and 2,
+page_size=1/max_pages=1, exact-duplicate collapse, repeated fetch, restart from the
+original committed cursor, append-only extension after checkpoint creation, exact
+old-evidence preservation, consumed-prefix content/rights/order/removal rejection,
+and conflicting same-revision payloads and aliases. The earlier pagination test
+was corrected to keep its record ID stable across revisions.
+
+Follow-up checks on the unchanged frozen dependency environment:
+
+- `uv run --frozen ruff check src/oil_agent/ingestion/replay.py tests/unit/ingestion/test_ingestion.py`: passed.
+- `uv run --frozen pytest tests/unit/ingestion/test_ingestion.py -q`: 25 passed.
+- `uv run --frozen pytest -m 'not postgres' -q`: 95 passed, 3 PostgreSQL tests
+  deselected, one existing Starlette/AnyIO deprecation warning.
+- `uv build --out-dir "$env:TEMP/oil-ab-fix-replay-ctx-e350f1136c55"`: wheel and
+  source distribution built successfully outside the repository.
+
+C's ffb62d ingestion code and E's PostgreSQL pipeline tests were read only;
+no shared contract or C/D/E/M file changed. Main/E must rerun actual PostgreSQL
+T09/T05 against the delivered fix SHA. No Docker, live source/model/API request,
+customer send or external acceptance was performed by this follow-up.
+
+## AB-FIX-QUOTE-DEFAULT follow-up
+
+Base: `f3b726d1a194f192f7fc4dc5908882190b416b96`. E's actual browser/API path
+submitted the advertised default field_mapping={} and encountered an invalid-input
+response before the parser inspected standard headers. Empty-map derivation now
+runs only after file/header validation and feeds the existing strict mapping and
+row validation. The shared DTO, raw upload cap and production settings are unchanged.
+
+The new CSV and XLSX SafeQuoteParser regressions both failed before the fix.
+They now confirm default preview success, all standard basis/release values,
+trusted fixture provenance and identical file/row identities versus the same
+explicit mapping. Additional cases cover missing/near-match mandatory headers,
+unknown optional names, explicit-map validation/non-enrichment, invalid headers,
+formula rejection and the unchanged 2,000,000-byte raw limit.
+
+Checks on the frozen local environment:
+
+- `uv run --frozen ruff check src/oil_agent/ingestion/quotes.py tests/unit/ingestion/test_ingestion.py`: passed.
+- `uv run --frozen pytest tests/unit/ingestion/test_ingestion.py -q`: 42 passed.
+- `uv run --frozen pytest -m 'not postgres' -q`: 112 passed, 3 PostgreSQL tests
+  deselected, one existing Starlette/AnyIO deprecation warning.
+- `uv build --out-dir "$env:TEMP/oil-ab-fix-quote-default-ctx-10a78cbe3c9a"`: wheel
+  and source distribution built successfully outside the repository.
+
+Only quotes.py, the existing ingestion test file and this handoff changed.
+E's browser test and C/D/E/M files were not edited; no injected UI/test mapping
+workaround was used. Main/E must rerun the unchanged real browser/API/PostgreSQL
+default upload flow on the delivered SHA. No Docker, product model, source API or
+customer sending was used for this local fix; existing external limits remain.
+
+## AB-FIX-SUMMARY-COPY follow-up
+
+Base: `026490a4558ffc50dba03a28c14b2e03dcfa32e9`. Replaced only the user-visible
+change_summary coordination placeholder with a concise Chinese explanation that
+the assessment uses the listed sources and presents fact status, evidence status
+and unresolved questions separately. It does not claim a new event, update,
+confirmation or durable revision. Matching and revision allocation remain C's
+responsibility; no processing behavior, IDs/hashes, severity/evidence fields,
+unknown codes, model settings or DTOs changed.
+
+- `uv run --frozen ruff check src/oil_agent/intelligence/assessment.py`: passed.
+- `uv run --frozen pytest tests/unit/intelligence -q`: 14 passed.
+- Existing tests were used without adding text-only assertions.
+
+Only assessment.py and this handoff changed. No Docker or live calls were used.
+The coordinator's reported eight-browser/264-Python integration evidence applies
+to the base above, not this successor. Final I must adopt the copy-only successor
+and rerun integrated CI; that validation was not performed in this AB follow-up.
+
+## Real integration R1: Jin10 source increment
+
+Ordinarily merged accepted local-only I baseline `ed1de2e24634e8471e0979cfc168eebec4c12e4c`,
+governance `57e72ee`, and C dependency/history contract `aa7d638dbbb9041bf3c9465803b6b61bb939e5bd`
+in the original AB branch. No owner files were edited by AB during these adoptions.
+
+Construction (all constructors are network-free):
+
+```python
+from oil_agent.ingestion.http import HttpBounds, PinnedHttpClient
+from oil_agent.ingestion.jin10 import ENDPOINT, Jin10Settings, Jin10Source
+
+http = PinnedHttpClient(HttpBounds(ENDPOINT, ("mcp.jin10.com",), request_limit=approved_limit))
+source = Jin10Source(
+    Jin10Settings(
+        source_id=source_id, rights_ref=rights_ref, authorization_ref=approval_ref,
+        token=project_secret, network_authorized=explicitly_authorized,
+        provenance="trial", arguments_json=reviewed_arguments_json,
+        offset_parameter=reviewed_offset_parameter, offset_type=reviewed_offset_type,
+    ),
+    http=http, authorize_source_request=runtime.authorize_source_request,
+    latest_source_record=runtime.latest_source_record,
+)
+```
+
+`project_secret` is an injected SecretStr, never an environment search or public
+configuration value. Every HTTP POST (initialize, initialized notification, tool
+discovery, tool call) requires C's durable authorization callback. Local request
+limits are secondary lifetime caps, not replacements for durable daily/approval
+budgets. No retries, redirects, provider-selected tools, sampling or resource fetches
+are performed. HTTPS connects to a validated public address using the original
+TLS certificate/SNI name and Host; ambient proxies are disabled. Body, header,
+request, page, item, schema nesting and elapsed-time limits are finite.
+
+MCP negotiates supported Streamable HTTP versions, handles JSON/SSE and session
+headers, discovers `list_flash`, and checks configured arguments against its input
+schema. Only explicitly named discovered fields can be sent. The public guide does
+not document argument names: no default offset/filter/limit argument is invented.
+Initial empty arguments are possible only if the discovered schema accepts them;
+pagination requires a reviewed offset binding. Tool schemas are bounded and use
+Draft202012Validator with an empty Registry; references/patterns/unknown dialects
+are rejected. A changed schema invalidates resume until configuration review.
+
+The adapter retains provider item order and publication offsets, including late
+records; future publications are quarantined. Publication is not occurrence time
+or provider-availability time. Upstream origin is explicitly unverified, with all
+Jin10 items in one publisher group; mirror domains cannot establish independence.
+Content and article instructions are inert evidence. Committed duplicate evidence
+is returned exactly, including discovery time; changed payload/time/URL retains the
+stable record ID with revision+1. Conflicting duplicate items or committed identity/
+rights/provenance changes reject the batch. Only C commits records and checkpoint;
+retry after an uncommitted fetch uses committed history. A completed page walk does
+not claim complete retention or source coverage; that gap remains explicit.
+
+Local verification: `uv run --frozen pytest tests/unit/ingestion -q` passed 79 tests,
+including 37 new synthetic provider/HTTP cases. Scoped Ruff passed; frozen source
+distribution/wheel build passed in the external temporary directory. Tests cover
+initialization, discovery, SSE/JSON, sessions, cursor restart, revision 2 with stable
+ID, exact duplicate retention, stale/future evidence, schema/identity/argument
+failures, private DNS, HTTP/body limits, authorization, timeouts and no hidden retry.
+These are deterministic HTTP doubles, not a licensed Jin10 connection or deployed
+DNS/TLS acceptance. I must wire the callbacks; E independently accepts the exact SHA.
+
+Documentation consulted on 2026-09-12:
+- [Jin10 official guide](https://mcp.jin10.com/app/doc.html): endpoint, Bearer token,
+  tool names and flash response fields, but no input argument or retention contract.
+- [MCP lifecycle](https://modelcontextprotocol.io/specification/2025-11-25/basic/lifecycle),
+  [transport](https://modelcontextprotocol.io/specification/2025-11-25/basic/transports)
+  and [tools](https://modelcontextprotocol.io/specification/2025-11-25/server/tools).
+- [HTTPCore SNI extension](https://www.encode.io/httpcore/extensions/#sni_hostname).
+
+Gap classification: source transport/adapter implemented, awaiting I/E integration
+and authorized real testing; source license/token/argument scope/request budget is
+missing authorization; model client/rules are the next implementation increment.
+Product source/model/platform calls and product cost remain 0. Provider costs for
+future real requests are unknown until actual usage/billing evidence is supplied.
+
+## Real integration R1: model client and reusable rules
+
+Source increment published as `d2f2d17fc0687dd75e56b21394830563df59e534`.
+This successor adds the official OpenAI Responses client candidate and approved
+reusable assessment rules. Provider/model selection and business rules are still
+unapproved; these construction APIs do not grant authorization.
+
+```python
+from oil_agent.intelligence.openai import ENDPOINT, OpenAISettings, OpenAIResponsesClient
+from oil_agent.intelligence.rules import ApprovedRules, PublicationRule
+
+model = OpenAIResponsesClient(
+    OpenAISettings(
+        model=approved_model, authorization_ref=model_approval_ref,
+        api_key=project_model_secret, authorized=explicitly_authorized, urgent=urgent_lane,
+    ),
+    http=PinnedHttpClient(HttpBounds(ENDPOINT, ("api.openai.com",), approved_request_limit)),
+    authorize_model_request=runtime.authorize_model_request,
+    record_model_usage=runtime.record_model_usage,
+)
+assessment = ConservativeAssessmentService(
+    model=model, policy=assessment_policy, rules=ApprovedRules.model_validate(rule_config),
+    normal_budget=normal_budget, urgent_budget=urgent_budget, lane=processing_lane,
+)
+```
+
+`OpenAISettings` requires model, authorization_ref and injected SecretStr api_key;
+authorized defaults false, urgent true, timeout_seconds 20, max_output_tokens 2048.
+The explicit HttpBounds endpoint must be `https://api.openai.com/v1/responses`.
+No ambient account/app credentials, conversation history, tool calls, retries or
+provider-side storage are enabled. It sends strict JSON-schema extraction through
+Responses and independently validates returned structure. Refusals, incomplete
+responses, tool output, duplicate JSON keys, unsupported content and malformed
+usage fail closed. Assessment still validates every exact evidence reference and
+content hash; structured output is not proof that a claim occurred.
+
+Before each request, the client calls C's
+`authorize_model_request("openai", model, reserved_tokens, urgent=lane_flag)` and
+retains its opaque reservation ID. The conservative token bound includes serialized
+request bytes, output allowance and framing. After every reserved attempt it calls
+`record_model_usage(reservation_id, input_tokens, output_tokens)`, with both values
+None when unknown. Invalid semantic output still records valid provider token usage;
+failed/unknown attempts do not refund budget. A bounded local `usage` deque exposes
+ModelUsage entries with provider_cost=None because this response does not establish
+an invoiced amount. Normal and urgent client/ModelBudget instances must be distinct;
+C remains owner of shared durable budgets. Usage recording is bounded too.
+
+Reusable `ApprovedRules` fields: version, approved=False, authorization_ref,
+valid_from, expires_at, provenances and up to 32 PublicationRule entries. Each entry
+requires rule_id, source_id, origin_publisher, facility_names, event_terms,
+occurrence_terms, impact_terms, current_terms, max_age_minutes and timezone;
+exclusion_terms defaults empty, severity routine, and evidence_status must explicitly
+be credible_single_source or publisher_statement. Positive term groups are separate,
+literal bounded criteria, not executable patterns or a single keyword promotion.
+All criteria must match one complete verbatim evidence clause, with exactly one
+configured facility, exact approved source identity, fresh same-local-day publication
+and valid time/provenance/approval. Whole-record negative/uncertain/archive/future/
+instruction cues and configured exclusions suppress promotion. Ambiguous clauses or
+multiple rules remain conservative. Current-source wording does not invent an exact
+occurrence timestamp; an unknown exact time is recorded explicitly.
+
+There is no per-message ClaimReview requirement or complete-message template.
+One unchanged synthetic policy recognizes materially different unseen statements
+about a loading shutdown and a production halt following a power failure, while
+routine/denied/planned/unmatched reports remain silent. Default/no/expired rules and
+unapproved publisher confidence cannot produce urgency. Model labels cannot set
+severity or create approval. C still matches event history, allocates durable event
+revisions, creates authorized intents and enforces real nonurgent silence; this
+service only returns evidence-backed candidates. Same-origin mirrors never gain
+independence and different facilities are not merged merely by place.
+
+This is a conservative literal-text rubric whose coverage and false positives need
+evaluation against approved real source/rule examples. It is not general semantic
+understanding, independent confirmation, or actual business-rule acceptance. Words
+outside the configured criteria remain unverified. Operator rules can grant only
+the explicitly approved source confidence; upstream-origin uncertainty in Jin10
+is preserved and must be considered when approving single-source policy.
+
+Verification on the frozen C-aa7d638 dependency environment:
+- `uv run --frozen pytest tests/unit/intelligence -q`: 69 passed (18 concrete-client
+  exchange tests plus 37 reusable-rule cases and 14 existing tests).
+- `uv run --frozen pytest -m 'not postgres' -q`: 307 passed, 63 PostgreSQL tests
+  deselected; one existing Starlette/AnyIO deprecation warning.
+- Scoped intelligence Ruff and external-temporary wheel/source build: passed.
+
+The [official Structured Outputs guide](https://developers.openai.com/api/docs/guides/structured-outputs)
+was consulted on 2026-09-12 for Responses text.format/schema/refusal semantics;
+the client uses the official API candidate, not a claim of provider approval.
+R-01/R-02 implementation is delivered for I/E integration and real testing; approved
+source/model/rules/budgets/project credential injection remain missing authorization.
+No Docker, real source/model/platform requests or customer sends occurred; actual
+product calls/tokens/cost remain 0 and future provider cost remains unknown.
+
+R1 authorization receipt follow-up: PinnedHttpClient now requires the nonblank
+string reservation ID promised by C, rather than only rejecting a literal False.
+Missing/empty callback returns cannot authorize a network attempt. The 40 source
+transport tests include False/None/empty/blank denial before DNS or HTTP, and scoped
+Ruff passed. Full non-PostgreSQL validation passed 310 tests with 63 deselected and
+the same upstream warning. This small follow-up changes no external authorization,
+DTO or constructor shape; product calls remain 0.
+
+R1 multilingual qualifier follow-up: the same conservative qualifier gate now also
+applies to model-proposed statuses. Conditional, procedure, training and exercise
+wording in Chinese/English cannot become occurred facts just because a clause
+contains the approved positive criteria. Nine additional synthetic tests exercise
+two different Chinese current-source phrasings under one unchanged policy and
+conditional/training/procedure/plan/denial/uncertainty negatives. Intelligence tests
+passed 78; full non-PostgreSQL tests passed 319 with 63 deselected and the same
+upstream warning; scoped Ruff and wheel/source build passed. The rules schema is
+unchanged. I owns the approved assembly identity convention
+`authorization_ref + '@' + version`, and checks matching model/trial-send permission
+rules_ref values; AB does not reinterpret that convention as business approval.
+
+## R1 T05 reviewed-denial regression repair
+
+Base: `651c11428642b8a3ac5549c7d40cc6edff3fe0f7`. The coordinator reported the
+unchanged E PostgreSQL T05 correction test failing on I `8de731b` (CI 34664381567)
+and E `f783bac` (CI 34664692956). Broad BLOCKERS introduced for false-occurrence
+protection also replaced an explicitly reviewed DENIED assertion with UNKNOWN
+when its correction contained the negative word "no".
+
+The additional broad guard now vetoes proposed OCCURRED assertions only. Existing
+specific denial/plan conflict handling, uncertain/archive/future/time-quality
+checks and reusable-rule qualifiers remain intact. No text-specific correction
+template was introduced. A new unit regression first failed on the base, then
+passed after the change, using the exact synthetic correction from E. It checks
+the same stable source family and event candidate, exact revision-2 evidence,
+DENIED/routine/credible-source status, advisory correction rather than a first
+report, immutable original evidence, and no trust promotion without a review.
+C's original-recipient authorization/outbox behavior and E tests were not edited.
+
+Verification on the existing frozen AB environment:
+
+- `uv run --frozen pytest tests/unit/ingestion tests/unit/intelligence tests/unit/reporting -q`:
+  178 passed.
+- `uv run --frozen python -B -m pytest -p no:cacheprovider --confcutdir C:/Users/DW/orca/workspaces/oil-agent/oil-v01-e/tests/integration C:/Users/DW/orca/workspaces/oil-agent/oil-v01-e/tests/integration/test_rules_acceptance.py -q`:
+  15 passed, reading E files without bytecode/cache writes. The test file matches
+  E `f783bac` blob `0013f7ab23cf93f240fbf2e643e077eb4b1a50c8`; positive assertions
+  and conditional/procedure/training negatives remain unchanged.
+- `uv run --frozen pytest -m 'not postgres' -q`: 320 passed, 63 PostgreSQL tests
+  deselected, one existing Starlette/AnyIO deprecation warning.
+- `uv run --frozen ruff check src/oil_agent/intelligence/assessment.py tests/unit/intelligence/test_assessment.py`:
+  passed.
+- `uv build --out-dir "$env:TEMP/oil-ab-fix-denial-ctx-a5f1b25a8789"`:
+  wheel and source distribution built outside the repository.
+
+I/E must adopt the fix SHA and rerun the unchanged PostgreSQL T05 test in remote CI
+to verify durable correction delivery remains limited to original authorized
+recipients. AB did not restart Docker or substitute SQLite for that acceptance.
+This is a bounded code repair; real source/model/Feishu calls remain unauthorized
+and unexecuted, and product usage/cost remains 0.
+
+## Business daily analysis: dispatch ctx_be1ebcef01c4
+
+Original AB HEAD `dea13fa81825f1160ef44187885a98c569375edb` was clean. Normal
+fast-forward adoption of I `78e5363d7c7da5d6bb76c3be6296b1f6e4010d87`, then
+normal merge of exact M `c4e41982fd1128c513d3b89750e7586eb23abb30`, produced
+baseline `9cb7d710ceee6af4636fde4f7022c61be50684dd`. No reset, checkout, history
+rewrite or new worker was used. Existing branch remains
+`songconmaisaix31-design/oil-v01-ab`. The delivery SHA is supplied in the terminal
+handoff so this note need not contain its own circular commit identifier.
+
+Owned changes: `reporting/service.py`, this existing note,
+`tests/unit/reporting/test_business_analysis.py` and the added business-sequence
+case in `tests/unit/intelligence/test_assessment.py`. No intelligence production
+code, approved rule, R16 guard, shared contract, C/D/E file or UI was edited.
+
+The report now produces deterministic Chinese conditional supply/transport
+analysis, next verification items, quote-basis interpretation and period-specific
+background interpretation from its supplied snapshot. It never reads event
+`title`, `impact_path` or `unknowns` as trusted analysis. Energy context and an
+explicit interruption must coexist in a cited clause; the existing full-record
+`guarded_status` and credible occurred assessment gate still apply. Fires,
+attacks, geography, arbitrary impact strings or a keyword alone cannot imply a
+disruption, market-wide price direction or trading recommendation.
+
+Source families select the latest known revision before validity filtering;
+events select the highest revision assessed by cutoff before checking references.
+An unusable current revision does not revive earlier facts or implications.
+Future-discovered/assessed revisions do not change an earlier cutoff. Denied,
+planned, unknown, withdrawn, corrected and conflicting event states carry a
+verification item, without reusing an earlier occurred impact. Complete evidence
+excerpts survive fact-display truncation. Original quote values, comparison basis,
+statistical geography/period/release and fixture/trial/production labels persist.
+
+### Existing-field reference convention accepted by M
+
+- Facts retain `SupportedFact.evidence`; metrics retain `ComputedMetric.evidence`.
+- Event impact/watch/specific-gap lines end in
+  `[event=<event_id>@<revision>; evidence=#<n>]`. The one-based `n` resolves to the
+  full existing `Report.evidence[n-1]` record ID, revision, field and excerpt.
+  Multiple supporting references repeat that exact annotation separately.
+- Quote/background interpretation uses `[evidence=#<n>]` (multiple references
+  separated by semicolons). General missing-input gaps describe absence and have
+  no invented evidence reference. The schema and frontend are unchanged.
+- Original English metric labels and diagnostic substrings are retained for
+  compatibility; added business prose and missing-data explanations are Chinese.
+
+### Actual local checks
+
+- Before code changes:
+  `uv run --offline --frozen pytest tests/unit/intelligence tests/unit/reporting tests/integration/test_contextual_guards.py tests/integration/test_rules_acceptance.py -q --tb=short`
+  returned **164 passed**.
+- The initial new `test_business_analysis.py` invocation first had a test-helper
+  import collection error; correcting only the test import allowed the actual
+  unchanged-baseline run: **12 failed, 11 passed**. Failures reproduced empty
+  analysis, missing revision/reference watch items, stale source-revision facts,
+  absent Chinese unknown-price explanations and missing quote interpretation.
+- Added valid occurred Chinese `装卸已暂停` energy-transport stimulus reproduced
+  **1 failed, 23 passed** before adding that one literal presentation wording.
+  It does not change event recognition, source approval or confidence rules.
+- Final focused intelligence/reporting/contextual/rules command above:
+  **191 passed**, zero failures/skips. All original test-function assertions were
+  retained. The event sequence exercises routine silence, same-origin repetition,
+  independent corroboration, substantive follow-up, denial and withdrawal;
+  these checks are advisory service behavior, not PostgreSQL/outbox acceptance.
+- `uv run --offline --frozen ruff check src/oil_agent/reporting tests/unit/reporting tests/unit/intelligence/test_assessment.py`: passed.
+- `uv build --offline --no-build-isolation --out-dir "$env:TEMP/oil-ab-business-ctx-be1ebcef01c4"`
+  failed because hatchling is absent from the application environment. The normal
+  declared isolated build, `uv build --offline --out-dir "$env:TEMP/oil-ab-business-ctx-be1ebcef01c4"`,
+  passed using the existing offline cache, producing wheel and sdist without any
+  dependency/lock change. No frontend source changed or UI build was needed.
+
+E's first `test_business_reports.py` positive fixture independently returned
+**1 failed, 2 passed**, both on E's baseline and on this implementation. The
+read-only diagnostic showed its actual event was `unknown/routine/unverified`:
+its original title/body explicitly described an exercise and uncertainty. This
+is preserved guard behavior, not a supported occurred positive. M returned the
+NEW positive setup to E for correction while retaining the original exercise
+negative and all assertions. AB did not edit E evidence or weaken the guards.
+
+E then froze corrected positive/negative scenarios in
+`83774440004fdf3969f2d3f0d283134e98bd8a87`: E reports the qualified pre-fix
+baseline as **2 failed, 5 passed** (empty analysis and superseded source fact).
+AB independently checked the test blob
+`ebaa20463b82b761b166528a0a5e16a1a9059b80` and fixture blob
+`188dc53e7a97d8107c5d8fb3ed396d0899459e24` against that commit. This exact
+read-only command passed **7 tests in 0.42s**, zero failures/skips:
+
+```powershell
+uv run --offline --frozen python -B -m pytest -p no:cacheprovider --confcutdir C:/Users/DW/orca/workspaces/oil-agent/oil-v01-e/tests/integration C:/Users/DW/orca/workspaces/oil-agent/oil-v01-e/tests/integration/test_business_reports.py -q --tb=short
+```
+
+The test now establishes occurred/credible-single-source/urgent preconditions
+before testing the positive report, preserves the exercise negative, and checks
+latest denial, invalid latest evidence and superseded source references. This
+is AB's local execution of frozen E cases, not E acceptance of the I candidate.
+AST comparison also confirmed all 12 original assessment test functions unchanged;
+the original reporting and R16/rules integration test files were not edited.
+
+### Chinese synthetic example from the actual test helpers
+
+**合成测试，非真实市场信息。** Cutoff `2026-09-12T04:00:00+00:00`, report
+`report-test`, provenance `fixture`, dataset `ab-report-v1`. The following is the
+actual business-text excerpt; repeated machine reference tails are consolidated
+as reference 1 below for readability.
+
+| Section | Generated Chinese result |
+| --- | --- |
+| Fact | 来源陈述：来源报告已发生 (occurred; credible_single_source): 测试杉木炼油厂今日因设备故障暂停装船，未造成人员伤亡。 |
+| Conditional impact | 条件性影响：若原文所述装运或运输中断持续，相关油品运输及到货节奏可能延后；实际受影响批次及替代运输能力尚不能确定。 |
+| Watch | 待观察：核验装运恢复时间、受影响批次及替代运输安排。 |
+| Evidence caution | 待核验：现有证据仅属单一原始出版方；同源转载不等于独立佐证。 |
+| Gap | 数据缺口：上述影响的持续时间、实际规模及本地关联未知，不能据此确定油价方向或涨跌幅。 |
+| Missing prices | 数据缺口：有效报价和背景数据缺失，当日市场变化未知，不能视为持平。 |
+
+Reference 1: event
+`event-candidate:257218a8bdcdb45b06176c8dc97f12f9e8b1007fc18fb598aa82a34b97658fd2@1`,
+`Report.evidence[0] = (fixture-record-1, 1, content_excerpt, 测试杉木炼油厂今日因设备故障暂停装船，未造成人员伤亡。)`.
+The returned report retains the complete annotation on each analytical line.
+
+Reproduce locally in PowerShell, using only existing synthetic test helpers:
+
+```powershell
+@'
+import asyncio, runpy, sys
+sys.path.insert(0, 'tests/unit/reporting')
+t = runpy.run_path('tests/unit/reporting/test_business_analysis.py')
+base = runpy.run_path('tests/conftest.py')['source_record'].__wrapped__()
+async def main():
+    r = t['news'](base, t['TRANSPORT'])
+    e = await t['assessed'](r)
+    report = await t['build']((r,), (e,))
+    print(report.model_dump_json(indent=2))
+asyncio.run(main())
+'@ | uv run --offline --frozen python -B -
+```
+
+Limits: literal clause interpretation is intentionally finite, not general Chinese
+causal understanding or verified real-market coverage. Unknown duration, scale,
+customer geography, independent sources and actual quotes remain explicit.
+I must integrate and E independently accept the delivered commit; C owns report
+failure/recovery and urgent isolation. No live source/model/platform request,
+credential access, real message, polling, Docker change, production change,
+paid service or fourteen-day operation was performed. Product calls and tokens
+remain zero for this increment; development-agent billing is unavailable.

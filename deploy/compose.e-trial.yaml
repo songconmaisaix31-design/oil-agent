@@ -1,0 +1,68 @@
+# Opt-in preparation only. Requires reviewed host firewall and a separately
+# created/verified egress network. Does not enable any product capability.
+name: oil-agent-e-trial
+
+x-trial: &trial
+  profiles: [controlled-trial]
+  dns: [127.0.0.1] # Docker service names work; no recursive external DNS fallback.
+  sysctls:
+    net.ipv6.conf.all.disable_ipv6: "1"
+  environment:
+    OIL_DATA_PROVENANCE: trial
+    OIL_FIXTURE_DATASET: "null"
+  networks: !override [backend, trial-egress]
+
+services:
+  postgres:
+    profiles: [controlled-trial]
+    environment:
+      POSTGRES_DB: oil_e_trial
+      POSTGRES_USER: oil_e_trial
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U oil_e_trial -d oil_e_trial]
+    volumes: !override [trial-data:/var/lib/postgresql/data]
+    ports: !reset []
+  init:
+    profiles: [controlled-trial]
+    environment:
+      OIL_DATA_PROVENANCE: trial
+      OIL_FIXTURE_DATASET: "null"
+    networks: !override [backend]
+  api: *trial
+  ingest: *trial
+  urgent: *trial
+  normal: *trial
+  gateway:
+    profiles: [controlled-trial]
+    networks: !override [backend]
+    ports: !override ["127.0.0.1:18443:8443"]
+    volumes:
+      - type: bind
+        source: ./nginx.e-trial.conf
+        target: /etc/nginx/nginx.conf
+        read_only: true
+        bind: {create_host_path: false}
+      - type: bind
+        source: ${OIL_TRIAL_TLS_CERT_FILE:?Explicit project TLS certificate file required}
+        target: /run/oil-tls/cert.pem
+        read_only: true
+        bind: {create_host_path: false}
+      - type: bind
+        source: ${OIL_TRIAL_TLS_KEY_FILE:?Explicit project TLS key file required}
+        target: /run/oil-tls/key.pem
+        read_only: true
+        bind: {create_host_path: false}
+
+networks:
+  backend:
+    internal: true
+    enable_ipv6: false
+    driver_opts:
+      com.docker.network.bridge.name: oil-e-trial-db
+  ingress:
+    internal: true
+  trial-egress:
+    external: true
+    name: oil-agent-e-trial-egress
+volumes:
+  trial-data: {}

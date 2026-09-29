@@ -1,0 +1,14 @@
+**
+!pyproject.toml
+!uv.lock
+!LICENSE
+!alembic.ini
+!src/
+!src/**
+!deploy/
+!deploy/entrypoint.sh
+!deploy/worker_health.py
+**/.env
+**/.env.*
+**/__pycache__
+**/*.pyc

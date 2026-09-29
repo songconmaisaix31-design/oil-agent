@@ -1,0 +1,171 @@
+name: oil-agent-e
+
+x-app: &app
+  image: oil-agent-app:${OIL_IMAGE_TAG:-e-local}
+  build:
+    context: ..
+    dockerfile: deploy/app.Dockerfile
+  environment:
+    OIL_ENVIRONMENT: ${OIL_ENVIRONMENT:-test}
+    OIL_DATABASE_URL: ${OIL_DATABASE_URL:?Inject the authorized isolated database URL}
+    OIL_DATA_PROVENANCE: ${OIL_DATA_PROVENANCE:-fixture}
+    OIL_FIXTURE_DATASET: ${OIL_FIXTURE_DATASET:-local-v01}
+    OIL_OUTBOUND_MODE: ${OIL_OUTBOUND_MODE:-dry_run}
+    OIL_FIRST_REPORT_POLICY: ${OIL_FIRST_REPORT_POLICY:-null}
+    OIL_PUBLIC_ORIGIN: ${OIL_PUBLIC_ORIGIN:-https://localhost}
+    OIL_COOKIE_SECURE: "true"
+    OIL_EXTERNAL_SOURCES_ENABLED: ${OIL_EXTERNAL_SOURCES_ENABLED:-false}
+    OIL_MODEL_CALLS_ENABLED: ${OIL_MODEL_CALLS_ENABLED:-false}
+    OIL_IDENTITY_ENABLED: ${OIL_IDENTITY_ENABLED:-false}
+    OIL_SOURCE_PERMISSIONS: ${OIL_SOURCE_PERMISSIONS:-[]}
+    OIL_MODEL_PERMISSION: ${OIL_MODEL_PERMISSION:-null}
+    OIL_IDENTITY_PERMISSION: ${OIL_IDENTITY_PERMISSION:-null}
+    OIL_TRIAL_SEND_PERMISSION: ${OIL_TRIAL_SEND_PERMISSION:-null}
+    OIL_QUOTE_UPLOAD_RIGHTS_REF: ${OIL_QUOTE_UPLOAD_RIGHTS_REF:-null}
+    OIL_QUOTE_ORIGIN_PUBLISHER: ${OIL_QUOTE_ORIGIN_PUBLISHER:-null}
+    OIL_DAILY_SOURCE_REQUESTS: ${OIL_DAILY_SOURCE_REQUESTS:-1000}
+    OIL_DAILY_PROCESSING_CALLS: ${OIL_DAILY_PROCESSING_CALLS:-1000}
+    OIL_URGENT_PROCESSING_RESERVE: ${OIL_URGENT_PROCESSING_RESERVE:-200}
+    OIL_DAILY_MODEL_CALLS: ${OIL_DAILY_MODEL_CALLS:-0}
+    OIL_DAILY_MODEL_TOKENS: ${OIL_DAILY_MODEL_TOKENS:-0}
+    OIL_URGENT_MODEL_RESERVE: ${OIL_URGENT_MODEL_RESERVE:-0}
+    OIL_URGENT_MODEL_TOKEN_RESERVE: ${OIL_URGENT_MODEL_TOKEN_RESERVE:-0}
+    OIL_JIN10_TOKEN: ${OIL_JIN10_TOKEN:-}
+    OIL_JIN10_ARGUMENTS_JSON: ${OIL_JIN10_ARGUMENTS_JSON:-}
+    OIL_JIN10_OFFSET_PARAMETER: ${OIL_JIN10_OFFSET_PARAMETER:-}
+    OIL_JIN10_OFFSET_TYPE: ${OIL_JIN10_OFFSET_TYPE:-string}
+    OIL_OPENAI_API_KEY: ${OIL_OPENAI_API_KEY:-}
+    OIL_APPROVED_RULES_JSON: ${OIL_APPROVED_RULES_JSON:-}
+    OIL_FEISHU_APP_SECRET: ${OIL_FEISHU_APP_SECRET:-}
+    OIL_FEISHU_ENCRYPT_KEY: ${OIL_FEISHU_ENCRYPT_KEY:-}
+    OIL_FEISHU_VERIFICATION_TOKEN: ${OIL_FEISHU_VERIFICATION_TOKEN:-}
+    OIL_FEISHU_REDIRECT_URI: ${OIL_FEISHU_REDIRECT_URI:-}
+    OIL_REMINDERS_ENABLED: "false"
+    OIL_SMS_ENABLED: "false"
+    OIL_PHONE_ENABLED: "false"
+    OIL_ASGI_FACTORY: ${OIL_ASGI_FACTORY:-oil_agent.bootstrap:create_app}
+    OIL_RUNTIME_FACTORY: ${OIL_RUNTIME_FACTORY:-oil_agent.bootstrap:build_runtime}
+  networks: [backend]
+  read_only: true
+  tmpfs: ["/tmp:size=32m,mode=1777"]
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+  pids_limit: 64
+  cpus: 0.5
+  mem_limit: 256m
+  stop_grace_period: 30s
+  logging:
+    driver: json-file
+    options: {max-size: 5m, max-file: "2"}
+
+services:
+  postgres:
+    image: postgres:16-alpine@sha256:e013e867e712fec275706a6c51c966f0bb0c93cfa8f51000f85a15f9865a28cb
+    environment:
+      POSTGRES_DB: oil_e_test
+      POSTGRES_USER: oil_e_test
+      POSTGRES_PASSWORD: ${OIL_POSTGRES_PASSWORD:?Inject a new isolated test password}
+      TZ: UTC
+    command: [postgres, -c, timezone=UTC, -c, max_connections=40, -c, shared_buffers=32MB]
+    volumes: [postgres-data:/var/lib/postgresql/data]
+    networks: [backend]
+    restart: unless-stopped
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U oil_e_test -d oil_e_test]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
+    shm_size: 64m
+    mem_limit: 128m
+    cpus: 0.5
+    pids_limit: 64
+    security_opt: [no-new-privileges:true]
+    logging:
+      driver: json-file
+      options: {max-size: 5m, max-file: "2"}
+  init:
+    <<: *app
+    command: [init]
+    restart: "no"
+    depends_on:
+      postgres: {condition: service_healthy}
+  api:
+    <<: *app
+    command: [api]
+    restart: unless-stopped
+    depends_on:
+      init: {condition: service_completed_successfully}
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/readyz', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+  ingest:
+    <<: *app
+    command: [worker, --queue, ingest]
+    restart: unless-stopped
+    healthcheck:
+      test: [CMD, python, /app/deploy/worker_health.py, ingest]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    depends_on:
+      init: {condition: service_completed_successfully}
+  urgent:
+    <<: *app
+    command: [worker, --queue, urgent]
+    restart: unless-stopped
+    healthcheck:
+      test: [CMD, python, /app/deploy/worker_health.py, urgent]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    depends_on:
+      init: {condition: service_completed_successfully}
+  normal:
+    <<: *app
+    command: [worker, --queue, normal]
+    restart: unless-stopped
+    healthcheck:
+      test: [CMD, python, /app/deploy/worker_health.py, normal]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    depends_on:
+      init: {condition: service_completed_successfully}
+  gateway:
+    image: oil-agent-web:${OIL_IMAGE_TAG:-e-local}
+    build:
+      context: ..
+      dockerfile: deploy/web.Dockerfile
+    ports: ["127.0.0.1:${OIL_HTTP_PORT:-18084}:8080"]
+    networks: [backend, ingress]
+    depends_on:
+      api: {condition: service_healthy}
+    restart: unless-stopped
+    read_only: true
+    tmpfs: ["/tmp:size=32m,mode=1777"]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 32
+    mem_limit: 64m
+    cpus: 0.25
+    healthcheck:
+      test: [CMD, wget, -q, --spider, http://127.0.0.1:8080/gateway-healthz]
+      interval: 15s
+      timeout: 3s
+      retries: 3
+    logging:
+      driver: json-file
+      options: {max-size: 5m, max-file: "2"}
+
+networks:
+  backend: {internal: true}
+  ingress: {}
+volumes:
+  postgres-data: {}

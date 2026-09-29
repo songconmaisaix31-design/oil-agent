@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; style-src 'unsafe-inline'"
+    />
+    <title>C1 本地演练卡片预览</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 24px 12px;
+        background: #f4f5f7;
+        color: #20252b;
+        font:
+          16px/1.7 system-ui,
+          sans-serif;
+      }
+      main {
+        max-width: 420px;
+        margin: auto;
+      }
+      .preview {
+        color: #626b77;
+        font-size: 13px;
+      }
+      article {
+        border: 1px solid #e4d1aa;
+        border-radius: 12px;
+        overflow: hidden;
+        background: white;
+      }
+      h1 {
+        font-size: 19px;
+        margin: 0;
+        padding: 16px;
+        background: #fff0ce;
+        line-height: 1.6;
+      }
+      .line {
+        padding: 0 16px;
+        white-space: pre-line;
+        overflow-wrap: anywhere;
+      }
+      .line-0 {
+        font-weight: 700;
+        color: #985000;
+      }
+      .line-2 {
+        font-size: 13px;
+        color: #626b77;
+      }
+      .line-3 {
+        border-top: 1px solid #eee;
+        padding-top: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p class="preview">本地预览 · 未发送 · 非飞书客户端截图</p>
+      <article>
+        <h1>【油品预警 Agent｜演练消息】</h1>
+        <!-- prettier-ignore -->
+        <p class="line line-0">演练／非真实行情</p>
+        <!-- prettier-ignore -->
+        <p class="line line-1">本条消息用于验证飞书推送与手机显示，
+不代表真实市场事件，不构成采购或交易建议。</p>
+        <!-- prettier-ignore -->
+        <p class="line line-2">测试编号：c1-62d9df74f70b40bd84245776163c1769
+消息生成时间：2026-09-12 14:27:01（上海时间）</p>
+        <!-- prettier-ignore -->
+        <p class="line line-3">本阶段只验证消息到达。</p>
+      </article>
+    </main>
+  </body>
+</html>

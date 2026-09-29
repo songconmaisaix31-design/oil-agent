@@ -1,0 +1,10 @@
+# Opt-in E host access for real PostgreSQL tests. Never use this for production.
+services:
+  postgres:
+    ports: ["127.0.0.1:55434:5432"]
+    networks: [backend, e-test-host]
+
+# Docker does not publish host bindings for an exclusively internal network.
+# This additional network is opt-in for the local E test database only.
+networks:
+  e-test-host: {}

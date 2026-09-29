@@ -1,0 +1,31 @@
+{
+  "label": "SYNTHETIC TEST - NOT MARKET INFORMATION",
+  "provenance": "fixture",
+  "fixture_dataset": "synthetic-e-baseline",
+  "case_id": "BUSINESS",
+  "clock_at": "2026-09-14T00:10:00+00:00",
+  "business_dates": ["2026-09-14", "2026-09-15", "2026-09-16"],
+  "faults": ["timeout", "quota_exhausted", "unexpected_error"],
+  "ordinary": {
+    "title": "合成演练：常规供货通知",
+    "content_excerpt": "合成演练，非真实行情：样例企业公布常规供货计划，尚未发生供应中断。",
+    "origin_publisher": "Synthetic Supplier A"
+  },
+  "exercise": {
+    "title": "合成演练：样例港口装卸暂停",
+    "content_excerpt": "合成演练，非真实行情：样例港口装卸已暂停，持续时间和成品油到货影响尚不明确。",
+    "origin_publisher": "Synthetic Port A"
+  },
+  "occurred": {
+    "title": "样例港口供运通知",
+    "content_excerpt": "今日样例港口装卸已暂停，成品油运输受阻。",
+    "origin_publisher": "Synthetic Port A"
+  },
+  "later": {
+    "title": "合成演练：截点之后的恢复通知",
+    "content_excerpt": "合成演练，非真实行情：LATE_ONLY_RESUMED 样例港口恢复装卸。",
+    "origin_publisher": "Synthetic Port A"
+  },
+  "preserved_scenarios": ["T03", "T04", "T05", "T12", "T14", "R16"],
+  "acceptance_boundary": "Three accelerated business dates; measured execution time is separate from calendar time, live operation, SLA and phone receipt."
+}
