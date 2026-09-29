@@ -225,6 +225,8 @@ def test_completed_child_requires_two_distinct_timed_acceptances_and_observation
 
 def test_local_start_records_once_and_resume_keeps_scope_and_window(monkeypatch):
     selected = {"config": prepared().model_copy(update={"exercise_start": None})}
+    monkeypatch.setattr(c1_local.platform, "system", lambda: "Windows")
+    monkeypatch.setattr(c1_local.platform, "node", lambda: selected["config"].host_binding)
     monkeypatch.setattr(c1_local.sys.stdin, "isatty", lambda: True)
     monkeypatch.setattr(c1_local, "prepared_config", lambda: selected["config"])
     writes, windows = [], []

@@ -177,6 +177,7 @@ def test_live_status_reuses_only_verified_owned_bridge(local, monkeypatch, owner
 
 def test_existing_bridge_owner_check_does_not_log_or_execute_owner_text(local, monkeypatch):
     calls = []
+    monkeypatch.setattr(c1_local, "_powershell_path", lambda: "C:/Windows/powershell.exe")
 
     def run(args, **kwargs):
         calls.append(args)
