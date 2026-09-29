@@ -130,6 +130,8 @@ def e_repository(monkeypatch):
         monkeypatch.setattr("oil_agent.channels.common.datetime", ChannelClock)
         monkeypatch.setattr("oil_agent.channels.callbacks.datetime", ChannelClock)
         monkeypatch.setattr("oil_agent.api.auth.datetime", ChannelClock)
+        # Ingestion deadlines must use the same frozen clock as the repository.
+        monkeypatch.setattr("oil_agent.ingestion.common.datetime", ChannelClock)
         yield repo
     finally:
         engine.dispose()
