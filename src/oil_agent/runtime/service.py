@@ -192,10 +192,12 @@ class Runtime(StatusRuntime, C1Runtime, RuntimeAuthorization):
                     ErrorCode.INVALID_OUTPUT, "Source changed its authorized data scope or rights"
                 )
             count = await self.db(self.repository.persist_batch, batch, expected=checkpoint)
+            gap = batch.checkpoint.gap_state
             await self.db(
                 self.repository.health,
                 "source:" + source_id,
-                "ok" if batch.checkpoint.gap_state == "none" else "degraded",
+                "ok",
+                None if gap == "none" else f"gap:{gap}",
             )
             return count
         except ServiceError as error:
@@ -229,22 +231,40 @@ class Runtime(StatusRuntime, C1Runtime, RuntimeAuthorization):
         if not claims:
             return ()
         try:
-            context = self.context(seconds=50, attempt=max(c.attempt for c in claims))
-            candidates = await self.bounded(
-                lambda ctx: self.services.assessment.assess(
-                    tuple(c.record for c in claims), context=ctx
-                ),
-                context=context,
-            )
+            attempt = max(c.attempt for c in claims)
+            # Small extraction batches isolate model/schema failures and keep each
+            # request within the provider timeout while still covering every claim.
+            batch_size = 6
+            candidates = []
+            for start in range(0, len(claims), batch_size):
+                chunk = claims[start : start + batch_size]
+                candidates.extend(
+                    await self.bounded(
+                        lambda ctx, chunk=chunk: self.services.assessment.assess(
+                            tuple(c.record for c in chunk), context=ctx
+                        ),
+                        context=self.context(seconds=45, attempt=attempt),
+                    )
+                )
             snapshot = await self.db(self.repository.prepare_assessment, claims, candidates)
             if len(snapshot.records) > len(claims):
                 await self._processing_budget(
                     urgent=True, uses_model=self.services.assessment_uses_model
                 )
-                candidates = await self.bounded(
-                    lambda ctx: self.services.assessment.assess(snapshot.records, context=ctx),
-                    context=context,
-                )
+                # A second pass replaces the candidate set for the newly visible
+                # revisions; appending would duplicate one event family.
+                candidates = []
+                records = snapshot.records
+                for start in range(0, len(records), batch_size):
+                    chunk = records[start : start + batch_size]
+                    candidates.extend(
+                        await self.bounded(
+                            lambda ctx, chunk=chunk: self.services.assessment.assess(
+                                chunk, context=ctx
+                            ),
+                            context=self.context(seconds=45, attempt=attempt),
+                        )
+                    )
             result = await self.db(
                 self.repository.commit_assessments, claims, candidates, snapshot=snapshot
             )

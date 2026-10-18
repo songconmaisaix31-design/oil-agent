@@ -177,7 +177,14 @@ class RuntimeAuthorization:
 
     async def provision_trial_user(self, actor_id):
         permission = self.identity_permission()
-        return await self.db(self.repository.provision_scoped_user, permission, actor_id)
+        # Production identities are real recipients, never trial exercise users.
+        is_test = self.settings.data_provenance != Provenance.PRODUCTION
+        return await self.db(
+            self.repository.provision_scoped_user,
+            permission,
+            actor_id,
+            is_test_recipient=is_test,
+        )
 
     def trial_config_allowed(self, config):
         permission = self.settings.trial_send_permission
@@ -200,7 +207,27 @@ class RuntimeAuthorization:
 
     def recipient_allowed(self, item, user):
         if item.provenance == Provenance.PRODUCTION:
-            return self.settings.data_provenance == Provenance.PRODUCTION
+            # A trial or fixture runtime can never deliver production-provenance
+            # content. Synthetic acceptance (environment=test) keeps the historical
+            # permissive scope; a real production deployment enforces the approved
+            # non-test identity binding below.
+            if self.settings.data_provenance != Provenance.PRODUCTION:
+                return False
+            if self.settings.environment != "production":
+                return True
+            permission = self.settings.identity_permission
+            return bool(
+                not user.is_test_recipient
+                and user.provider == "feishu"
+                and permission
+                and permission.active(self.repository.clock())
+                and self.repository.permission_is_current(permission, owner=user)
+                and any(
+                    (user.actor_id, user.recipient_id, user.provider_subject, user.role)
+                    == (a.actor_id, a.recipient_id, a.subject, a.role)
+                    for a in permission.identities
+                )
+            )
         if item.is_fixture and not user.is_test_recipient:
             return False
         if item.provenance == Provenance.TRIAL or self.settings.outbound_mode == "trial":

@@ -215,6 +215,15 @@ class ApprovedRules(DTO):
     expires_at: UtcDatetime | None = None
     provenances: tuple[Provenance, ...] = ()
     rules: tuple[PublicationRule, ...] = Field(default=(), max_length=32)
+    # The strict rubric additionally requires an impact term and a textual
+    # currentness term in the same clause. A medium rubric keeps the facility,
+    # event and occurrence gates while relying on max_age_minutes for freshness.
+    require_impact_terms: bool = True
+    require_current_terms: bool = True
+    # Strict mode matches every criterion inside one clause and exactly one
+    # facility. Medium mode allows the criteria anywhere in the record and one
+    # or more facilities, while still requiring the affirmative occurrence context.
+    clause_scoped: bool = True
 
     @model_validator(mode="after")
     def explicit_approval(self):
@@ -249,10 +258,20 @@ class ApprovedRules(DTO):
         context = occurrence_context(text)
         if "?" in text or "？" in text or any(contains(context, term) for term in BLOCKERS):
             return None
-        clauses = [
-            c.strip() for c in re.findall(r"[^.!?。！？\n]+[.!?。！？]?", record.content_excerpt)
-        ]
-        if len(clauses) > 32:
+        if not self.clause_scoped:
+            scopes = []
+            if record.title.strip():
+                scopes.append(("title", record.title.strip()))
+            if record.content_excerpt.strip():
+                scopes.append(("content_excerpt", record.content_excerpt.strip()))
+        else:
+            scopes = [
+                ("content_excerpt", clause.strip())
+                for clause in re.findall(
+                    r"[^.!?。！？\n]+[.!?。！？]?", record.content_excerpt
+                )
+            ]
+        if len(scopes) > 32:
             return None
         matches = []
         for rule in self.rules:
@@ -267,28 +286,29 @@ class ApprovedRules(DTO):
                 or any(contains(text, term) for term in rule.exclusion_terms)
             ):
                 continue
-            for clause in clauses:
+            for field, clause in scopes:
                 if not clause or len(clause) > 1800:
                     continue
                 # Negated collateral facts cannot supply an affirmative rule criterion.
                 context = occurrence_context(clause)
                 facilities = [name for name in rule.facility_names if contains(context, name)]
-                groups = (
-                    rule.event_terms,
-                    rule.occurrence_terms,
-                    rule.impact_terms,
-                    rule.current_terms,
-                )
-                if len(facilities) != 1 or not all(
+                groups = [rule.event_terms, rule.occurrence_terms]
+                if self.require_impact_terms:
+                    groups.append(rule.impact_terms)
+                if self.require_current_terms:
+                    groups.append(rule.current_terms)
+                if not facilities or not all(
                     any(contains(context, term) for term in terms) for terms in groups
                 ):
+                    continue
+                if self.clause_scoped and len(facilities) != 1:
                     continue
                 matches.append(
                     RuleMatch(
                         reference=EvidenceRef(
                             record_id=record.record_id,
                             revision=record.revision,
-                            field="content_excerpt",
+                            field=field,
                             excerpt=clause,
                         ),
                         severity=rule.severity,

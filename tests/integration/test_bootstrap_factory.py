@@ -513,7 +513,7 @@ def trial_source_factory(e_repository, factory_settings, monkeypatch):
     monkeypatch.setattr(
         bootstrap,
         "PinnedHttpClient",
-        lambda bounds: PinnedHttpClient(
+        lambda bounds, **kwargs: PinnedHttpClient(
             bounds, resolver=resolver, transport=httpx.MockTransport(provider)
         ),
     )
@@ -700,12 +700,12 @@ def trial_model_factory(e_repository, trial_source_factory, monkeypatch):
         model_calls.append(payload)
         return httpx.Response(200, headers={"content-type": "application/json"}, stream=Stream())
 
-    def http(bounds):
+    def http(bounds, **kwargs):
         if bounds.allowed_hosts == ("api.openai.com",):
             return PinnedHttpClient(
                 bounds, resolver=resolver, transport=httpx.MockTransport(model_response)
             )
-        return original_http(bounds)
+        return original_http(bounds, **kwargs)
 
     monkeypatch.setattr(bootstrap, "PinnedHttpClient", http)
     return config, rules, source_calls, model_calls

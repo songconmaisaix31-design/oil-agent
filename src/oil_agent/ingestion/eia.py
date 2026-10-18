@@ -112,7 +112,11 @@ class EiaSource:
             data = response_obj["data"]
         except (ValueError, KeyError, TypeError, json.JSONDecodeError):
             raise ServiceError(ErrorCode.INVALID_OUTPUT, "EIA response shape changed") from None
-        if not isinstance(payload, dict) or not isinstance(response_obj, dict) or not isinstance(data, list):
+        if (
+            not isinstance(payload, dict)
+            or not isinstance(response_obj, dict)
+            or not isinstance(data, list)
+        ):
             raise ServiceError(ErrorCode.INVALID_OUTPUT, "EIA response shape changed")
         records = []
         for point in data[: settings.max_points]:
@@ -142,14 +146,15 @@ class EiaSource:
             if len(excerpt) > 2000:
                 raise ServiceError(ErrorCode.INVALID_OUTPUT, "EIA record exceeds excerpt bound")
             external_id = f"{settings.series_id}:{period}"
+            title = f"{settings.product}: {settings.series_id} {period}"
             records.append(
                 SourceRecord(
                     record_id=stable_id("eia", settings.source_id, external_id),
                     source_id=settings.source_id,
                     external_id=external_id,
                     revision=1,
-                    content_hash=content_hash(settings.product, excerpt),
-                    title=f"{settings.product}: {settings.series_id} {period}",
+                    content_hash=content_hash(title, excerpt),
+                    title=title,
                     content_excerpt=excerpt,
                     url=None,
                     origin_publisher=PUBLISHER,

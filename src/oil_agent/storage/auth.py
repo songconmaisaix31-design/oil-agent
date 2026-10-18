@@ -22,10 +22,10 @@ from oil_agent.storage.models import (
 
 
 class AuthRepository:
-    def provision_scoped_user(self, permission, actor_id):
+    def provision_scoped_user(self, permission, actor_id, *, is_test_recipient=True):
         approved = next((a for a in permission.identities if a.actor_id == actor_id), None)
         if approved is None:
-            reject(ErrorCode.FORBIDDEN, "Actor is outside approved trial provisioning scope")
+            reject(ErrorCode.FORBIDDEN, "Actor is outside approved provisioning scope")
         with self.sessions.begin() as session:
             self.bind_permission(session, permission)
             user = session.get(UserRow, actor_id, with_for_update=True)
@@ -41,7 +41,7 @@ class AuthRepository:
                     permission.provider,
                     approved.subject,
                     approved.role,
-                    True,
+                    is_test_recipient,
                 ):
                     reject(
                         ErrorCode.FORBIDDEN, "Existing user conflicts with approved identity scope"
@@ -55,14 +55,17 @@ class AuthRepository:
                     provider_subject=approved.subject,
                     role=approved.role.value,
                     active=True,
-                    is_test_recipient=True,
+                    is_test_recipient=is_test_recipient,
                 )
             )
             self.audit(
                 session,
-                "trial_user_provisioned",
+                "user_provisioned",
                 actor_id,
-                details={"approval_id": permission.approval_id},
+                details={
+                    "approval_id": permission.approval_id,
+                    "is_test_recipient": is_test_recipient,
+                },
             )
             return "provisioned"
 

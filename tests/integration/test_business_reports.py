@@ -158,7 +158,7 @@ async def test_source_correction_never_revives_old_fact_or_impact(
         "A denial or invalid latest reference cannot revive old impact"
     )
     if revision_state == "denied_latest":
-        assert report.facts and report.watch_items
-        assert all(ref.revision == 2 for fact in report.facts for ref in fact.evidence)
+        # A denial is traceable as a verification item but is not a supported fact.
+        assert not report.facts and report.watch_items
     else:
         assert not report.facts

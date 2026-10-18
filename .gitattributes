@@ -1,0 +1,5 @@
+# Keep shell entrypoints LF on every checkout so /bin/sh accepts them in Linux images.
+*.sh text eol=lf
+deploy/entrypoint.sh text eol=lf
+Dockerfile text eol=lf
+*.Dockerfile text eol=lf

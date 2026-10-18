@@ -80,6 +80,14 @@ class Settings(BaseSettings):
     external_sources_enabled: bool = False
     model_calls_enabled: bool = False
     identity_enabled: bool = False
+    # Explicit operator-supplied public IP pins, e.g. {"api.eia.gov": ["3.32.1.168"]}.
+    # Pins bypass ambient DNS (including proxy fake-IP answers) while the transport
+    # still verifies the original TLS hostname. Empty means system public DNS.
+    source_ip_pins: dict[str, tuple[str, ...]] = Field(default_factory=dict)
+    # Per-source provider configuration; keys must be approved source IDs.
+    eia_series: dict[str, dict[str, str]] = Field(default_factory=dict)
+    gnews_queries: dict[str, str] = Field(default_factory=dict)
+    gnews_langs: dict[str, str] = Field(default_factory=dict)
     production_source_license_ref: str | None = None
     production_recipient_approval_ref: str | None = None
     production_budget_units: int = Field(default=0, ge=0)
@@ -178,6 +186,18 @@ class Settings(BaseSettings):
             raise ValueError("Only fixture runtime requires a fixture dataset")
         if len({p.source_id for p in self.source_permissions}) != len(self.source_permissions):
             raise ValueError("Source permissions must have distinct source IDs")
+        import ipaddress
+
+        for host, addresses in self.source_ip_pins.items():
+            if not host or not addresses:
+                raise ValueError("Source IP pins require a host and at least one address")
+            for address in addresses:
+                try:
+                    parsed = ipaddress.ip_address(address)
+                except ValueError:
+                    raise ValueError("Source IP pin is not a valid address") from None
+                if not parsed.is_global or getattr(parsed, "ipv4_mapped", None):
+                    raise ValueError("Source IP pin must be a public address")
         for permission in self.source_permissions:
             if (
                 permission.provider == "eia"
@@ -189,6 +209,21 @@ class Settings(BaseSettings):
                 and permission.max_requests > self.daily_source_requests
             ):
                 raise ValueError("GNews source budget must stay within the daily source budget")
+        approved_sources = {item.source_id for item in self.source_permissions}
+        for mapping, name in (
+            (self.eia_series, "EIA series"),
+            (self.gnews_queries, "GNews query"),
+            (self.gnews_langs, "GNews language"),
+        ):
+            unknown = set(mapping) - approved_sources
+            if unknown:
+                raise ValueError(f"{name} configuration names an unapproved source")
+        for config in self.eia_series.values():
+            if not all(config.get(key) for key in ("series_id", "product", "unit")):
+                raise ValueError("EIA series configuration requires series_id, product and unit")
+        for query in self.gnews_queries.values():
+            if not query.strip():
+                raise ValueError("GNews query configuration cannot be empty")
         if self.external_sources_enabled and (
             self.data_provenance == Provenance.FIXTURE
             or not self.source_permissions

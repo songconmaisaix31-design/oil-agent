@@ -229,31 +229,6 @@ class SnapshotReportService:
                     ),
                 )
             )
-            for ref in refs:
-                state = {
-                    EvidenceStatus.WITHDRAWN: "已撤回",
-                    EvidenceStatus.CORRECTED: "已更正",
-                    EvidenceStatus.CONFLICTING: "证据冲突",
-                    EvidenceStatus.UNVERIFIED: "未核实",
-                }.get(
-                    event.evidence_status,
-                    {
-                        AssertionStatus.OCCURRED: "来源报告已发生",
-                        AssertionStatus.PLANNED: "仅为计划",
-                        AssertionStatus.DENIED: "已否认",
-                        AssertionStatus.UNKNOWN: "发生状态未知",
-                    }[event.assertion_status],
-                )
-                facts.append(
-                    SupportedFact(
-                        text=(
-                            f"来源陈述：{state} ({event.assertion_status.value}; "
-                            f"{event.evidence_status.value}): {ref.excerpt[:1800]}"
-                        ),
-                        evidence=(ref,),
-                    )
-                )
-                include(ref)
             tag = f"[event={event.event_id}@{event.revision}; "
             all_refs = " ".join(tag + include(ref) + "]" for ref in refs)
             reliable = event.evidence_status in {
@@ -275,11 +250,22 @@ class SnapshotReportService:
                 )
             )
             if not usable:
+                # A plan, denial or otherwise unusable statement is not a supported
+                # fact, but it stays traceable as an explicit verification item.
                 watch.add(
                     "待核验：当前修订的事实状态或证据不足以支持已发生影响；"
                     "需核对否认、计划、更正、撤回或冲突，旧影响不沿用。" + all_refs
                 )
                 continue
+            for index, ref in enumerate(refs):
+                if index == 0 and event.summary_zh:
+                    text = f"摘要：{event.summary_zh}（原文摘录：{ref.excerpt[:600]}）"
+                else:
+                    text = (
+                        f"来源陈述：来源报告已发生 ({event.assertion_status.value}; "
+                        f"{event.evidence_status.value}): {ref.excerpt[:1800]}"
+                    )
+                facts.append(SupportedFact(text=text, evidence=(ref,)))
             effects = {}
             for ref in refs:
                 for effect in _business_effects(ref.excerpt):

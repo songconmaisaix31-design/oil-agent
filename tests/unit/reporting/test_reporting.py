@@ -205,7 +205,9 @@ async def test_T28_event_title_hallucinations_not_used_and_exact_references_chec
     )
     service = SnapshotReportService(clock=lambda: NOW)
     report = await service.build(request((r,), events=(hallucinated,)), context=context())
-    assert len(report.facts) == 1 and "12 percent" not in report.model_dump_json()
+    # An unverified statement is not a supported fact; it remains a watch item.
+    assert not report.facts and report.watch_items
+    assert "12 percent" not in report.model_dump_json()
     bad_ref = event.evidence[0].model_copy(update={"revision": 99})
     unsupported = event.model_copy(update={"evidence": (bad_ref,)})
     invalid = await service.build(request((r,), events=(unsupported,)), context=context())
@@ -278,8 +280,12 @@ async def test_T05_report_uses_latest_event_revision_at_cutoff(source_record):
     corrected = event.model_copy(update={"revision": 2, "supersedes_revision": 1})
     service = SnapshotReportService(clock=lambda: NOW)
     report = await service.build(request((r,), events=(old, corrected)), context=context())
-    assert len(report.facts) == 1 and "(denied;" in report.facts[0].text
+    # The latest revision is a denial, so it is traceable but not a supported fact.
+    assert not report.facts
+    assert any(f"event={corrected.event_id}@2;" in line for line in report.watch_items)
     future = corrected.model_copy(update={"assessed_at": NOW + timedelta(seconds=1)})
     historical = await service.build(request((r,), events=(old, future)), context=context())
-    assert len(historical.facts) == 1
+    # The future revision is excluded by cutoff, so only the historical revision is traced.
     assert any("after cutoff" in gap for gap in historical.gaps)
+    assert any(f"event={old.event_id}@1;" in line for line in historical.watch_items)
+    assert not any(f"event={old.event_id}@2;" in line for line in historical.watch_items)

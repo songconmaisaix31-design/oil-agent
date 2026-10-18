@@ -19,7 +19,9 @@ COPY alembic.ini ./alembic.ini
 COPY src/oil_agent/storage/migrations ./src/oil_agent/storage/migrations
 COPY deploy/entrypoint.sh ./deploy/entrypoint.sh
 COPY deploy/worker_health.py ./deploy/worker_health.py
-RUN chmod 0555 /app/deploy/entrypoint.sh
+COPY scripts ./scripts
+# Normalize a Windows checkout's CRLF so /bin/sh accepts `set -eu`.
+RUN sed -i 's/\r$//' /app/deploy/entrypoint.sh && chmod 0555 /app/deploy/entrypoint.sh
 USER 10001:10001
 EXPOSE 8000
 ENTRYPOINT ["/bin/sh", "/app/deploy/entrypoint.sh"]

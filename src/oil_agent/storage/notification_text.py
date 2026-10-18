@@ -1,12 +1,16 @@
-"""Bounded Chinese card text from committed DTOs and exact stored source revisions.
+"""Natural Chinese risk narrative from committed DTOs and exact stored revisions.
 
-D renders this existing NotificationIntent.body as plain text. This formatter
-does not infer facts, recompute metrics or turn unknown timestamps into estimates.
+The audience is refined-oil practitioners: lead with what changed and what risk it
+creates, then price, what to watch and where the information came from. The
+formatter never infers facts, recomputes metrics or invents timestamps.
 """
+
+import re
+from zoneinfo import ZoneInfo
 
 from oil_agent.contracts.dto import EventAssessment
 
-ASSERTIONS = {"occurred": "已发生", "planned": "计划中", "denied": "已否认", "unknown": "未知"}
+ASSERTIONS = {"occurred": "已发生", "planned": "计划中", "denied": "已否认", "unknown": "状态不明"}
 SEVERITIES = {"urgent": "紧急", "important": "重要", "routine": "常规"}
 EVIDENCE = {
     "credible_single_source": "可信单一来源",
@@ -18,88 +22,207 @@ EVIDENCE = {
     "unverified": "未核实",
 }
 QUALITY = {"valid": "有效", "stale": "陈旧", "incomplete": "不完整", "invalid": "无效"}
+LABELS = {"fixture": "【测试样例】", "trial": "【试运行】", "production": ""}
+SHANGHAI = ZoneInfo("Asia/Shanghai")
 
 
 def short(value, limit=600):
     value = str(value)
-    return value if len(value) <= limit else value[:limit] + "…（节选，完整内容见详情）"
+    return value if len(value) <= limit else value[:limit] + "…（节选）"
 
 
 def timestamp(value):
     return value.isoformat() if value else "未知"
 
 
-def notification_body(item, records, *, exercise=False):
-    label = (
-        "【合成演练】"
-        if exercise
-        else {"fixture": "【测试样例】", "trial": "【试运行】", "production": "【生产数据】"}[
-            item.provenance
-        ]
-    )
-    lines = [label, f"版本：{item.revision}"]
+def _cn_time(value):
+    if value is None:
+        return "时间未知"
+    return value.astimezone(SHANGHAI).strftime("%m月%d日 %H:%M")
 
-    def section(label, values):
-        lines.append(label + "：")
-        values = tuple(values)
-        lines.extend(short(value) for value in values[:6])
-        if not values:
-            lines.append("未记录")
-        elif len(values) > 6:
-            lines.append("其余内容见详情")
 
-    if isinstance(item, EventAssessment):
-        lines.extend(
-            (
-                "事实条目：" + short(item.title),
-                "事实状态：" + ASSERTIONS[item.assertion_status],
-                "紧急程度：" + SEVERITIES[item.severity],
-                "证据状态：" + EVIDENCE[item.evidence_status],
-                "本次变化：" + short(item.change_summary),
-            )
+def _strip_markup(text):
+    """Remove stored citation tags and report prefixes without altering the claim."""
+    text = re.sub(r"\s*\[(?:event|evidence)=[^\]]*\]", "", str(text))
+    text = re.sub(r"^来源陈述：来源报告已发生 \([^)]*\):\s*", "", text)
+    text = re.sub(r"^来源报告已发生 \([^)]*\):\s*", "", text)
+    text = re.sub(r"^摘要：", "", text)
+    return text.strip().rstrip("。；;，, ")
+
+
+def _decimal_text(value):
+    try:
+        text = format(value, "f")
+    except (TypeError, ValueError):
+        return str(value)
+    return text.rstrip("0").rstrip(".") if "." in text else text
+
+
+def _product(name):
+    for candidate in ("WTI", "Brent", "汽油", "柴油"):
+        if candidate.lower() in name.lower():
+            return candidate
+    return None
+
+
+def _price_sentences(metrics):
+    closes = [item for item in metrics if "close" in item.name.lower()]
+    changes = [item for item in metrics if "change" in item.name.lower()]
+    if not closes:
+        closes = [item for item in metrics if item.value is not None]
+    sentences = []
+    for close in closes:
+        if close.value is None:
+            continue
+        label = _product(close.name) or short(close.name, 40)
+        sentence = (
+            f"{label} 最新 {_decimal_text(close.value)} {close.unit}（{_cn_time(close.as_of)}"
         )
-        section("关键未知项", item.unknowns)
-    else:
-        lines.extend(
+        if close.quality_state != "valid":
+            sentence += f"，数据{QUALITY[close.quality_state]}"
+        sentences.append(sentence + "）")
+        change = next(
             (
-                f"日报日期：{item.report_date}（{item.timezone}）",
-                "数据截止：" + timestamp(item.cutoff_at),
-                "补发状态：" + ("延迟生成" if item.delayed else "正常生成"),
-            )
-        )
-        section("有来源的事实", (fact.text for fact in item.facts))
-        section(
-            "来源支持的指标",
-            (
-                f"{short(metric.name, 120)}："
-                + (
-                    f"{metric.value} {short(metric.unit, 60)}"
-                    if metric.value is not None and metric.evidence
-                    else "未知"
-                )
-                + f"；时点：{timestamp(metric.as_of)}；质量：{QUALITY[metric.quality_state]}"
-                for metric in item.computed_metrics
+                item
+                for item in changes
+                if (_product(item.name) or "") and (_product(item.name) or "") in label
             ),
+            None,
         )
-        section("数据缺口", item.gaps)
-        section("观察项", item.watch_items)
+        if change is not None and change.value is not None:
+            previous = close.value - change.value
+            direction = "涨" if change.value > 0 else "跌" if change.value < 0 else "持平"
+            text = f"较前一交易日{direction} {_decimal_text(abs(change.value))} {change.unit}"
+            if previous:
+                pct = abs(change.value) / previous * 100
+                text += f"，约 {pct:.1f}%"
+            sentences.append(text)
+    return sentences
 
-    seen, sources = set(), []
-    for ref in item.evidence:
+
+def _source_line(item, records, limit=5):
+    refs = list(item.evidence)
+    if hasattr(item, "facts"):
+        refs = [ref for fact in item.facts for ref in fact.evidence]
+        refs.extend(ref for metric in item.computed_metrics for ref in metric.evidence)
+    seen, names, publishers = set(), [], set()
+    for ref in refs:
         key = (ref.record_id, ref.revision)
-        if key in seen:
+        if key in seen or key not in records:
             continue
         seen.add(key)
         source = records[key]
-        sources.append(
-            f"原始发布者：{short(source.origin_publisher, 160)}；"
-            f"发布时间：{timestamp(source.published_at)}；证据版本：{ref.revision}"
-        )
-    section("证据来源", sources)
-    # DTO limit is 20,000; bound whole lines and mark omission explicitly.
-    output = ""
-    for line in lines:
-        if len(output) + len(line) + 1 > 19000:
-            return output + "\n其余内容见详情"
-        output += ("\n" if output else "") + line
-    return output
+        name = source.origin_publisher.strip()
+        if name and name.casefold() not in publishers:
+            publishers.add(name.casefold())
+            names.append(f"{name}（{_cn_time(source.published_at)}）")
+    if not names:
+        return ""
+    head = "、".join(names[:limit])
+    return "信源：" + head + ("等" if len(names) > limit else "") + "。"
+
+
+def _report_body(item, records):
+    parts = []
+    label = LABELS[item.provenance]
+    day = f"{item.report_date.month}月{item.report_date.day}日"
+    parts.append(f"{label}{day}成品油风险简报")
+
+    facts = [_strip_markup(fact.text) for fact in item.facts]
+    if facts:
+        if len(facts) == 1:
+            parts.append("今天需要重点关注一件事：" + short(facts[0], 220) + "。")
+        else:
+            joined = "；".join(short(f, 160) for f in facts[:3])
+            parts.append(f"今天需要重点关注 {len(facts)} 件事：" + joined + "。")
+    else:
+        parts.append("今天没有新增的、已核实到需要立即处置的风险事件，主要看价格和后续观察项。")
+
+    impact = [
+        _strip_markup(line)
+        for line in item.impact_analysis
+        if not line.startswith("价格解读")
+    ]
+    impact = [line for line in impact if line]
+    if impact:
+        joined = "；".join(short(line, 260) for line in impact[:3])
+        parts.append("对市场的影响，目前能说的是：" + joined + "。")
+
+    prices = _price_sentences(item.computed_metrics)
+    if prices:
+        parts.append("价格方面，" + "；".join(prices) + "。")
+    else:
+        parts.append("价格方面，本轮没有拿到可核验的报价，暂不做涨跌判断。")
+
+    watch = []
+    for line in item.watch_items:
+        if line.startswith("待观察"):
+            watch.append(_strip_markup(line).removeprefix("待观察："))
+        elif line.startswith("待核验：现有证据仅属单一原始出版方"):
+            watch.append("这条消息目前只有一家原始来源，建议再等一个独立来源确认后再作为决策依据")
+    if watch:
+        parts.append("接下来要盯的是：" + "；".join(short(line, 220) for line in watch[:3]) + "。")
+
+    note = [f"数据截至 {_cn_time(item.cutoff_at)}（上海时间）。"]
+    if item.gaps:
+        note.append("部分来源覆盖或报价仍有缺口，相关判断按未知处理，不当作持平。")
+    if item.delayed:
+        note.append("本期为延迟生成。")
+    parts.append("".join(note))
+
+    sources = _source_line(item, records)
+    if sources:
+        parts.append(sources)
+    return "\n\n".join(parts)
+
+
+UNKNOWN_TEXT = {
+    "Exact occurrence time is unavailable; source reports current status": (
+        "具体发生时间还没确认，来源只说明了当前状态"
+    ),
+    "Source assertion is not independently verified": (
+        "目前只有单一来源，还没有第二个独立来源证实"
+    ),
+    "Qualifiers or time quality prevent reliable occurrence classification": (
+        "原文带有条件或时间限定，暂时不能当成已经发生"
+    ),
+    "Old or unknown occurrence time; redistribution is not a new urgent event": (
+        "事件发生时间较早或不明，可能不是新增风险"
+    ),
+    "model_failed_or_invalid": "本期结构化提取没有成功，信息按原文呈现",
+    "Fixture synthetic unknown preserved": "测试样例中的未知项保持原样",
+}
+
+
+def _event_body(item, records):
+    label = LABELS[item.provenance]
+    parts = [f"{label}【{SEVERITIES[item.severity]}风险提示】"]
+    headline = (item.summary_zh or _strip_markup(item.title)).strip().rstrip("。；;，, ")
+    headline = re.sub(r"^Source assertion:\s*", "", headline)
+    parts.append("发生了什么：" + short(headline, 400) + "。")
+    state = ASSERTIONS[item.assertion_status]
+    evidence = EVIDENCE[item.evidence_status]
+    parts.append(f"目前状态：{state}，证据等级为{evidence}。")
+    if item.assertion_status != "occurred":
+        parts.append("目前还不能把它当成已经发生的供应或价格风险。")
+    elif item.evidence_status != "independent_multi_source":
+        parts.append("对国内成品油供应和价格的实际影响还没法量化，需要继续跟踪到货和运费变化。")
+    unknown = [UNKNOWN_TEXT.get(text, text) for text in item.unknowns]
+    if unknown:
+        parts.append("现在还不确定：" + "；".join(short(text, 180) for text in unknown[:3]) + "。")
+    sources = _source_line(item, records)
+    if sources:
+        parts.append(sources)
+    return "\n\n".join(parts)
+
+
+def notification_body(item, records, *, exercise=False):
+    if exercise:
+        body = _event_body(item, records)
+        return "【合成演练】\n\n" + body
+    body = _report_body(item, records) if not isinstance(item, EventAssessment) else _event_body(
+        item, records
+    )
+    if len(body) > 19000:
+        return body[:19000] + "\n\n其余内容见详情"
+    return body

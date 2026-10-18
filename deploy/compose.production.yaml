@@ -1,0 +1,121 @@
+# Production stack for one Linux host: PostgreSQL + API + three queue workers.
+# Push-only phase 1: no public ingress; the API binds to loopback for health checks.
+# Provider egress uses the host's normal DNS/network. No proxy is injected.
+name: oil-agent-prod
+
+x-app: &app
+  image: oil-agent-app:${OIL_IMAGE_TAG:-production}
+  build:
+    context: ..
+    dockerfile: deploy/app.Dockerfile
+  env_file: [production.env]
+  restart: unless-stopped
+  read_only: true
+  # Operator commands (ops_config, soak_status, feishu_self_test) run from the
+  # checked-out scripts; keeping them read-only avoids rebuilding the image.
+  volumes: ["../scripts:/app/scripts:ro"]
+  tmpfs: ["/tmp:size=64m,mode=1777"]
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+  pids_limit: 128
+  networks: [backend]
+  stop_grace_period: 30s
+  logging:
+    driver: json-file
+    options: {max-size: 10m, max-file: "3"}
+
+services:
+  postgres:
+    image: postgres:16-alpine@sha256:e013e867e712fec275706a6c51c966f0bb0c93cfa8f51000f85a15f9865a28cb
+    environment:
+      POSTGRES_DB: oil_prod
+      POSTGRES_USER: oil_prod
+      POSTGRES_PASSWORD: ${OIL_POSTGRES_PASSWORD:?Inject the production database password}
+      TZ: UTC
+    command: [postgres, -c, timezone=UTC, -c, max_connections=50, -c, shared_buffers=256MB]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    networks: [backend]
+    restart: unless-stopped
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U oil_prod -d oil_prod]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    shm_size: 256m
+    mem_limit: 1g
+    cpus: 1.0
+    pids_limit: 128
+    security_opt: [no-new-privileges:true]
+
+  init:
+    <<: *app
+    command: [init]
+    restart: "no"
+    depends_on:
+      postgres: {condition: service_healthy}
+    mem_limit: 512m
+    cpus: 0.5
+
+  api:
+    <<: *app
+    command: [api]
+    ports: ["127.0.0.1:8000:8000"]
+    depends_on:
+      init: {condition: service_completed_successfully}
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/readyz', timeout=3)"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    mem_limit: 512m
+    cpus: 0.75
+
+  ingest:
+    <<: *app
+    command: [worker, --queue, ingest]
+    depends_on:
+      init: {condition: service_completed_successfully}
+    healthcheck:
+      test: [CMD, python, /app/deploy/worker_health.py, ingest]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 45s
+    mem_limit: 384m
+    cpus: 0.5
+
+  urgent:
+    <<: *app
+    command: [worker, --queue, urgent]
+    depends_on:
+      init: {condition: service_completed_successfully}
+    healthcheck:
+      test: [CMD, python, /app/deploy/worker_health.py, urgent]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 45s
+    mem_limit: 384m
+    cpus: 0.5
+
+  normal:
+    <<: *app
+    command: [worker, --queue, normal]
+    depends_on:
+      init: {condition: service_completed_successfully}
+    healthcheck:
+      test: [CMD, python, /app/deploy/worker_health.py, normal]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 45s
+    mem_limit: 384m
+    cpus: 0.5
+
+volumes:
+  pgdata: {}
+
+networks:
+  backend: {driver: bridge}

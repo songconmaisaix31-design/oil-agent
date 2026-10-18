@@ -13,3 +13,9 @@ dist/
 node_modules/
 web/dist/
 *.log
+deploy/production.env
+deploy/.env
+backups/
+!deploy/.env.production.example
+pytest-of-*/
+tmp*/

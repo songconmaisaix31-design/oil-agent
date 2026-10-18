@@ -1,12 +1,12 @@
 # Oil Agent
 
-成品油行业资讯监测与预警的实验原型。应用代码现已整合到 `main`；真实资讯接入、身份和手机送达仍需分别验收。
+成品油行业资讯监测与预警系统。应用代码、生产组装和单机部署件已整合到 `main`；真实数据/模型/飞书链路已在本地验证，生产验收以连续运行记录为准。
 
-Refined-oil news monitoring, evidence review and mobile alerts. The real-integration
-v1.1 candidate adds explicit trial assembly to the accepted local fixture/dry-run
-baseline. Licensed live calls, real Feishu login and phone receipt still require
-the specified external authorization and real test evidence. Production assembly
-is not implemented and rejects startup.
+Refined-oil news monitoring, evidence review and mobile alerts. The application now
+includes an explicit production factory that assembles only from validated
+readiness references and typed source/model/identity permissions. Real Feishu
+receipt and the seven-day acceptance window remain external evidence, not code
+claims.
 
 The implementation uses FastAPI/Pydantic, PostgreSQL/SQLAlchemy/Alembic,
 Procrastinate, bounded LangGraph processing and React/Vite. It includes:
@@ -23,6 +23,23 @@ Procrastinate, bounded LangGraph processing and React/Vite. It includes:
   an explicitly configured OpenAI Responses client with durable request/token limits.
 - Reusable approved-rule assessment without per-message manual annotations,
   separate fixture/trial/production provenance, and scoped Feishu OAuth/send/ack.
+
+## Production deployment
+
+`oil_agent.bootstrap:build_production_runtime` requires `OIL_ENVIRONMENT=production`,
+production provenance and outbound mode, the complete readiness references, an
+approved Feishu identity scope, and the matching source/model permissions. It
+performs no provider request, migration or seeding at construction time. Source
+configuration supports multiple EIA series and multiple GNews queries in one
+runtime; `OIL_EIA_SERIES`, `OIL_GNEWS_QUERIES` and `OIL_GNEWS_LANGS` map each
+approved source ID to its provider selection.
+
+Push-only phase 1 ships `deploy/compose.production.yaml` (PostgreSQL, API bound to
+loopback, ingest/urgent/normal workers), `deploy/backup.sh`, `deploy/restore.sh`,
+`deploy/healthcheck.sh` and the [production runbook](docs/production-runbook.md).
+`scripts/build_live_config.py` generates the typed permission/rules JSON,
+`scripts/ops_config.py` sets recipients and the 08:00 Shanghai report time, and
+`scripts/soak_status.py` prints the seven-day acceptance evidence.
 
 ## Trial connection
 

@@ -94,6 +94,92 @@ def approved_configuration(repository, environment, *, model=False):
     return settings, rules
 
 
+def production_configuration(repository, environment):
+    """Complete production readiness plus two approved Feishu recipients."""
+    raw_rules = fixed_policy().model_dump(mode="json")
+    raw_rules["provenances"] = ["production"]
+    for rule in raw_rules["rules"]:
+        rule["source_id"] = "gnews-oil"
+    rules = ApprovedRules.model_validate(raw_rules)
+    reference = f"{rules.authorization_ref}@{rules.version}"
+    identities = tuple(
+        dict(
+            actor_id=actor_id,
+            recipient_id=recipient_id,
+            subject=f"p-tenant:cli_prod:{open_id}",
+            role="viewer",
+        )
+        for actor_id, recipient_id, open_id in (
+            ("p-self", "prod-self", "ou_prod_self"),
+            ("p-yuanfang", "prod-yuanfang", "ou_prod_yuanfang"),
+        )
+    )
+    settings = trial_settings(
+        repository,
+        environment="production",
+        data_provenance="production",
+        outbound_mode="production",
+        trial_send_permission=None,
+        external_sources_enabled=True,
+        daily_source_requests=200,
+        source_permissions=(
+            permission(repository, "p-eia-source", max_requests=24)
+            | dict(
+                source_id="eia-wti",
+                provider="eia",
+                rights_ref="public:eia-free",
+                credentials_ref="project:eia",
+                host="api.eia.gov",
+            ),
+            permission(repository, "p-gnews-source", max_requests=48)
+            | dict(
+                source_id="gnews-oil",
+                provider="gnews",
+                rights_ref="public:gnews-free",
+                credentials_ref="project:gnews",
+                host="gnews.io",
+            ),
+        ),
+        model_calls_enabled=True,
+        daily_model_calls=50,
+        daily_model_tokens=200000,
+        model_permission=permission(repository, "p-model", max_requests=50)
+        | dict(
+            provider="deepseek",
+            model="deepseek-flash",
+            credentials_ref="project:deepseek",
+            rules_ref=reference,
+            max_tokens=200000,
+        ),
+        identity_permission=permission(repository, "p-identity")
+        | dict(
+            app_id="cli_prod",
+            tenant_key="p-tenant",
+            credentials_ref="project:feishu",
+            identities=identities,
+        ),
+        production_source_license_ref="op:eia-gnews-public",
+        production_recipient_approval_ref="op:recipients-2026-10",
+        production_budget_units=100000,
+        production_retention_days=90,
+        production_credentials_ref="project:oil-agent-prod",
+        production_identity_verification_ref="op:feishu-tenant-verified",
+    )
+    environment.update(
+        OIL_EIA_API_KEY="SYNTHETIC-CONSTRUCTION-ONLY",
+        OIL_EIA_SERIES_ID="PET.RWTC.D",
+        OIL_EIA_PRODUCT="WTI",
+        OIL_EIA_UNIT="USD/BBL",
+        OIL_GNEWS_API_KEY="SYNTHETIC-CONSTRUCTION-ONLY",
+        OIL_GNEWS_QUERY="crude oil",
+        OIL_DEEPSEEK_API_KEY="SYNTHETIC-CONSTRUCTION-ONLY",
+        OIL_APPROVED_RULES_JSON=rules.model_dump_json(),
+        OIL_FEISHU_APP_SECRET="SYNTHETIC-CONSTRUCTION-ONLY",
+        OIL_FEISHU_REDIRECT_URI="https://testserver/oauth/callback",
+    )
+    return settings
+
+
 def test_R4_default_factory_ignores_provider_environment_and_does_no_io(construction):
     _, environment = construction
     environment.update(
@@ -179,7 +265,7 @@ def test_R4_missing_injected_key_is_configuration_error_not_provider_success(con
         bootstrap.build_runtime(settings)
 
 
-def test_R4_production_assembly_is_explicitly_unsupported(construction):
+def test_R4_production_factory_rejects_incomplete_delivery_mode(construction):
     repository, environment = construction
     settings = trial_settings(
         repository,
@@ -188,9 +274,24 @@ def test_R4_production_assembly_is_explicitly_unsupported(construction):
         identity_permission=None,
         trial_send_permission=None,
     )
-    with pytest.raises(RuntimeError, match="Production assembly has not been implemented"):
+    with pytest.raises(ValueError, match="production provenance and delivery mode"):
         bootstrap.build_runtime(settings)
     assert environment.reads == []
+
+
+def test_R4_production_assembly_wires_approved_recipients_without_callbacks(construction):
+    repository, environment = construction
+    settings = production_configuration(repository, environment)
+    runtime = bootstrap.build_runtime(settings)
+    assert set(runtime.services.sources) == {"eia-wti", "gnews-oil"}
+    assert runtime.services.external_sources == frozenset({"eia-wti", "gnews-oil"})
+    assert runtime.services.identity is not None
+    channel = runtime.services.channels["feishu"]
+    assert set(channel.recipients) == {"prod-self", "prod-yuanfang"}
+    assert not any(recipient.is_test_recipient for recipient in channel.recipients.values())
+    # Push-only production does not require callback secrets or an ack verifier.
+    assert runtime.services.ack_verifier is None
+    assert runtime.services.assessment_uses_model
 
 
 async def test_R1_R4_factory_reuses_loaded_rules_without_per_message_review(

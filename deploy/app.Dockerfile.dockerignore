@@ -8,6 +8,8 @@
 !deploy/
 !deploy/entrypoint.sh
 !deploy/worker_health.py
+!scripts/
+!scripts/**
 **/.env
 **/.env.*
 **/__pycache__

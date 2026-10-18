@@ -30,8 +30,8 @@ class OpenAISettings:
     api_key: SecretStr = field(repr=False)
     authorized: bool = False
     urgent: bool = True
-    timeout_seconds: float = 20
-    max_output_tokens: int = 2048
+    timeout_seconds: float = 45
+    max_output_tokens: int = 8192
 
     def __post_init__(self):
         if (

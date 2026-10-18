@@ -294,7 +294,7 @@ async def test_transport_failure_keeps_unknown_usage_and_redacts_errors(status, 
 
 async def test_time_input_output_and_usage_recording_are_bounded():
     model, events, _ = client()
-    for system, output in [("x" * 100001, 100), ("x", 0), ("x", 2049)]:
+    for system, output in [("x" * 100001, 100), ("x", 0), ("x", 8193)]:
         with pytest.raises(ServiceError) as error:
             await model.extract(system=system, records_json="[]", max_output_tokens=output)
         assert error.value.code == "invalid_input"

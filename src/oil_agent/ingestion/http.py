@@ -189,8 +189,8 @@ class PinnedHttpClient:
             raise ServiceError(ErrorCode.INVALID_INPUT, "Invalid provider path segment")
         if any(
             not isinstance(k, str) or not isinstance(v, str)
-            or len(k) > 256 or len(v) > 2048
-            or any(ord(c) < 32 or ord(c) > 126 for c in k + v)
+            or len(k) > 256 or len(v.encode("utf-8")) > 2048
+            or any(ord(c) < 32 or ord(c) == 127 for c in k + v)
             for k, v in query.items()
         ):
             raise ServiceError(ErrorCode.INVALID_INPUT, "Invalid provider query parameters")

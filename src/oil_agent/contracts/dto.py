@@ -291,6 +291,7 @@ class EventAssessment(ProvenancedDTO):
     processing: ProcessingVersion
     assessed_at: UtcDatetime
     change_summary: NonEmpty
+    summary_zh: str | None = None
     supersedes_revision: Revision | None = None
 
     @model_validator(mode="after")

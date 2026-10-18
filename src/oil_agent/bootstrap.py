@@ -25,7 +25,7 @@ from oil_agent.ingestion.eia import ENDPOINT as EIA_ENDPOINT
 from oil_agent.ingestion.eia import EiaSettings, EiaSource
 from oil_agent.ingestion.gnews import ENDPOINT as GNEWS_ENDPOINT
 from oil_agent.ingestion.gnews import GnewsSettings, GnewsSource
-from oil_agent.ingestion.http import HttpBounds, PinnedHttpClient
+from oil_agent.ingestion.http import HttpBounds, PinnedHttpClient, resolve_public_host
 from oil_agent.ingestion.jin10 import ENDPOINT, Jin10Settings, Jin10Source
 from oil_agent.ingestion.mcp import load_json
 from oil_agent.intelligence import ConservativeAssessmentService
@@ -80,26 +80,45 @@ def _required_environment(name: str) -> str:
     return value
 
 
+def _source_resolver(settings: Settings):
+    """Return pinned public addresses when configured; otherwise system DNS.
+
+    Pins exist because an ambient proxy may answer with non-public fake-IP
+    addresses. The transport still validates that every address is public and
+    keeps the original TLS hostname.
+    """
+    pins = {host: tuple(addresses) for host, addresses in settings.source_ip_pins.items()}
+
+    async def resolve(host: str):
+        if host in pins:
+            return pins[host]
+        return await resolve_public_host(host)
+
+    return resolve
+
+
 def _wire_source(runtime: Runtime) -> None:
     settings = runtime.settings
     if not settings.external_sources_enabled:
         return
-    # One approved news source is the current product scope. Do not silently
-    # ignore extra configured sources or map an unknown provider to Jin10.
-    if len(settings.source_permissions) != 1:
-        raise ValueError("Trial source assembly requires one explicitly approved source")
-    permission = settings.source_permissions[0]
-    if permission.provider == "jin10":
-        source, poll_seconds = _jin10_source(runtime, permission)
-    elif permission.provider == "eia":
-        source, poll_seconds = _eia_source(runtime, permission)
-    elif permission.provider == "gnews":
-        source, poll_seconds = _gnews_source(runtime, permission)
-    else:
-        raise ValueError("Trial source assembly requires an approved supported provider")
-    runtime.services.sources[permission.source_id] = source
-    runtime.services.external_sources = frozenset({permission.source_id})
-    runtime.services.source_poll_seconds[permission.source_id] = poll_seconds
+    # Every configured source is assembled explicitly. Never ignore an extra
+    # source, silently replace a duplicate ID, or map an unknown provider.
+    if not settings.source_permissions:
+        raise ValueError("Live source assembly requires explicitly approved sources")
+    for permission in settings.source_permissions:
+        if permission.source_id in runtime.services.sources:
+            raise ValueError("Live source assembly requires distinct source IDs")
+        if permission.provider == "jin10":
+            source, poll_seconds = _jin10_source(runtime, permission)
+        elif permission.provider == "eia":
+            source, poll_seconds = _eia_source(runtime, permission)
+        elif permission.provider == "gnews":
+            source, poll_seconds = _gnews_source(runtime, permission)
+        else:
+            raise ValueError("Live source assembly requires an approved supported provider")
+        runtime.services.sources[permission.source_id] = source
+        runtime.services.source_poll_seconds[permission.source_id] = poll_seconds
+    runtime.services.external_sources = frozenset(runtime.services.sources)
 
 
 def _jin10_source(runtime: Runtime, permission):
@@ -123,7 +142,8 @@ def _jin10_source(runtime: Runtime, permission):
                 ENDPOINT,
                 ("mcp.jin10.com",),
                 request_limit=min(permission.max_requests, settings.daily_source_requests, 10000),
-            )
+            ),
+            resolver=_source_resolver(settings),
         ),
         authorize_source_request=runtime.authorize_source_request,
         latest_source_record=runtime.latest_source_record,
@@ -134,18 +154,21 @@ def _jin10_source(runtime: Runtime, permission):
 
 def _eia_source(runtime: Runtime, permission):
     settings = runtime.settings
+    series = settings.eia_series.get(permission.source_id, {})
     source_settings = EiaSettings(
         source_id=permission.source_id,
         rights_ref=permission.rights_ref,
         authorization_ref=permission.authorization_ref,
         api_key=SecretStr(_required_environment("OIL_EIA_API_KEY")),
-        series_id=_required_environment("OIL_EIA_SERIES_ID"),
-        product=_required_environment("OIL_EIA_PRODUCT"),
-        unit=_required_environment("OIL_EIA_UNIT"),
+        series_id=series.get("series_id") or _required_environment("OIL_EIA_SERIES_ID"),
+        product=series.get("product") or _required_environment("OIL_EIA_PRODUCT"),
+        unit=series.get("unit") or _required_environment("OIL_EIA_UNIT"),
         network_authorized=True,
         provenance=settings.data_provenance.value,
         fixture_dataset=settings.fixture_dataset,
-        poll_seconds=int(os.environ.get("OIL_EIA_POLL_SECONDS", "86400")),
+        poll_seconds=int(
+            series.get("poll_seconds") or os.environ.get("OIL_EIA_POLL_SECONDS", "86400")
+        ),
     )
     source = EiaSource(
         source_settings,
@@ -154,7 +177,8 @@ def _eia_source(runtime: Runtime, permission):
                 EIA_ENDPOINT,
                 ("api.eia.gov",),
                 request_limit=min(permission.max_requests, settings.daily_source_requests, 10000),
-            )
+            ),
+            resolver=_source_resolver(settings),
         ),
         authorize_source_request=runtime.authorize_source_request,
         latest_source_record=runtime.latest_source_record,
@@ -170,8 +194,10 @@ def _gnews_source(runtime: Runtime, permission):
         rights_ref=permission.rights_ref,
         authorization_ref=permission.authorization_ref,
         api_key=SecretStr(_required_environment("OIL_GNEWS_API_KEY")),
-        query=_required_environment("OIL_GNEWS_QUERY"),
-        lang=os.environ.get("OIL_GNEWS_LANG", "en"),
+        query=settings.gnews_queries.get(permission.source_id)
+        or _required_environment("OIL_GNEWS_QUERY"),
+        lang=settings.gnews_langs.get(permission.source_id)
+        or os.environ.get("OIL_GNEWS_LANG", "en"),
         max_items=int(os.environ.get("OIL_GNEWS_MAX_ITEMS", "10")),
         network_authorized=True,
         provenance=settings.data_provenance.value,
@@ -185,7 +211,8 @@ def _gnews_source(runtime: Runtime, permission):
                 GNEWS_ENDPOINT,
                 ("gnews.io",),
                 request_limit=min(permission.max_requests, settings.daily_source_requests, 10000),
-            )
+            ),
+            resolver=_source_resolver(settings),
         ),
         authorize_source_request=runtime.authorize_source_request,
         clock=runtime.repository.clock,
@@ -216,7 +243,43 @@ def _wire_feishu(runtime: Runtime) -> None:
         ):
             raise ValueError("Approved Feishu identity does not match this application")
     runtime.services.identity = FeishuIdentityAdapter(feishu)
-    if settings.outbound_mode != "trial":
+    if settings.outbound_mode not in {"trial", "production"}:
+        return
+    if settings.outbound_mode == "production":
+        # Production sending uses the approved identities themselves as the only
+        # sendable scope. Recipients are not marked as test recipients, and the
+        # business configuration must still select them before any delivery.
+        recipients = {}
+        for identity in permission.identities:
+            open_id = identity.subject.removeprefix(prefix)
+            if feishu_identity(feishu, open_id).subject != identity.subject:
+                raise ValueError("Approved Feishu identity does not match this application")
+            recipients[identity.recipient_id] = FeishuRecipient(open_id, is_test_recipient=False)
+        runtime.services.channels["feishu"] = FeishuChannel(
+            feishu,
+            recipients=recipients,
+            authorize=runtime.authorize_recipient,
+            public_base_url=settings.public_origin,
+        )
+        # Acknowledged callbacks are optional for the push-only phase. Build the
+        # verifier only when both callback secrets are present.
+        encrypt_key = os.environ.get("OIL_FEISHU_ENCRYPT_KEY")
+        verification_token = os.environ.get("OIL_FEISHU_VERIFICATION_TOKEN")
+        if encrypt_key and verification_token:
+            callback_settings = FeishuSettings(
+                enabled=True,
+                app_id=permission.app_id,
+                tenant_key=permission.tenant_key,
+                app_secret=feishu.app_secret,
+                redirect_uri=redirect,
+                encrypt_key=SecretStr(encrypt_key),
+                verification_token=SecretStr(verification_token),
+            )
+            runtime.services.ack_verifier = FeishuAckVerifier(
+                callback_settings,
+                identity_resolver=runtime.resolve_identity,
+                delivery_matches=runtime.verify_delivery_message,
+            )
         return
     # Sending and callbacks share the same explicitly approved app. Identity-only
     # construction does not demand message callback secrets or enable a sender.
@@ -304,7 +367,9 @@ def _wire_assessment(runtime: Runtime) -> None:
                 authorized=True,
                 urgent=True,
             ),
-            http=PinnedHttpClient(HttpBounds(endpoint, (host,), calls)),
+            http=PinnedHttpClient(
+                HttpBounds(endpoint, (host,), calls), resolver=_source_resolver(settings)
+            ),
             authorize_model_request=runtime.authorize_model_request,
             record_model_usage=runtime.record_model_usage,
         )
@@ -426,16 +491,8 @@ def build_status_runtime(settings: Settings) -> Runtime:
         raise
 
 
-def build_trial_runtime(settings: Settings) -> Runtime:
-    """Assemble approved adapters; C owns each live operation's authorization."""
-    if settings.data_provenance == "production" or settings.outbound_mode == "production":
-        raise ValueError("Trial factory cannot construct a production runtime")
-    if settings.data_provenance == "fixture" and settings.outbound_mode != "trial":
-        raise ValueError("Fixture use of trial factory requires an explicit exercise permission")
-    if settings.trial_status_only:
-        return build_status_runtime(settings)
-    if settings.c1_display_only:
-        return _build_c1_runtime(settings)
+def _assemble_live_runtime(settings: Settings) -> Runtime:
+    """Wire the approved live adapters; never migrate, seed or call a provider."""
     runtime = _local_services(settings)
     try:
         _wire_source(runtime)
@@ -447,10 +504,47 @@ def build_trial_runtime(settings: Settings) -> Runtime:
         raise
 
 
-def build_runtime(settings: Settings) -> Runtime:
-    """Keep fixture default; select trial explicitly through C classification."""
+def build_trial_runtime(settings: Settings) -> Runtime:
+    """Assemble approved adapters; C owns each live operation's authorization."""
     if settings.data_provenance == "production" or settings.outbound_mode == "production":
-        raise RuntimeError("Production assembly has not been implemented")
+        raise ValueError("Trial factory cannot construct a production runtime")
+    if settings.data_provenance == "fixture" and settings.outbound_mode != "trial":
+        raise ValueError("Fixture use of trial factory requires an explicit exercise permission")
+    if settings.trial_status_only:
+        return build_status_runtime(settings)
+    if settings.c1_display_only:
+        return _build_c1_runtime(settings)
+    return _assemble_live_runtime(settings)
+
+
+def build_production_runtime(settings: Settings) -> Runtime:
+    """Assemble the explicitly authorized production runtime.
+
+    Production readiness is an operator assertion plus the existing typed
+    source/model/identity permissions. This factory still performs no provider
+    request, migration or seeding; it only constructs the approved adapters.
+    """
+    if settings.data_provenance != "production" or settings.outbound_mode != "production":
+        raise ValueError("Production factory requires production provenance and delivery mode")
+    if settings.environment != "production":
+        raise ValueError("Production factory requires environment=production")
+    if not settings.production_ready:
+        raise ValueError("Production assembly requires complete readiness references")
+    if settings.trial_status_only or settings.c1_display_only or settings.c1_tenant_lookup_only:
+        raise ValueError("Production assembly rejects experimental status/C1 modes")
+    if settings.trial_send_permission is not None:
+        raise ValueError("Production assembly does not use a trial send permission")
+    if not settings.identity_enabled or settings.identity_permission is None:
+        raise ValueError("Production assembly requires its exact approved Feishu identities")
+    if settings.first_report_policy is None:
+        raise ValueError("Production assembly requires an explicit first-report policy")
+    return _assemble_live_runtime(settings)
+
+
+def build_runtime(settings: Settings) -> Runtime:
+    """Keep fixture default; select trial or production explicitly."""
+    if settings.data_provenance == "production" or settings.outbound_mode == "production":
+        return build_production_runtime(settings)
     if settings.trial_status_only:
         return build_status_runtime(settings)
     if settings.c1_tenant_lookup_only:
@@ -468,6 +562,7 @@ def create_app():
 
 __all__ = [
     "build_fixture_runtime",
+    "build_production_runtime",
     "build_runtime",
     "build_status_runtime",
     "build_trial_runtime",

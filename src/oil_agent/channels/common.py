@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import os
 import re
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
@@ -187,6 +188,9 @@ class ProviderHTTP:
         except _ObservationFailure:
             raise
         except (RequestFailure, httpx.HTTPError, TimeoutError) as exc:
+            if os.environ.get("OIL_DEBUG_HTTP"):
+                # Operator-only diagnostics; never includes headers or credentials.
+                print(f"HTTP_TRANSPORT_FAILURE {type(exc).__name__}: {exc}", flush=True)
             may_have_arrived = started and not isinstance(
                 exc, (httpx.ConnectError, httpx.ConnectTimeout, httpx.PoolTimeout)
             )
