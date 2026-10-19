@@ -47,6 +47,12 @@ def _strip_markup(text):
     text = re.sub(r"^来源陈述：来源报告已发生 \([^)]*\):\s*", "", text)
     text = re.sub(r"^来源报告已发生 \([^)]*\):\s*", "", text)
     text = re.sub(r"^摘要：", "", text)
+    # Presentation only: round long provider percentages such as 1.041046995835%.
+    text = re.sub(
+        r"(\d+\.\d{4,})%",
+        lambda match: f"{float(match.group(1)):.1f}%",
+        text,
+    )
     return text.strip().rstrip("。；;，, ")
 
 
@@ -188,6 +194,8 @@ def report_detail_markdown(item, records):
         lines.append(f"- {metric.name}：{value}；时点 {_cn_time(metric.as_of)}；质量 {quality}")
     lines.append("")
     lines.append("## 事实与证据")
+    if not item.facts:
+        lines.append("- 本期没有达到“已发生且可信”标准的事实。")
     for fact in item.facts:
         lines.append(f"### {_strip_markup(fact.text)}")
         for ref in fact.evidence:
@@ -200,8 +208,13 @@ def report_detail_markdown(item, records):
         lines.append("")
     lines.append("## 待核验与观察项")
     if item.watch_items:
+        counts = {}
         for line in item.watch_items:
-            lines.append(f"- {_strip_markup(line)}")
+            text = _strip_markup(line)
+            counts[text] = counts.get(text, 0) + 1
+        for text, count in counts.items():
+            suffix = f"（共 {count} 条同类）" if count > 1 else ""
+            lines.append(f"- {text}{suffix}")
     else:
         lines.append("- 无")
     lines.append("")
