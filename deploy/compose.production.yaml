@@ -13,7 +13,11 @@ x-app: &app
   read_only: true
   # Operator commands (ops_config, soak_status, feishu_self_test) run from the
   # checked-out scripts; keeping them read-only avoids rebuilding the image.
-  volumes: ["../scripts:/app/scripts:ro"]
+  volumes:
+    - ../scripts:/app/scripts:ro
+    - ../details:/app/details
+  environment:
+    OIL_DETAIL_DIR: /app/details
   tmpfs: ["/tmp:size=64m,mode=1777"]
   cap_drop: [ALL]
   security_opt: [no-new-privileges:true]

@@ -131,12 +131,12 @@ def _report_body(item, records):
     facts = [_strip_markup(fact.text) for fact in item.facts]
     if facts:
         if len(facts) == 1:
-            parts.append("今天需要重点关注一件事：" + short(facts[0], 220) + "。")
+            parts.append("今天需要重点关注一件事：" + short(facts[0], 200) + "。")
         else:
-            joined = "；".join(short(f, 160) for f in facts[:3])
-            parts.append(f"今天需要重点关注 {len(facts)} 件事：" + joined + "。")
+            joined = "；".join(short(f, 140) for f in facts[:2])
+            parts.append(f"今天有 {len(facts)} 件事需要关注：" + joined + "。")
     else:
-        parts.append("今天没有新增的、已核实到需要立即处置的风险事件，主要看价格和后续观察项。")
+        parts.append("今天没有新增的、已核实到需要立即处置的风险事件。")
 
     impact = [
         _strip_markup(line)
@@ -145,35 +145,91 @@ def _report_body(item, records):
     ]
     impact = [line for line in impact if line]
     if impact:
-        joined = "；".join(short(line, 260) for line in impact[:3])
-        parts.append("对市场的影响，目前能说的是：" + joined + "。")
+        parts.append("目前能判断的是：" + "；".join(short(line, 180) for line in impact[:2]) + "。")
 
     prices = _price_sentences(item.computed_metrics)
     if prices:
         parts.append("价格方面，" + "；".join(prices) + "。")
+        ages = [
+            (item.cutoff_at - metric.as_of).total_seconds() / 86400
+            for metric in item.computed_metrics
+            if metric.as_of is not None and metric.value is not None
+        ]
+        if ages and max(ages) > 1.5:
+            parts.append(
+                f"注意：官方价格数据已经滞后约 {round(max(ages))} 天，不能代表今天的盘中走势。"
+            )
     else:
         parts.append("价格方面，本轮没有拿到可核验的报价，暂不做涨跌判断。")
 
-    watch = []
-    for line in item.watch_items:
-        if line.startswith("待观察"):
-            watch.append(_strip_markup(line).removeprefix("待观察："))
-        elif line.startswith("待核验：现有证据仅属单一原始出版方"):
-            watch.append("这条消息目前只有一家原始来源，建议再等一个独立来源确认后再作为决策依据")
-    if watch:
-        parts.append("接下来要盯的是：" + "；".join(short(line, 220) for line in watch[:3]) + "。")
-
-    note = [f"数据截至 {_cn_time(item.cutoff_at)}（上海时间）。"]
-    if item.gaps:
-        note.append("部分来源覆盖或报价仍有缺口，相关判断按未知处理，不当作持平。")
-    if item.delayed:
-        note.append("本期为延迟生成。")
-    parts.append("".join(note))
-
-    sources = _source_line(item, records)
-    if sources:
-        parts.append(sources)
+    parts.append("详细的核实过程、全部来源和指标见附件。")
     return "\n\n".join(parts)
+
+
+def report_detail_markdown(item, records):
+    """Full evidence appendix sent as a separate file, never in the short alert."""
+    lines = [f"# {item.report_date.isoformat()} 成品油日报 · 核实明细", ""]
+    lines.append(f"数据截止：{_cn_time(item.cutoff_at)}（上海时间）")
+    lines.append(f"版本：v{item.revision}" + ("（延迟生成）" if item.delayed else ""))
+    lines.append("")
+    lines.append("## 结论")
+    if item.facts:
+        for fact in item.facts:
+            lines.append(f"- {_strip_markup(fact.text)}")
+    else:
+        lines.append("- 没有已核实到需要立即处置的新增风险事件。")
+    for line in item.impact_analysis:
+        lines.append(f"- {_strip_markup(line)}")
+    lines.append("")
+    lines.append("## 指标")
+    for metric in item.computed_metrics:
+        value = "未知" if metric.value is None else f"{_decimal_text(metric.value)} {metric.unit}"
+        quality = QUALITY[metric.quality_state]
+        lines.append(f"- {metric.name}：{value}；时点 {_cn_time(metric.as_of)}；质量 {quality}")
+    lines.append("")
+    lines.append("## 事实与证据")
+    for fact in item.facts:
+        lines.append(f"### {_strip_markup(fact.text)}")
+        for ref in fact.evidence:
+            source = records.get((ref.record_id, ref.revision))
+            publisher = source.origin_publisher if source else "未知发布者"
+            published = _cn_time(source.published_at) if source else "时间未知"
+            record = f"{ref.record_id} v{ref.revision}"
+            lines.append(f"- 来源：{publisher}｜发布：{published}｜记录：{record}")
+            lines.append(f"  > {ref.excerpt[:800]}")
+        lines.append("")
+    lines.append("## 待核验与观察项")
+    if item.watch_items:
+        for line in item.watch_items:
+            lines.append(f"- {_strip_markup(line)}")
+    else:
+        lines.append("- 无")
+    lines.append("")
+    lines.append("## 数据缺口")
+    if item.gaps:
+        for gap in item.gaps:
+            lines.append(f"- {gap}")
+    else:
+        lines.append("- 无")
+    lines.append("")
+    lines.append("## 全部来源")
+    refs = [ref for fact in item.facts for ref in fact.evidence]
+    refs.extend(ref for metric in item.computed_metrics for ref in metric.evidence)
+    seen = set()
+    for ref in refs:
+        key = (ref.record_id, ref.revision)
+        if key in seen or key not in records:
+            continue
+        seen.add(key)
+        source = records[key]
+        external = source.external_id or source.record_id
+        lines.append(f"- {source.origin_publisher}｜{_cn_time(source.published_at)}｜{external}")
+    if not seen:
+        lines.append("- 无")
+    lines.append("")
+    lines.append("---")
+    lines.append("本文件由 oil-agent 自动生成；摘要为模型辅助生成，事实以引用原文为准。")
+    return "\n".join(lines)
 
 
 UNKNOWN_TEXT = {

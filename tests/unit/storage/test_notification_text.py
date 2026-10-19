@@ -5,7 +5,7 @@ from datetime import date
 from test_runtime import candidate
 
 from oil_agent.contracts.dto import Report
-from oil_agent.storage.notification_text import notification_body
+from oil_agent.storage.notification_text import notification_body, report_detail_markdown
 
 
 def test_event_body_keeps_status_and_unknown_publication_separate(source_record):
@@ -54,8 +54,13 @@ def test_report_body_uses_stored_metrics_cutoff_gaps_and_bounded_text(source_rec
         fixture_dataset=source_record.fixture_dataset,
     )
     body = notification_body(item, {(source_record.record_id, 1): source_record})
-    assert "数据截至" in body and "上海时间" in body
     assert "123.456 CNY/ton" in body and "陈旧" in body
     assert "Source-backed fixture" in body
-    assert "Synthetic publisher" in body
+    assert "详细的核实过程" in body
+    # Sources and verification detail belong to the appendix, not the alert.
+    assert "Synthetic publisher" not in body
     assert len(body) <= 20000
+    detail = report_detail_markdown(item, {(source_record.record_id, 1): source_record})
+    assert "Synthetic publisher" in detail
+    assert "Missing synthetic series" in detail
+    assert "## 事实与证据" in detail
